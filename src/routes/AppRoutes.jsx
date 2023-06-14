@@ -7,6 +7,7 @@ import Error404 from "./error404";
 import Alerts from "../helpers/Alerts";
 import Login from "../components/login/Login";
 import Register from "../components/register/Register";
+import Header from "../components/header/Header";
 // import Menu from "../menu/Menu";
 // import Tramites from "../tramites/Tramites";
 // import Tramitesform from "../forms/Tramitesform";
@@ -26,7 +27,33 @@ const AppRoutes = () => {
           <Route path={"/addtramite/*"} element={<><Menu /><Tramitesform /></>} />
           <Route path={"/certcatastral/*"} element={<><Menu /><Certificacionesform /></>} />
           <Route path={"/entrega/*"} element={<><Menu /><Salidasform /></>} /> */}
-          <Route path={"/home/*"} element={<><div>HOME</div></>} />
+          <Route
+            path={"/home/*"}
+            element={
+              <>
+                <Header />
+                <div>HOME</div>
+              </>
+            }
+          />
+          <Route
+            path={"/profile/*"}
+            element={
+              <>
+                <Header retroceder="/" />
+                <div>Profile</div>
+              </>
+            }
+          />
+          <Route
+            path={"/messages/*"}
+            element={
+              <>
+                <Header retroceder="/" />
+                <div>Messages</div>
+              </>
+            }
+          />
         </Route>
         <Route
           path={"/"}
