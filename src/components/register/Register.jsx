@@ -9,7 +9,7 @@ import Alert from "@mui/material/Alert";
 import Loadding from "../../helpers/Loadding";
 import { useAlertStore } from "../../store/Store";
 import { useMutation } from "@apollo/client";
-import { MutationLogin } from "../../querys/mutations/LoginMutations";
+import { MutationRegister } from "../../querys/mutations/RegisterMutations";
 import { useUserDataStore } from "../../store/Store";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/logo.png";
@@ -24,9 +24,9 @@ function Copyright(props) {
       align="center"
       {...props}
     >
-      No está Registrado???{" "}
-      <NavLink to={"/register"} end>
-        Registrarse
+      Ya está Registrado???{" "}
+      <NavLink to={"/"} end>
+        Iniciar Sesión
       </NavLink>{" "}
       <br />
       {"Copyright CubAmor© "}
@@ -38,15 +38,18 @@ function Copyright(props) {
 
 const validationSchema = Yup.object().shape({
   username: Yup.string()
-    .required("El Em@il es obligatorio")
+    .required("El nombre de usuario es obligatorio")
+    .min(4, "Debe tener mínimo 4 caracteres"),
+  email: Yup.string()
+    .required("El nombre de usuario es obligatorio")
     .email("No es una dirección Email"),
   password: Yup.string()
     .required("La contraseña es obligatoria")
     .min(6, "Debe tener mínimo 6 dígitos"),
 });
 
-function Login() {
-  const [NewLogin] = useMutation(MutationLogin);
+function Register() {
+  const [NewRegister] = useMutation(MutationRegister);
   const { ChangeToken, ChangeUser_Data, ChangeLogged } = useUserDataStore();
   const {
     ChangeMsgOpen,
@@ -81,30 +84,33 @@ function Login() {
               CubAmor
             </Typography>
             <Formik
-              initialValues={{ username: "", password: "" }}
+              initialValues={{ username: "", email: "", password: "" }}
               validationSchema={validationSchema}
-              onSubmit={async ({ username, password }, { resetForm }) => {
+              onSubmit={async (
+                { username, email, password },
+                { resetForm }
+              ) => {
                 isLoadding.value = true;
                 // Aquí irá la lógica para enviar los datos del formulario al servidor
                 try {
-                  const GET = await NewLogin({
-                    variables: { username, password },
+                  const GET = await NewRegister({
+                    variables: { username, email, password },
                   });
-                  const token = GET.data.login.jwt;
+                  const token = GET.data.register.jwt;
                   ChangeToken(token);
-                  const user_data = GET.data.login.user;
+                  const user_data = GET.data.register.user;
                   ChangeUser_Data(user_data);
                   ChangeLogged(true);
                   resetForm();
                   isLoadding.value = false;
-                  navigate("/tramites", { replace: true });
+                  navigate("/profile", { replace: true });
                 } catch (error) {
                   //console.log(error.message);
                   ChangeMsgOpen(true);
                   ChangeSeverity("error");
                   ChangeMsg(
-                    error.message === "Invalid identifier or password"
-                      ? "Email o Password Incorrecto!"
+                    error.message === "Email or Username are already taken"
+                      ? "El Usuario o el Email ya están en uso!"
                       : error.message === "Failed to fetch"
                       ? "Error al hacer la petición al Servidor!"
                       : error.message
@@ -124,7 +130,7 @@ function Login() {
                       required
                       fullWidth
                       id="username"
-                      label="Em@il"
+                      label="Usuario"
                       name="username"
                       autoComplete="username"
                       onChange={handleChange}
@@ -136,6 +142,27 @@ function Login() {
                       name="username"
                       component={() => (
                         <Alert severity="warning">{errors.username}</Alert>
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="email"
+                      label="Em@il"
+                      name="email"
+                      autoComplete="email"
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.email}
+                      autoFocus
+                    />
+                    <ErrorMessage
+                      name="email"
+                      component={() => (
+                        <Alert severity="warning">{errors.email}</Alert>
                       )}
                     />
                   </div>
@@ -167,7 +194,7 @@ function Login() {
                     variant="contained"
                     sx={{ mt: 1, mb: 1 }}
                   >
-                    Iniciar Sesión
+                    Registrarse
                   </Button>
                 </Form>
               )}
@@ -180,4 +207,4 @@ function Login() {
   }
 }
 
-export default Login;
+export default Register;

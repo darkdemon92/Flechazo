@@ -6,6 +6,12 @@ import ProtectedRoutes from "./ProtectedRoutes";
 import Error404 from "./error404";
 import Alerts from "../helpers/Alerts";
 import Login from "../components/login/Login";
+import Register from "../components/register/Register";
+// import Menu from "../menu/Menu";
+// import Tramites from "../tramites/Tramites";
+// import Tramitesform from "../forms/Tramitesform";
+// import Certificacionesform from "../forms/Certificacionesform";
+// import Salidasform from "../forms/Salidasform";
 
 const AppRoutes = () => {
   const { logged } = useUserDataStore((state) => ({
@@ -20,7 +26,7 @@ const AppRoutes = () => {
           <Route path={"/addtramite/*"} element={<><Menu /><Tramitesform /></>} />
           <Route path={"/certcatastral/*"} element={<><Menu /><Certificacionesform /></>} />
           <Route path={"/entrega/*"} element={<><Menu /><Salidasform /></>} /> */}
-          <Route path={"/home/*"} element={<><Alerts /><div>HOME</div></>} />
+          <Route path={"/home/*"} element={<><div>HOME</div></>} />
         </Route>
         <Route
           path={"/"}
@@ -28,6 +34,15 @@ const AppRoutes = () => {
             <PublicRoutes logged={logged}>
               <Alerts />
               <Login />
+            </PublicRoutes>
+          }
+        />
+        <Route
+          path={"/register"}
+          element={
+            <PublicRoutes logged={logged}>
+              <Alerts />
+              <Register />
             </PublicRoutes>
           }
         />

@@ -1,20 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export const useThemeStore = create(
-  persist(
-    (set) => ({
-      theme: "light",
-      //theme: "dark",
-      ChangeTheme: (value) => set((state) => ({ theme: value })),
-      // ClearStore: () => {
-      //   set({}, true);
-      // },
-    }),
-    { name: "theme" }
-  )
-);
-
 export const useAlertStore = create((set) => ({
   MsgOpen: false,
   SeverityMsg: "error",
