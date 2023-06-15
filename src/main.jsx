@@ -15,7 +15,7 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 const httpLink = createHttpLink({
-  uri: "https://cubamor.darkprojects.tk/graphql",
+  uri: "https://backend1.darkprojects.tk/graphql",
 });
 
 const authLink = setContext((_, { headers }) => {
