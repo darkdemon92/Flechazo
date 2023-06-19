@@ -8,6 +8,7 @@ import Alerts from "../helpers/Alerts";
 import Login from "../components/login/Login";
 import Register from "../components/register/Register";
 import Header from "../components/header/Header";
+import Tarjetas from "../components/tarjetas/Tarjetas";
 // import Menu from "../menu/Menu";
 // import Tramites from "../tramites/Tramites";
 // import Tramitesform from "../forms/Tramitesform";
@@ -32,7 +33,7 @@ const AppRoutes = () => {
             element={
               <>
                 <Header />
-                <div>HOME</div>
+                <Tarjetas />
               </>
             }
           />

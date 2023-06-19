@@ -1,0 +1,34 @@
+.tarjeta  { 
+  position: relative;
+  width: 600px;
+  padding: 20px;
+  max-width: 85vw;
+  height: 50vh;
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 2px 0 rgb(0, 0, 0.356);
+ }
+
+ .tarjeta h2 {
+  position: absolute;
+  bottom: 0.5px;
+  color: white;
+ }
+
+ .tarjeta__contenedor {
+  display: flex;
+  justify-content: center;
+  margin-top: 5vh;
+ }
+
+ .swipe {
+  position: absolute;
+ }
+
+ .buttons__likes {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 10px;
+}

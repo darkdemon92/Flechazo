@@ -12,7 +12,7 @@ import { useMutation } from "@apollo/client";
 import { MutationLogin } from "../../querys/mutations/LoginMutations";
 import { useUserDataStore } from "../../store/Store";
 import { NavLink, useNavigate } from "react-router-dom";
-import Logo from "../../assets/logo.png";
+import Logo from "../../assets/logo.webp";
 
 const isLoadding = signal(false);
 

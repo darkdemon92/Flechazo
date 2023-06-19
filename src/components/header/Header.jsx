@@ -5,7 +5,7 @@ import PersonSharpIcon from "@mui/icons-material/PersonSharp";
 import QuestionAnswerSharpIcon from "@mui/icons-material/QuestionAnswerSharp";
 import LogoutSharpIcon from "@mui/icons-material/LogoutSharp";
 import ArrowBackIosNewSharpIcon from "@mui/icons-material/ArrowBackIosNewSharp";
-import Logo from "../../assets/logo.png";
+import Logo from "../../assets/logo.webp";
 import "./Header.css";
 
 export default function Header({ retroceder }) {
