@@ -97,7 +97,7 @@ function Login() {
                   ChangeLogged(true);
                   resetForm();
                   isLoadding.value = false;
-                  navigate("/home", { replace: true });
+                  navigate("/profile", { replace: true });
                 } catch (error) {
                   //console.log(error.message);
                   ChangeMsgOpen(true);

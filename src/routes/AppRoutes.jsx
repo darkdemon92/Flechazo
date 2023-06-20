@@ -9,6 +9,7 @@ import Login from "../components/login/Login";
 import Register from "../components/register/Register";
 import Header from "../components/header/Header";
 import Tarjetas from "../components/tarjetas/Tarjetas";
+import Profile from "../components/profile/Profile";
 // import Menu from "../menu/Menu";
 // import Tramites from "../tramites/Tramites";
 // import Tramitesform from "../forms/Tramitesform";
@@ -16,8 +17,9 @@ import Tarjetas from "../components/tarjetas/Tarjetas";
 // import Salidasform from "../forms/Salidasform";
 
 const AppRoutes = () => {
-  const { logged } = useUserDataStore((state) => ({
+  const { logged, user_id } = useUserDataStore((state) => ({
     logged: state.logged,
+    user_id: state.user_data.id,
   }));
 
   return (
@@ -41,8 +43,9 @@ const AppRoutes = () => {
             path={"/profile/*"}
             element={
               <>
+                <Alerts />
                 <Header retroceder="/" />
-                <div>Profile</div>
+                <Profile user_id={user_id} />
               </>
             }
           />
