@@ -1,84 +1,155 @@
 import "./Tarjetas.css";
-import { useState } from "preact/hooks";
 import TarjetaPersona from "react-tinder-card";
+import { useEffect } from "preact/hooks";
 import { IconButton } from "@mui/material";
-import ThumbDownAltSharpIcon from "@mui/icons-material/ThumbDownAltSharp";
-import ThumbUpAltSharpIcon from "@mui/icons-material/ThumbUpAltSharp";
+import HeartBrokenSharpIcon from "@mui/icons-material/HeartBrokenSharp";
+import FavoriteSharpIcon from "@mui/icons-material/FavoriteSharp";
+import { useQuery, useMutation } from "@apollo/client";
+import { IsPlus } from "../../querys/querys/PlusQuery";
+import { GetProfiles } from "../../querys/querys/TarjetasQuerys";
+import { Liked, Disliked } from "../../querys/mutations/Like_DislakeMutations";
+import { useAlertStore } from "../../store/Store";
+import Loadding from "../../helpers/Loadding";
+import Typography from "@mui/material/Typography";
+import SentimentVeryDissatisfiedSharpIcon from "@mui/icons-material/SentimentVeryDissatisfiedSharp";
+import VerifiedSharpIcon from "@mui/icons-material/VerifiedSharp";
+import ControlPointSharpIcon from "@mui/icons-material/ControlPointSharp";
+import F from "../../assets/F.webp";
+import M from "../../assets/M.webp";
 
-export default function Tarjetas() {
-  const [persona, setPersona] = useState([
-    {
-      id: 1,
-      nombre: "Ana de Armas",
-      img: "https://hips.hearstapps.com/hmg-prod/images/cuban-actress-ana-de-armas-attends-the-95th-annual-academy-news-photo-1678694111.jpg",
-      edad: "25",
-      provincia: "Pinar del Río",
-    },
-    {
-      id: 2,
-      nombre: "Gal Gadot",
-      img: "https://www.deusnews.com/src/news/00/00/8B/8D/gal-gadot-en-el-remake-de-hand-in-the-snare-de-hitchcock.jpg",
-      edad: "35",
-      provincia: "Matanzas",
-    },
-    {
-      id: 3,
-      nombre: "Jennifer López",
-      img: "https://media.glamour.es/photos/62b18e97c451f1771777bacb/master/pass/Jennifer%20Lopez.jpg",
-      edad: "50",
-      provincia: "La Habana",
-    },
-  ]);
-  console.log(persona);
-  const onSwipe = (direction, id_persona) => {
-    console.log("You swiped: " + direction + id_persona);
-    if (direction === "left") {
-      let newPersona = persona.filter((persona) => persona.id !== id_persona);
-      setPersona(newPersona);
-    }
-    if (direction === "right") {
-      console.table("You swiped: " + direction + id_persona);
+export default function Tarjetas({ user_id }) {
+  const Plus = useQuery(IsPlus);
+  const [I_Liked] = useMutation(Liked);
+  const [I_Disliked] = useMutation(Disliked);
+
+  const { loading, error, data, refetch } = Plus.error
+    ? useQuery(GetProfiles, {
+        variables: { id: user_id },
+      })
+    : useQuery(GetProfiles, {
+        variables: { id: user_id },
+      });
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  const {
+    ChangeMsgOpen,
+    ChangeSeverity,
+    ChangeMsg,
+    ChangeDuration,
+    ChangePositionV,
+    ChangePositionH,
+  } = useAlertStore();
+
+  const onSwiped = async (direction, id_persona) => {
+    //console.log("You swiped: " + direction + id_persona);
+    const mutation = direction === "left" ? I_Disliked : I_Liked;
+    try {
+      await mutation({ variables: { id: user_id, profile: id_persona } });
+      console.log("You swiped: " + direction + id_persona);
+      refetch();
+    } catch (error) {
+      console.log(error);
     }
   };
-  return (
-    <>
-      <div className="tarjeta__contenedor">
-        {persona.map((persona) => (
-          <TarjetaPersona
-            className="swipe"
-            key={persona.id}
-            preventSwipe={["up", "down"]}
-            onSwipe={(direction) => onSwipe(direction, persona.id)}
-          >
-            <div
-              className="tarjeta"
-              style={{ backgroundImage: `url(${persona.img})` }}
+
+  if (loading) {
+    return <Loadding />;
+  }
+
+  if (error) {
+    ChangeMsgOpen(true);
+    ChangeSeverity("error");
+    ChangeMsg(
+      error.message === "Failed to fetch"
+        ? "Error al hacer la petición al Servidor!"
+        : error.message
+    );
+    ChangeDuration(2000);
+    ChangePositionV("top");
+    ChangePositionH("center");
+  }
+
+  if (data && data.profiles.data.length > 0) {
+    console.log(data.profiles.data);
+    return (
+      <>
+        {Plus.error ? (
+          <div>
+            <ControlPointSharpIcon />
+            No es Plus+
+          </div>
+        ) : (
+          <div>
+            <ControlPointSharpIcon />
+            Es Plus+
+          </div>
+        )}
+        <div className="tarjeta__contenedor">
+          {data.profiles.data.map((persona) => (
+            <TarjetaPersona
+              className="swipe"
+              key={persona.id}
+              preventSwipe={["up", "down", "left", "right"]}
+              onSwipe={(direction) => onSwiped(direction, persona.id)}
             >
-              <h2>
-                Nombre: {persona.nombre}
-                &nbsp;&nbsp; Edad: {persona.edad}
-                <br />
-                Provincia: {persona.provincia}
-              </h2>
-            </div>
-            <div>
-              <IconButton onClick={() => onSwipe("left", persona.id)}>
-                <ThumbDownAltSharpIcon
-                  fontSize="large"
-                  style={{ color: "red" }}
-                />
-              </IconButton>
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <IconButton onClick={() => onSwipe("right", persona.id)}>
-                <ThumbUpAltSharpIcon
-                  fontSize="large"
-                  style={{ color: "green" }}
-                />
-              </IconButton>
-            </div>
-          </TarjetaPersona>
-        ))}
-      </div>
-    </>
-  );
+              <div
+                className="tarjeta"
+                style={{
+                  backgroundImage: persona.attributes.avatar.data
+                    ? `url(${import.meta.env.VITE_BASE_URL}${
+                        persona.attributes.avatar.data.attributes.url
+                      })`
+                    : persona.attributes.sexo === "Femenino"
+                    ? `url(${F})`
+                    : `url(${M})`,
+                }}
+              >
+                {persona.attributes.verificado ? (
+                  <VerifiedSharpIcon className="verified" fontSize="large" />
+                ) : (
+                  <></>
+                )}
+                <h2>
+                  Nombre: {persona.attributes.nombres_apellidos}
+                  &nbsp;&nbsp; Edad: {persona.attributes.edad}
+                  <br />
+                  Provincia: {persona.attributes.provincia}
+                </h2>
+              </div>
+              <div>
+                <IconButton onClick={() => onSwiped("left", persona.id)}>
+                  <HeartBrokenSharpIcon
+                    fontSize="large"
+                    style={{ color: "black" }}
+                  />
+                </IconButton>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <IconButton onClick={() => onSwiped("right", persona.id)}>
+                  <FavoriteSharpIcon
+                    fontSize="large"
+                    style={{ color: "red" }}
+                  />
+                </IconButton>
+              </div>
+            </TarjetaPersona>
+          ))}
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <Typography
+        component="h1"
+        variant="h6"
+        style={{ marginTop: "35px", color: "red" }}
+      >
+        <SentimentVeryDissatisfiedSharpIcon fontSize="large" />
+        Lo Sentimos!!! No tenemos más Perfiles que mostrarle por el momento...
+        <SentimentVeryDissatisfiedSharpIcon fontSize="large" />
+      </Typography>
+    );
+  }
 }

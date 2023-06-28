@@ -157,7 +157,6 @@ function Register() {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       value={values.email}
-                      autoFocus
                     />
                     <ErrorMessage
                       name="email"
@@ -179,7 +178,6 @@ function Register() {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       value={values.password}
-                      autoFocus
                     />
                     <ErrorMessage
                       name="password"

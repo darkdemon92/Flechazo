@@ -10,6 +10,7 @@ import Register from "../components/register/Register";
 import Header from "../components/header/Header";
 import Tarjetas from "../components/tarjetas/Tarjetas";
 import Profile from "../components/profile/Profile";
+import CreateProfile from "../components/profile/Create";
 // import Menu from "../menu/Menu";
 // import Tramites from "../tramites/Tramites";
 // import Tramitesform from "../forms/Tramitesform";
@@ -35,7 +36,7 @@ const AppRoutes = () => {
             element={
               <>
                 <Header />
-                <Tarjetas />
+                <Tarjetas user_id={user_id} />
               </>
             }
           />
@@ -46,6 +47,15 @@ const AppRoutes = () => {
                 <Alerts />
                 <Header retroceder="/" />
                 <Profile user_id={user_id} />
+              </>
+            }
+          />
+          <Route
+            path={"/profile/create/*"}
+            element={
+              <>
+                <Alerts />
+                <CreateProfile user_id={user_id} />
               </>
             }
           />

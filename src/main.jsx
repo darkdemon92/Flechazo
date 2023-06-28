@@ -9,13 +9,14 @@ import { render } from "preact";
 import { App } from "./app.jsx";
 import {
   ApolloClient,
-  createHttpLink,
   InMemoryCache,
   ApolloProvider,
 } from "@apollo/client";
+import { createUploadLink } from "apollo-upload-client";
 import { setContext } from "@apollo/client/link/context";
-const httpLink = createHttpLink({
-  uri: "https://backend1.darkprojects.tk/graphql",
+const httpLink = createUploadLink({
+  //uri: "https://backend1.darkprojects.tk/graphql",
+  uri: `${import.meta.env.VITE_BASE_URL}/graphql`,
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -33,7 +34,20 @@ const authLink = setContext((_, { headers }) => {
 
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      ProfileEntity: {
+        fields: {
+          attributes: {
+            merge(existing, incoming) {
+              //return { ...existing, ...incoming };
+              return incoming;
+            },
+          },
+        },
+      },
+    },
+  }),
   connectToDevTools: true,
 });
 

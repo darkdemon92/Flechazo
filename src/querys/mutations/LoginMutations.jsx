@@ -7,6 +7,7 @@ export const MutationLogin = gql`
       user {
         id
         username
+        confirmed
       }
     }
   }

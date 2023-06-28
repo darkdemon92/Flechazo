@@ -152,7 +152,6 @@ function Login() {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       value={values.password}
-                      autoFocus
                     />
                     <ErrorMessage
                       name="password"

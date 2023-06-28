@@ -34,7 +34,7 @@ const validationSchema = Yup.object().shape({
     .matches(/^(Masculino|Femenino)$/, "El sexo debe ser Masculino o Femenino"),
 });
 
-export default function Create({ user_id }) {
+export default function CreateProfile({ user_id }) {
   const [NewProfile] = useMutation(MutationNewProfile);
   const {
     ChangeMsgOpen,
@@ -67,7 +67,7 @@ export default function Create({ user_id }) {
             { resetForm }
           ) => {
             isLoadding.value = true;
-            console.log(user_id, nombres_apellidos, edad, provincia, sexo);
+            //console.log(user_id, nombres_apellidos, edad, provincia, sexo);
             // Aquí irá la lógica para enviar los datos del formulario al servidor
             try {
               await NewProfile({
@@ -81,9 +81,9 @@ export default function Create({ user_id }) {
               });
               resetForm();
               isLoadding.value = false;
-              navigate("/home", { replace: true });
+              navigate("/profile", { replace: true });
             } catch (error) {
-              console.log(error);
+              //console.log(JSON.parse(error));
               ChangeMsgOpen(true);
               ChangeSeverity("error");
               ChangeMsg(
@@ -94,9 +94,7 @@ export default function Create({ user_id }) {
               ChangeDuration(2000);
               ChangePositionV("top");
               ChangePositionH("center");
-              resetForm();
               isLoadding.value = false;
-              navigate("/profile", { replace: true });
             }
           }}
         >
@@ -131,11 +129,11 @@ export default function Create({ user_id }) {
                   id="edad"
                   label="Edad"
                   name="edad"
+                  type="number"
                   autoComplete="edad"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.edad}
-                  autoFocus
                 />
                 <ErrorMessage
                   name="edad"
@@ -155,7 +153,6 @@ export default function Create({ user_id }) {
                   autoComplete="provincia"
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  autoFocus
                   value={values.provincia}
                 >
                   <MenuItem value={"Pinar del Río"}>Pinar del Río</MenuItem>{" "}
@@ -197,7 +194,6 @@ export default function Create({ user_id }) {
                   autoComplete="sexo"
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  autoFocus
                   value={values.sexo}
                 >
                   <MenuItem value={"Masculino"}>Masculino</MenuItem>
