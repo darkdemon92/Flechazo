@@ -15,6 +15,27 @@ import { useNavigate } from "react-router-dom";
 
 const isLoadding = signal(false);
 
+const provincias = [
+  "Pinar del Río",
+  "Artemisa",
+  "La Habana",
+  "Mayabeque",
+  "Matanzas",
+  "Cienfuegos",
+  "Villa Clara",
+  "Sancti Spíritus",
+  "Ciego de Ávila",
+  "Camagüey",
+  "Las Tunas",
+  "Granma",
+  "Holguín",
+  "Santiago de Cuba",
+  "Guantánamo",
+  "Isla de la Juventud",
+];
+
+const sexos = ["Masculino", "Femenino"];
+
 const validationSchema = Yup.object().shape({
   nombres_apellidos: Yup.string()
     .required("Los nombres y apellidos son obligatorios")
@@ -155,26 +176,11 @@ export default function CreateProfile({ user_id }) {
                   onBlur={handleBlur}
                   value={values.provincia}
                 >
-                  <MenuItem value={"Pinar del Río"}>Pinar del Río</MenuItem>{" "}
-                  <MenuItem value={"Artemisa"}>Artemisa</MenuItem>{" "}
-                  <MenuItem value={"La Habana"}>La Habana</MenuItem>{" "}
-                  <MenuItem value={"Mayabeque"}>Mayabeque</MenuItem>{" "}
-                  <MenuItem value={"Matanzas"}>Matanzas</MenuItem>{" "}
-                  <MenuItem value={"Cienfuegos"}>Cienfuegos</MenuItem>{" "}
-                  <MenuItem value={"Villa Clara"}>Villa Clara</MenuItem>{" "}
-                  <MenuItem value={"Sancti Spíritus"}>Sancti Spíritus</MenuItem>{" "}
-                  <MenuItem value={"Ciego de Ávila"}>Ciego de Ávila</MenuItem>{" "}
-                  <MenuItem value={"Camagüey"}>Camagüey</MenuItem>{" "}
-                  <MenuItem value={"Las Tunas"}>Las Tunas</MenuItem>{" "}
-                  <MenuItem value={"Granma"}>Granma</MenuItem>{" "}
-                  <MenuItem value={"Holguín"}>Holguín</MenuItem>{" "}
-                  <MenuItem value={"Santiago de Cuba"}>
-                    Santiago de Cuba
-                  </MenuItem>{" "}
-                  <MenuItem value={"Guantánamo"}>Guantánamo</MenuItem>{" "}
-                  <MenuItem value={"Isla de la Juventud"}>
-                    Isla de la Juventud (Municipio Especial)
-                  </MenuItem>
+                  {provincias.map((provincia) => (
+                    <MenuItem key={provincia} value={provincia}>
+                      {provincia}
+                    </MenuItem>
+                  ))}
                 </Select>
                 <ErrorMessage
                   name="provincia"
@@ -196,8 +202,11 @@ export default function CreateProfile({ user_id }) {
                   onBlur={handleBlur}
                   value={values.sexo}
                 >
-                  <MenuItem value={"Masculino"}>Masculino</MenuItem>
-                  <MenuItem value={"Femenino"}>Femenino</MenuItem>
+                  {sexos.map((sexo) => (
+                    <MenuItem key={sexo} value={sexo}>
+                      {sexo}
+                    </MenuItem>
+                  ))}
                 </Select>
                 <ErrorMessage
                   name="sexo"

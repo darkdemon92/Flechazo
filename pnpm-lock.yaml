@@ -44,9 +44,6 @@ dependencies:
   compressorjs:
     specifier: ^1.2.1
     version: 1.2.1
-  dotenv:
-    specifier: ^16.3.1
-    version: 16.3.1
   formik:
     specifier: ^2.4.1
     version: 2.4.1(react@18.2.0)
@@ -2592,11 +2589,6 @@ packages:
     dependencies:
       '@babel/runtime': 7.22.5
       csstype: 3.1.2
-    dev: false
-
-  /dotenv@16.3.1:
-    resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
-    engines: {node: '>=12'}
     dev: false
 
   /ejs@3.1.9:

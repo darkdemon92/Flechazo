@@ -2,7 +2,9 @@ import { IconButton } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useUserDataStore } from "../../store/Store";
 import PersonSharpIcon from "@mui/icons-material/PersonSharp";
-import QuestionAnswerSharpIcon from "@mui/icons-material/QuestionAnswerSharp";
+import Badge from "@mui/material/Badge";
+import MailIcon from "@mui/icons-material/Mail";
+import VolunteerActivismSharpIcon from '@mui/icons-material/VolunteerActivismSharp';
 import LogoutSharpIcon from "@mui/icons-material/LogoutSharp";
 import ArrowBackIosNewSharpIcon from "@mui/icons-material/ArrowBackIosNewSharp";
 import Logo from "../../assets/logo.webp";
@@ -17,7 +19,7 @@ export default function Header({ retroceder }) {
         <>
           <NavLink to={retroceder} end>
             <IconButton>
-              <ArrowBackIosNewSharpIcon fontSize="large" />
+              <ArrowBackIosNewSharpIcon fontSize="large" color="error" />
             </IconButton>
           </NavLink>
         </>
@@ -25,7 +27,7 @@ export default function Header({ retroceder }) {
         <>
           <NavLink to={"/profile"} end>
             <IconButton>
-              <PersonSharpIcon fontSize="large" />
+              <PersonSharpIcon fontSize="large" color="success" />
             </IconButton>
           </NavLink>
           <NavLink to={"/"} end>
@@ -35,7 +37,16 @@ export default function Header({ retroceder }) {
           </NavLink>
           <NavLink to={"/messages"} end>
             <IconButton>
-              <QuestionAnswerSharpIcon fontSize="large" />
+              <Badge badgeContent={4} color="primary">
+                <MailIcon fontSize="large" color="warning" />
+              </Badge>
+            </IconButton>
+          </NavLink>
+          <NavLink to={"/messages"} end>
+            <IconButton>
+              <Badge badgeContent={6} color="error">
+                <VolunteerActivismSharpIcon fontSize="large" color="primary" />
+              </Badge>
             </IconButton>
           </NavLink>
           <IconButton
@@ -44,7 +55,7 @@ export default function Header({ retroceder }) {
               navigate("/", { replace: true });
             }}
           >
-            <LogoutSharpIcon fontSize="large" />
+            <LogoutSharpIcon fontSize="large" color="error" />
           </IconButton>
         </>
       )}
