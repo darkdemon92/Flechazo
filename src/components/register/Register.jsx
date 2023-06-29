@@ -29,7 +29,7 @@ function Copyright(props) {
         Iniciar Sesión
       </NavLink>{" "}
       <br />
-      {"Copyright CubAmor© "}
+      {"Copyright Flechazo© "}
       {new Date().getFullYear()}
       {"."}{" "}
     </Typography>
@@ -81,7 +81,7 @@ function Register() {
               style={{ width: "20%", height: "auto" }}
             />
             <Typography component="h1" variant="h3">
-              CubAmor
+              Flechazo
             </Typography>
             <Formik
               initialValues={{ username: "", email: "", password: "" }}
