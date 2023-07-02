@@ -94,7 +94,7 @@ export default function UploadAvatar({ modal2Status, data, refetch }) {
   const compressImagePromise = (file) => {
     return new Promise((resolve, reject) => {
       new Compressor(file, {
-        quality: 0.6,
+        quality: 0, //0 0.2 0.4 0.6 0.8 1
         success: (compressedFile) => {
           resolve(compressedFile);
         },
