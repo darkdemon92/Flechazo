@@ -1,33 +1,20 @@
-import { useEffect } from "preact/hooks";
-import { signal } from "@preact/signals";
+import "./Likes.css";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
-import { GetProfile } from "../../querys/querys/ProfileQuerys";
+import { GetProfileDetails } from "../../querys/querys/ProfileQuerys";
 import { useAlertStore } from "../../store/Store";
 import Loadding from "../../helpers/Loadding";
 import F from "../../assets/F.webp";
 import M from "../../assets/M.webp";
-import { IconButton } from "@mui/material";
-import EditSharpIcon from "@mui/icons-material/EditSharp";
-import ChangeCircleSharpIcon from "@mui/icons-material/ChangeCircleSharp";
 import DoNotDisturbSharpIcon from "@mui/icons-material/DoNotDisturbSharp";
-import AddPhotoAlternateSharpIcon from "@mui/icons-material/AddPhotoAlternateSharp";
-import Edit from "./Edit";
-import UploadAvatar from "./UploadAvatar";
-import UploadFoto from "./UploadFoto";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import VerifiedSharpIcon from "@mui/icons-material/VerifiedSharp";
 
-const modalStatus = signal(false);
-const modal2Status = signal(false);
-const modal3Status = signal(false);
-
-function Profile({ Plus, user_id }) {
-  //console.log("render profile");
-  //console.log(user_id);
-  let navigate = useNavigate();
+function ProfileDetails({ Plus }) {
+  const { id } = useParams();
+  //console.log(id);
   const {
     ChangeMsgOpen,
     ChangeSeverity,
@@ -36,12 +23,8 @@ function Profile({ Plus, user_id }) {
     ChangePositionV,
     ChangePositionH,
   } = useAlertStore();
-  const { loading, error, data, refetch } = useQuery(GetProfile, {
-    variables: { id: user_id },
-  });
-  useEffect(() => {
-    //console.log("refetch");
-    refetch();
+  const { loading, error, data } = useQuery(GetProfileDetails, {
+    variables: { id: id },
   });
 
   //console.log(data);
@@ -60,69 +43,40 @@ function Profile({ Plus, user_id }) {
     ChangePositionV("top");
     ChangePositionH("center");
   }
-  if (data && data.profiles.data.length > 0) {
+  if (data && data?.profile?.data) {
     //console.log(data);
     return (
-      <>
+      <div className={Plus.error ? "avatar" : "avatar_plus"}>
         <Typography component="h1" variant="h3" style={{ color: "blue" }}>
-          Mi Perfil
-          <IconButton
-            onClick={() => (modalStatus.value = true)}
-            style={{ color: "green" }}
-          >
-            <EditSharpIcon fontSize="large" />
-          </IconButton>
-        </Typography>{" "}
-        <Edit
-          modalStatus={modalStatus}
-          data={data.profiles.data[0]}
-          refetch={refetch}
-        />
-        <UploadAvatar
-          modal2Status={modal2Status}
-          data={data.profiles.data[0]}
-          refetch={refetch}
-        />
-        <UploadFoto
-          modal3Status={modal3Status}
-          data={data.profiles.data[0]}
-          refetch={refetch}
-        />
-        <br />
+          Perfil de {data.profile.data.attributes.nombres_apellidos}
+        </Typography>
         <img
           src={
-            data.profiles.data[0].attributes.avatar.data
+            data.profile.data.attributes.avatar.data
               ? `${import.meta.env.VITE_BASE_URL}${
-                  data.profiles.data[0].attributes.avatar.data?.attributes.url
+                  data.profile.data.attributes.avatar.data?.attributes.url
                 }`
-              : data.profiles.data[0].attributes.sexo === "Femenino"
+              : data.profile.data.attributes.sexo === "Femenino"
               ? F
               : M
           }
           alt="Avatar"
           style={{ maxWidth: "300px", padding: "5px", borderRadius: "20px" }}
         />
-        <IconButton
-          onClick={() => (modal2Status.value = true)}
-          style={{ color: "green" }}
-        >
-          <ChangeCircleSharpIcon fontSize="large" />
-        </IconButton>
         <Typography component="h1" variant="h4">
-          Nombres y Apellidos:{" "}
-          {data.profiles.data[0].attributes.nombres_apellidos}
+          Nombres y Apellidos: {data.profile.data.attributes.nombres_apellidos}
         </Typography>
         <Typography component="h1" variant="h4">
-          Edad: {data.profiles.data[0].attributes.edad}
+          Edad: {data.profile.data.attributes.edad}
         </Typography>
         <Typography component="h1" variant="h4">
-          Sexo: {data.profiles.data[0].attributes.sexo}
+          Sexo: {data.profile.data.attributes.sexo}
         </Typography>
         <Typography component="h1" variant="h4">
-          Provincia: {data.profiles.data[0].attributes.provincia}
+          Provincia: {data.profile.data.attributes.provincia}
         </Typography>
         <Typography component="h1" variant="h4">
-          {data.profiles.data[0].attributes.verificado ? (
+          {data?.profile?.data?.attributes?.verificado ? (
             <>
               Verificado:{" "}
               <VerifiedSharpIcon
@@ -138,21 +92,15 @@ function Profile({ Plus, user_id }) {
         </Typography>
         <br /> <br /> <br />
         <Typography component="h1" variant="h4" style={{ color: "gray" }}>
-          Mis Fotos
-          <IconButton
-            onClick={() => (modal3Status.value = true)}
-            style={{ color: "green" }}
-          >
-            <AddPhotoAlternateSharpIcon fontSize="large" />
-          </IconButton>
+          Fotos de {data.profile.data.attributes.nombres_apellidos}
         </Typography>
         <ImageList
           sx={{ width: "100%", height: "100%" }}
           cols={3}
           rowHeight="auto"
         >
-          {data.profiles.data[0].attributes.mis_fotos?.data?.length > 0 ? (
-            data.profiles.data[0].attributes.mis_fotos?.data.map((fotos) => (
+          {data.profile.data.attributes.mis_fotos?.data?.length > 0 ? (
+            data.profile.data.attributes.mis_fotos?.data.map((fotos) => (
               <ImageListItem key={fotos.id}>
                 <img
                   src={`${import.meta.env.VITE_BASE_URL}${
@@ -182,12 +130,16 @@ function Profile({ Plus, user_id }) {
             </Typography>
           )}
         </ImageList>
-      </>
+      </div>
     );
-  }
-  if (data && data.profiles.data.length === 0) {
-    navigate("/profile/create", { replace: true });
+  } else {
+    return (
+      <Typography component="h1" variant="h3" style={{ color: "red" }}>
+        <DoNotDisturbSharpIcon fontSize="large" /> Este Usuario aún no
+        completado su perfil...
+      </Typography>
+    );
   }
 }
 
-export default Profile;
+export default ProfileDetails;

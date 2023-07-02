@@ -18,21 +18,29 @@ const isLoadding = signal(false);
 
 function Copyright(props) {
   return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      Ya está Registrado???{" "}
-      <NavLink to={"/"} end>
-        Iniciar Sesión
-      </NavLink>{" "}
-      <br />
-      {"Copyright Flechazo© "}
-      {new Date().getFullYear()}
-      {"."}{" "}
-    </Typography>
+    <>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        align="center"
+        {...props}
+      >
+        Ya está Registrado???{" "}
+        <NavLink to={"/"} end>
+          Iniciar Sesión
+        </NavLink>{" "}
+        <br />
+        {"Copyright Flechazo© "}
+        {new Date().getFullYear()}
+        {"."}{" "}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" align="center">
+        Al Registrarse Usted Acepta Nuestros{" "}
+        <NavLink to={"/terms"} end>
+          Términos y Condiciones
+        </NavLink>{" "}
+      </Typography>
+    </>
   );
 }
 

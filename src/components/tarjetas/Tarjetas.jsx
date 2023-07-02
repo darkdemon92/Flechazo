@@ -6,7 +6,6 @@ import { IconButton } from "@mui/material";
 import HeartBrokenSharpIcon from "@mui/icons-material/HeartBrokenSharp";
 import FavoriteSharpIcon from "@mui/icons-material/FavoriteSharp";
 import { useQuery, useMutation } from "@apollo/client";
-import { IsPlus } from "../../querys/querys/PlusQuery";
 import { GetProfiles } from "../../querys/querys/TarjetasQuerys";
 import { Liked, Disliked } from "../../querys/mutations/Like_DislakeMutations";
 import { useAlertStore } from "../../store/Store";
@@ -46,8 +45,7 @@ const provincias = [
 
 const sexos = ["Masculino", "Femenino"];
 
-export default function Tarjetas({ user_id }) {
-  const Plus = useQuery(IsPlus);
+export default function Tarjetas({ Plus, user_id }) {
   const [I_Liked] = useMutation(Liked);
   const [I_Disliked] = useMutation(Disliked);
 
@@ -118,9 +116,9 @@ export default function Tarjetas({ user_id }) {
     ChangePositionH("center");
   }
 
-  console.log(filter_sex.value);
+  //console.log(filter_sex.value);
   if (data && data.profiles.data.length > 0) {
-    console.log(data.profiles.data);
+    //console.log(data.profiles.data);
     return (
       <>
         {
@@ -147,7 +145,7 @@ export default function Tarjetas({ user_id }) {
                 disabled={Plus.error ? true : false}
               >
                 <MenuItem value="">
-                  <em>Ninguna</em>
+                  <em>Todas</em>
                 </MenuItem>
                 {provincias.map((provincia) => (
                   <MenuItem key={provincia} value={provincia}>
@@ -167,7 +165,7 @@ export default function Tarjetas({ user_id }) {
                 disabled={Plus.error ? true : false}
               >
                 <MenuItem value="">
-                  <em>Ninguno</em>
+                  <em>Todos</em>
                 </MenuItem>
                 {sexos.map((sexo) => (
                   <MenuItem key={sexo} value={sexo}>

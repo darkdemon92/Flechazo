@@ -10,7 +10,14 @@ import Register from "../components/register/Register";
 import Header from "../components/header/Header";
 import Tarjetas from "../components/tarjetas/Tarjetas";
 import Profile from "../components/profile/Profile";
+import ProfileDetails from "../components/likes/ProfileDetails";
 import CreateProfile from "../components/profile/Create";
+import { useQuery } from "@apollo/client";
+import { IsPlus } from "../querys/querys/PlusQuery";
+import Likes from "../components/likes/Likes";
+import Messages from "../components/messages/Messages";
+import Terminos from "../components/TermsAndFaq/Terminos";
+import Anuncios from "../components/Anuncios/Anuncios";
 // import Menu from "../menu/Menu";
 // import Tramites from "../tramites/Tramites";
 // import Tramitesform from "../forms/Tramitesform";
@@ -22,6 +29,7 @@ const AppRoutes = () => {
     logged: state.logged,
     user_id: state.user_data.id,
   }));
+  const Plus = useQuery(IsPlus);
 
   return (
     <>
@@ -35,8 +43,8 @@ const AppRoutes = () => {
             path={"/home/*"}
             element={
               <>
-                <Header />
-                <Tarjetas user_id={user_id} />
+                <Header user_id={user_id} />
+                <Tarjetas Plus={Plus} user_id={user_id} />
               </>
             }
           />
@@ -46,7 +54,17 @@ const AppRoutes = () => {
               <>
                 <Alerts />
                 <Header retroceder="/" />
-                <Profile user_id={user_id} />
+                <Profile Plus={Plus} user_id={user_id} />
+              </>
+            }
+          />
+          <Route
+            path={"/profile/:id"}
+            element={
+              <>
+                <Alerts />
+                <Header retroceder="/likes" />
+                <ProfileDetails Plus={Plus} />
               </>
             }
           />
@@ -64,7 +82,27 @@ const AppRoutes = () => {
             element={
               <>
                 <Header retroceder="/" />
-                <div>Messages</div>
+                <Messages />
+              </>
+            }
+          />
+          <Route
+            path={"/likes/*"}
+            element={
+              <>
+                <Alerts />
+                <Header retroceder="/" />
+                <Likes Plus={Plus} user_id={user_id} />
+              </>
+            }
+          />
+          <Route
+            path={"/anuncios/*"}
+            element={
+              <>
+                <Alerts />
+                <Header retroceder="/" />
+                <Anuncios />
               </>
             }
           />
@@ -84,6 +122,15 @@ const AppRoutes = () => {
             <PublicRoutes logged={logged}>
               <Alerts />
               <Register />
+            </PublicRoutes>
+          }
+        />
+        <Route
+          path={"/terms"}
+          element={
+            <PublicRoutes logged={logged}>
+              <Header retroceder="/" />
+              <Terminos />
             </PublicRoutes>
           }
         />
