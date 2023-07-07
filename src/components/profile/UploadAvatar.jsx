@@ -50,6 +50,52 @@ const validationSchema = Yup.object().shape({
       return value && value.size <= 5 * 1024 * 1024;
     }),
 });
+const resizeImage = (file, maxWidth, maxHeight) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        blob.name = file.name;
+        resolve(blob);
+      }, file.type);
+    };
+    img.onerror = (error) => {
+      reject(error);
+    };
+  });
+};
+const compressImagePromise = (file) => {
+  return new Promise((resolve, reject) => {
+    new Compressor(file, {
+      quality: 0.4, //0 0.2 0.4 0.6 0.8 1
+      success: (compressedFile) => {
+        resolve(compressedFile);
+      },
+      error: (error) => {
+        reject(error);
+      },
+    });
+  });
+};
 export default function UploadAvatar({ modal2Status, data, refetch }) {
   const user_id = data.id;
   const closeModal = () => {
@@ -58,52 +104,6 @@ export default function UploadAvatar({ modal2Status, data, refetch }) {
   const [UploadAvatar, { loading }] = useMutation(MutationUploadImg);
   const [UpdateProfile] = useMutation(MutationUpdateProfile);
   const [DeleteAvatar] = useMutation(MutationDeleteImg);
-  const resizeImage = (file, maxWidth, maxHeight) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => {
-          blob.name = file.name;
-          resolve(blob);
-        }, file.type);
-      };
-      img.onerror = (error) => {
-        reject(error);
-      };
-    });
-  };
-  const compressImagePromise = (file) => {
-    return new Promise((resolve, reject) => {
-      new Compressor(file, {
-        quality: 0, //0 0.2 0.4 0.6 0.8 1
-        success: (compressedFile) => {
-          resolve(compressedFile);
-        },
-        error: (error) => {
-          reject(error);
-        },
-      });
-    });
-  };
   return (
     <Modal
       open={modal2Status.value}

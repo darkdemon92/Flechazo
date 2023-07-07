@@ -11,21 +11,40 @@ import ArrowBackIosNewSharpIcon from "@mui/icons-material/ArrowBackIosNewSharp";
 import CampaignSharpIcon from "@mui/icons-material/CampaignSharp";
 import Logo from "../../assets/logo.webp";
 import "./Header.css";
-import { useQuery } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client";
 import { cantidad_likes } from "../../querys/querys/Like_DislakeQuerys";
+import { cantidad_mensajes } from "../../querys/querys/MessagesQuerys";
 
 export default function Header({ user_id, retroceder }) {
+  const client = useApolloClient();
   //console.log(user_id);
   const [likes, setlikes] = useState(0);
-  if (user_id && user_id !== undefined) {
-    const { data, refetch } = useQuery(cantidad_likes, {
+  const [mensajes, setmensajes] = useState(0);
+  const { data: cant_likes, refetch: refetch_likes } = useQuery(
+    cantidad_likes,
+    {
       variables: { id: user_id },
-    });
-    setlikes(data?.likes?.data?.length);
-    refetch();
-  }
+      skip: !user_id,
+    }
+  );
+  const { data: cant_mensajes, refetch: refetch_mensajes } = useQuery(
+    cantidad_mensajes,
+    {
+      variables: { id: user_id },
+      skip: !user_id,
+    }
+  );
 
-  //console.log(likes);
+  useEffect(() => {
+    if (cant_likes?.likes?.data?.length) {
+      setlikes(cant_likes.likes.data.length);
+      refetch_likes();
+    }
+    if (cant_mensajes?.messages?.data?.length) {
+      setmensajes(cant_mensajes.messages.data.length);
+      refetch_mensajes();
+    }
+  }, [cant_likes, cant_mensajes, refetch_likes, refetch_mensajes]);
 
   let navigate = useNavigate();
   const { ClearStore } = useUserDataStore();
@@ -53,7 +72,7 @@ export default function Header({ user_id, retroceder }) {
           </NavLink>
           <NavLink to={"/messages"} end>
             <IconButton>
-              <Badge badgeContent={4} color="primary">
+              <Badge badgeContent={mensajes} color="primary">
                 <MailIcon fontSize="large" color="warning" />
               </Badge>
             </IconButton>
