@@ -53,7 +53,7 @@ export default function SendMessage({
             setSubmitting(false);
             setOpenmsg(false);
           } catch (error) {
-            console.log(error.message);
+            console.log(error);
             setSubmitting(false);
             setFieldError("mensaje", error.message);
           }

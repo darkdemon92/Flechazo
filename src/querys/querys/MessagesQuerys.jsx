@@ -3,50 +3,28 @@ import { gql } from "@apollo/client";
 export const cantidad_mensajes = gql`
   query cantidad_mensajes($id: ID!) {
     messages(
-      filters: {
-        profile: { user: { id: { eq: $id } } }
-        # and: { leido: { eq: false } }
-      }
+      filters: { recipient: { id: { eq: $id } }, and: { read: { eq: false } } }
       pagination: { start: 0, limit: -1 }
       sort: ["createdAt:asc"]
     ) {
       data {
         id
-      }
-    }
-  }
-`;
-
-export const id_profile_emisor = gql`
-  query id_profile_emisor($id: ID!) {
-    usersPermissionsUser(id: $id) {
-      data {
-        id
-        attributes {
-          profile {
-            data {
-              id
-            }
-          }
-        }
       }
     }
   }
 `;
 
 export const PerfilesMensajes = gql`
-  query PerfilesMensajesSinLeer($id: ID!) {
+  query GetUsersWhoMessagedMe($id: ID!) {
     usersPermissionsUsers(
-      filters: {
-        messages: { profile: { user: { id: { eq: $id } } } }
-        # and: { messages: { leido: { eq: false } } }
-      }
-      pagination: { start: 0, limit: -1 }
-      sort: ["createdAt:asc"]
+      filters: { messages_sender: { recipient: { id: { eq: $id } } } }
+      pagination: {}
+      sort: ["messages:read:asc"]
     ) {
       data {
         id
         attributes {
+          username
           profile {
             data {
               id
@@ -54,14 +32,10 @@ export const PerfilesMensajes = gql`
                 nombres_apellidos
                 avatar {
                   data {
+                    id
                     attributes {
                       url
                     }
-                  }
-                }
-                user {
-                  data {
-                    id
                   }
                 }
               }
@@ -74,22 +48,17 @@ export const PerfilesMensajes = gql`
 `;
 
 export const Converzacion = gql`
-  query Converzacion(
-    $emisor_user_id: ID!
-    $receptor_user_id: ID!
-    $emisor_profile_id: ID!
-    $receptor_profile_id: ID!
-  ) {
+  query Converzacion($sender_id: ID!, $recipient_id: ID!) {
     messages(
       filters: {
         or: [
           {
-            user: { id: { eq: $emisor_user_id } }
-            and: { profile: { id: { eq: $receptor_profile_id } } }
+            sender: { id: { eq: $sender_id } }
+            and: { recipient: { id: { eq: $recipient_id } } }
           }
           {
-            profile: { id: { eq: $emisor_profile_id } }
-            and: { user: { id: { eq: $receptor_user_id } } }
+            sender: { id: { eq: $recipient_id } }
+            and: { recipient: { id: { eq: $sender_id } } }
           }
         ]
       }
@@ -99,22 +68,24 @@ export const Converzacion = gql`
       data {
         id
         attributes {
-          user {
+          sender {
             data {
               id
               attributes {
                 username
-              }
-            }
-          }
-          profile {
-            data {
-              id
-              attributes {
-                avatar {
+                profile {
                   data {
+                    id
                     attributes {
-                      url
+                      nombres_apellidos
+                      avatar {
+                        data {
+                          id
+                          attributes {
+                            url
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -123,7 +94,7 @@ export const Converzacion = gql`
           }
           createdAt
           updatedAt
-          mensaje
+          message
         }
       }
     }

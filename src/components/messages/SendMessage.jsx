@@ -27,7 +27,7 @@ export default function SendMessage({ user_id, destinatario, refetch }) {
             });
             resetForm();
             refetch();
-            setSubmitting(false)
+            setSubmitting(false);
           } catch (error) {
             console.log(error.message);
             setSubmitting(false);

@@ -18,6 +18,7 @@ import Likes from "../components/likes/Likes";
 import Messages from "../components/messages/Messages";
 import Terminos from "../components/TermsAndFaq/Terminos";
 import Anuncios from "../components/Anuncios/Anuncios";
+import Converzation from "../components/messages/Converzation";
 
 const AppRoutes = () => {
   const { logged, user_id } = useUserDataStore((state) => ({
@@ -80,6 +81,16 @@ const AppRoutes = () => {
               <>
                 <Header retroceder="/" />
                 <Messages user_id={user_id} />
+              </>
+            }
+          />
+          <Route
+            path={"/messages/:sender_id/:user_id"}
+            element={
+              <>
+                <Alerts />
+                <Header retroceder="/messages" />
+                <Converzation />
               </>
             }
           />

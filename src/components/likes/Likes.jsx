@@ -174,7 +174,7 @@ export default function Likes({ Plus, user_id }) {
                           aria-label="Enviar Mensaje"
                           onClick={() => {
                             Existe_Mensaje({
-                              profile_id: ProfileData?.id,
+                              profile_id: ProfileData?.attributes.user?.data?.id,
                             });
                           }}
                         >
