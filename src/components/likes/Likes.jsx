@@ -167,14 +167,16 @@ export default function Likes({ Plus, user_id }) {
                             style={{ color: "blue" }}
                           />
                         </IconButton>
-                      }{" "}
+                      }
+                      <br />
                       Enviar Mensaje:
                       {
                         <IconButton
                           aria-label="Enviar Mensaje"
                           onClick={() => {
                             Existe_Mensaje({
-                              profile_id: ProfileData?.attributes.user?.data?.id,
+                              profile_id:
+                                ProfileData?.attributes.user?.data?.id,
                             });
                           }}
                         >
@@ -183,7 +185,8 @@ export default function Likes({ Plus, user_id }) {
                             style={{ color: "gray" }}
                           />
                         </IconButton>
-                      }
+                      }{" "}
+                      <br />
                     </>
                   }
                   position="below"

@@ -25,11 +25,13 @@ export default function Anuncios() {
       pueden realizar las transferencias. <br />
       <b>
         {" "}
-        - Cuenta de Bitcoin: [Dirección de la cuenta de Bitcoin] <br />
-        - Cuenta de Ethereum: [Dirección de la cuenta de Ethereum] <br />
-        - Cuenta de TRX: [Dirección de la cuenta de TRX] <br />
-        - Cuenta de USDT: [Dirección de la cuenta de USDT] <br />
-        - Cuenta bancaria: [Número de cuenta bancaria] <br /> <br />
+        - Cuenta de Bitcoin: [bc1q8v3ans5ev08t6gz90x8uk9qqmae8gatwrwasdq] <br />
+        - Cuenta de Ethereum: [0xe9e33bAdf7e87390fc5c97b9d9242395b736e233] <br />
+        - Cuenta de TRX: [TCCy7TGZw5wMD9JeH4fSKxvoRYCTRGbtrh] <br />
+        - Cuenta de BNB: [0xe9e33bAdf7e87390fc5c97b9d9242395b736e233] <br />
+        - Cuenta de USDT(ERC20): [0xe9e33bAdf7e87390fc5c97b9d9242395b736e233] <br />
+        - Cuenta de USDT(TRC20): [TCCy7TGZw5wMD9JeH4fSKxvoRYCTRGbtrh] <br />
+        - Cuenta bancaria: [POR DEFINIR...] <br /> <br />
       </b>
       Cualquier donación que realicen será de gran ayuda para nosotros y nos
       permitirá seguir trabajando en el desarrollo de Flechazo y ofrecerles una
