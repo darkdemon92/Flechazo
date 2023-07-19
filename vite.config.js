@@ -7,15 +7,15 @@ export default defineConfig({
   plugins: [
     splitVendorChunkPlugin(),
     preact(),
-    VitePWA({
-      registerType: "autoUpdate",
-      devOptions: {
-        enabled: true,
-      },
-      workbox: {
-        sourcemap: true,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
-      },
-    }),
+    // VitePWA({
+    //   registerType: "autoUpdate",
+    //   devOptions: {
+    //     enabled: true,
+    //   },
+    //   workbox: {
+    //     sourcemap: true,
+    //     globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
+    //   },
+    // }),
   ],
 });
