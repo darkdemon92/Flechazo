@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { useUserDataStore } from "../store/Store";
-
+import { useEffect } from "preact/hooks";
 import PublicRoutes from "./PublicRoutes";
 import ProtectedRoutes from "./ProtectedRoutes";
 import Error404 from "./error404";
@@ -18,27 +18,25 @@ import Likes from "../components/likes/Likes";
 import Messages from "../components/messages/Messages";
 import Terminos from "../components/TermsAndFaq/Terminos";
 import Anuncios from "../components/Anuncios/Anuncios";
-// import Menu from "../menu/Menu";
-// import Tramites from "../tramites/Tramites";
-// import Tramitesform from "../forms/Tramitesform";
-// import Certificacionesform from "../forms/Certificacionesform";
-// import Salidasform from "../forms/Salidasform";
+import Converzation from "../components/messages/Converzation";
 
 const AppRoutes = () => {
   const { logged, user_id } = useUserDataStore((state) => ({
     logged: state.logged,
     user_id: state.user_data.id,
   }));
-  const Plus = useQuery(IsPlus);
+  const { data: Plus, refetch } = useQuery(IsPlus);
+
+  useEffect(() => {
+    if (logged) {
+      refetch();
+    }
+  }, [logged]);
 
   return (
     <>
       <Routes>
         <Route element={<ProtectedRoutes logged={logged} />}>
-          {/* <Route path={"/tramites/*"} element={<><Menu /><Tramites /></>} />
-          <Route path={"/addtramite/*"} element={<><Menu /><Tramitesform /></>} />
-          <Route path={"/certcatastral/*"} element={<><Menu /><Certificacionesform /></>} />
-          <Route path={"/entrega/*"} element={<><Menu /><Salidasform /></>} /> */}
           <Route
             path={"/home/*"}
             element={
@@ -82,7 +80,17 @@ const AppRoutes = () => {
             element={
               <>
                 <Header retroceder="/" />
-                <Messages />
+                <Messages user_id={user_id} />
+              </>
+            }
+          />
+          <Route
+            path={"/messages/:sender_id/:user_id"}
+            element={
+              <>
+                <Alerts />
+                <Header retroceder="/messages" />
+                <Converzation />
               </>
             }
           />

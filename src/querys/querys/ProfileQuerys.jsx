@@ -29,12 +29,24 @@ export const GetProfile = gql`
           sexo
           provincia
           verificado
+          user {
+            data {
+              attributes {
+                role {
+                  data {
+                    attributes {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
   }
 `;
-
 
 export const GetProfileDetails = gql`
   query GetProfileDetails($id: ID!) {

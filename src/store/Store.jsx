@@ -16,6 +16,11 @@ export const useAlertStore = create((set) => ({
   ChangePositionH: (value) => set((state) => ({ PositionH: value })),
 }));
 
+export const usePlusStore = create((set) => ({
+  Plus: "",
+  ChangePlus: (value) => set((state) => ({ Plus: value })),
+}));
+
 export const useUserDataStore = create(
   persist(
     (set) => ({

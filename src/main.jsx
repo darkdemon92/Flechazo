@@ -7,11 +7,7 @@ import "@fontsource/roboto/700.css";
 
 import { render } from "preact";
 import { App } from "./app.jsx";
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-} from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { createUploadLink } from "apollo-upload-client";
 import { setContext } from "@apollo/client/link/context";
 const httpLink = createUploadLink({
@@ -21,7 +17,8 @@ const httpLink = createUploadLink({
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  const { token } = JSON.parse(sessionStorage.getItem("UserData")).state;
+  const userData = JSON.parse(sessionStorage.getItem("UserData"));
+  const token = userData.state.token;
   //console.log(JSON.parse(token));
   // return the headers to the context so httpLink can read them
   return {

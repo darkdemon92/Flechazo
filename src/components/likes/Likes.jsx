@@ -1,4 +1,4 @@
-import Avatar from "@mui/material/Avatar";
+import { useState } from "preact/hooks";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import ImageListItemBar from "@mui/material/ImageListItemBar";
@@ -16,8 +16,11 @@ import CommentSharpIcon from "@mui/icons-material/CommentSharp";
 import ControlPointSharpIcon from "@mui/icons-material/ControlPointSharp";
 import VerifiedSharpIcon from "@mui/icons-material/VerifiedSharp";
 import { useNavigate } from "react-router-dom";
+import SendMessage from "./SendMessage";
 
 export default function Likes({ Plus, user_id }) {
+  const [openmsg, setOpenmsg] = useState(false);
+  const [destinatario, setDestinatario] = useState("");
   let navigate = useNavigate();
   const {
     ChangeMsgOpen,
@@ -27,7 +30,12 @@ export default function Likes({ Plus, user_id }) {
     ChangePositionV,
     ChangePositionH,
   } = useAlertStore();
-  const { loading, error, data, refetch} = useQuery(Iliked, {
+  const Existe_Mensaje = async ({ profile_id }) => {
+    //console.log(profile_id);
+    setDestinatario(profile_id);
+    setOpenmsg(true);
+  };
+  const { loading, error, data, refetch } = useQuery(Iliked, {
     variables: { id: user_id },
   });
   if (loading) {
@@ -47,9 +55,10 @@ export default function Likes({ Plus, user_id }) {
   }
   if (data) {
     //console.log(data.profiles.data[0].attributes.likes.data);
+    const { profiles } = data;
     return (
       <>
-        {Plus.error ? (
+        {Plus && Plus.pluses === null ? (
           <Typography
             component="h1"
             variant="h6"
@@ -76,122 +85,115 @@ export default function Likes({ Plus, user_id }) {
           cols={2}
           rowHeight="auto"
         >
-          {data.profiles.data[0].attributes.likes.data.map((likes) => (
-            <ImageListItem
-              className={Plus.error ? "avatar" : "avatar_plus"}
-              key={likes.id}
-            >
-              <img
-                src={
-                  likes?.attributes?.user?.data?.attributes?.profile?.data
-                    ?.attributes?.avatar?.data?.attributes?.url
-                    ? `${import.meta.env.VITE_BASE_URL}${
-                        likes?.attributes?.user?.data?.attributes?.profile?.data
-                          ?.attributes?.avatar?.data?.attributes?.url
-                      }`
-                    : likes?.attributes?.user?.data?.attributes?.profile?.data
-                        ?.attributes?.avatar?.data?.attributes?.sexo ===
-                      "Femenino"
-                    ? F
-                    : M
+          <SendMessage
+            openmsg={openmsg}
+            setOpenmsg={setOpenmsg}
+            user_id={user_id}
+            destinatario={destinatario}
+          />
+          {profiles.data[0].attributes.likes.data.map((likes) => {
+            const ProfileData =
+              likes?.attributes.user.data.attributes.profile.data;
+            const ProfileAtrributes = ProfileData?.attributes;
+            const AvatarUrl = ProfileAtrributes?.avatar?.data?.attributes?.url;
+            return (
+              <ImageListItem
+                className={
+                  Plus && Plus.pluses === null ? "avatar" : "avatar_plus"
                 }
-                alt="Avatar"
-                loading="lazy"
-                //onClick={handleClick}
-                style={{
-                  maxWidth: "auto",
-                  height: "auto",
-                  padding: "5px",
-                  borderRadius: "20px",
-                  position: "relative",
-                  zIndex: 1,
-                  //cursor: "pointer",
-                }}
-              />
-              {likes?.attributes?.user?.data?.attributes?.profile?.data
-                ?.attributes?.verificado ? (
-                <VerifiedSharpIcon className="verified" fontSize="large" />
-              ) : (
-                <></>
-              )}
-              <ImageListItemBar
-                title={
-                  <>
-                    Nombres y Apellidos:{" "}
-                    {
-                      likes?.attributes?.user?.data?.attributes?.profile?.data
-                        ?.attributes?.nombres_apellidos
-                    }
-                  </>
-                }
-                subtitle={
-                  <>
-                    Edad:{" "}
-                    {
-                      likes?.attributes?.user?.data?.attributes?.profile?.data
-                        ?.attributes?.edad
-                    }
-                    <br />
-                    Sexo:{" "}
-                    {
-                      likes?.attributes?.user?.data?.attributes?.profile?.data
-                        ?.attributes?.sexo
-                    }
-                    <br />
-                    Provincia:{" "}
-                    {
-                      likes?.attributes?.user?.data?.attributes?.profile?.data
-                        ?.attributes?.provincia
-                    }
-                    <br />
-                    Fecha en que le gustaste:{" "}
-                    {new Date(
-                      likes?.attributes?.createdAt
-                    ).toLocaleDateString()}{" "}
-                    {new Date(
-                      likes?.attributes?.createdAt
-                    ).toLocaleTimeString()}
-                    <br />
-                    Ver Perfil:
-                    {
-                      <IconButton
-                        aria-label="Ver Perfil"
-                        onClick={() =>
-                          navigate(
-                            `/profile/${likes?.attributes?.user?.data?.attributes?.profile?.data?.id}`,
-                            { replace: true }
-                          )
-                        }
-                      >
-                        <AssignmentIndSharpIcon
-                          fontSize="medium"
-                          style={{ color: "blue" }}
-                        />
-                      </IconButton>
-                    }{" "}
-                    Enviar Mensaje:
-                    {
-                      <IconButton
-                        aria-label="Enviar Mensaje"
-                        onClick={() =>
-                          console.log(
-                            likes?.attributes?.user?.data?.attributes?.profile
-                              ?.data?.id
-                          )
-                        }
-                      >
-                        <CommentSharpIcon
-                          fontSize="medium"
-                          style={{ color: "gray" }}
-                        />
-                      </IconButton>
-                    }
-                  </>
-                }
-                position="below"
-              />
-            </ImageListItem>
-          ))}
+                key={likes.id}
+              >
+                <img
+                  src={
+                    AvatarUrl
+                      ? `${import.meta.env.VITE_BASE_URL}${AvatarUrl}`
+                      : ProfileAtrributes.sexo === "Femenino"
+                      ? F
+                      : M
+                  }
+                  alt="Avatar"
+                  loading="lazy"
+                  //onClick={handleClick}
+                  style={{
+                    maxWidth: "auto",
+                    height: "auto",
+                    padding: "5px",
+                    borderRadius: "20px",
+                    position: "relative",
+                    zIndex: 1,
+                    //cursor: "pointer",
+                  }}
+                />
+                {ProfileAtrributes?.verificado ? (
+                  <VerifiedSharpIcon className="verified" fontSize="large" />
+                ) : (
+                  <></>
+                )}
+                <ImageListItemBar
+                  title={
+                    <>
+                      Nombres y Apellidos:{" "}
+                      {ProfileAtrributes?.nombres_apellidos}
+                    </>
+                  }
+                  subtitle={
+                    <>
+                      Edad: {ProfileAtrributes?.edad}
+                      <br />
+                      Sexo: {ProfileAtrributes?.sexo}
+                      <br />
+                      Provincia: {ProfileAtrributes?.provincia}
+                      <br />
+                      Fecha en que le gustaste:{" "}
+                      {new Date(
+                        likes?.attributes?.createdAt
+                      ).toLocaleDateString()}{" "}
+                      {new Date(
+                        likes?.attributes?.createdAt
+                      ).toLocaleTimeString()}
+                      <br />
+                      Ver Perfil:
+                      {
+                        <IconButton
+                          aria-label="Ver Perfil"
+                          onClick={() =>
+                            navigate(`/profile/${ProfileData?.id}`, {
+                              replace: true,
+                            })
+                          }
+                        >
+                          <AssignmentIndSharpIcon
+                            fontSize="medium"
+                            style={{ color: "blue" }}
+                          />
+                        </IconButton>
+                      }
+                      <br />
+                      Enviar Mensaje:
+                      {
+                        <IconButton
+                          aria-label="Enviar Mensaje"
+                          onClick={() => {
+                            Existe_Mensaje({
+                              profile_id:
+                                ProfileData?.attributes.user?.data?.id,
+                            });
+                          }}
+                        >
+                          <CommentSharpIcon
+                            fontSize="medium"
+                            style={{ color: "gray" }}
+                          />
+                        </IconButton>
+                      }{" "}
+                      <br />
+                    </>
+                  }
+                  position="below"
+                />
+              </ImageListItem>
+            );
+          })}
         </ImageList>
       </>
     );

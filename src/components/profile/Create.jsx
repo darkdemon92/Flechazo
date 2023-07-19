@@ -1,6 +1,6 @@
 import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { signal } from "@preact/signals";
+import { useState } from "preact/hooks";
 import Loadding from "../../helpers/Loadding";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -12,8 +12,6 @@ import { MutationNewProfile } from "../../querys/mutations/ProfileMutations";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
-
-const isLoadding = signal(false);
 
 const provincias = [
   "Pinar del Río",
@@ -56,6 +54,7 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function CreateProfile({ user_id }) {
+  const [isLoadding, setIsLoadding] = useState(false);
   const [NewProfile] = useMutation(MutationNewProfile);
   const {
     ChangeMsgOpen,
@@ -66,10 +65,10 @@ export default function CreateProfile({ user_id }) {
     ChangePositionH,
   } = useAlertStore();
   let navigate = useNavigate();
-  if (isLoadding.value) {
+  if (isLoadding) {
     return <Loadding />;
   }
-  if (!isLoadding.value) {
+  if (!isLoadding) {
     return (
       <>
         <Typography component="h1" variant="h3">
@@ -87,7 +86,7 @@ export default function CreateProfile({ user_id }) {
             { nombres_apellidos, edad, provincia, sexo },
             { resetForm }
           ) => {
-            isLoadding.value = true;
+            setIsLoadding(true);
             //console.log(user_id, nombres_apellidos, edad, provincia, sexo);
             // Aquí irá la lógica para enviar los datos del formulario al servidor
             try {
@@ -101,7 +100,7 @@ export default function CreateProfile({ user_id }) {
                 },
               });
               resetForm();
-              isLoadding.value = false;
+              setIsLoadding(false);
               navigate("/profile", { replace: true });
             } catch (error) {
               //console.log(JSON.parse(error));
@@ -115,7 +114,7 @@ export default function CreateProfile({ user_id }) {
               ChangeDuration(2000);
               ChangePositionV("top");
               ChangePositionH("center");
-              isLoadding.value = false;
+              setIsLoadding(false);
             }
           }}
         >
@@ -221,6 +220,7 @@ export default function CreateProfile({ user_id }) {
                 color="success"
                 variant="contained"
                 sx={{ mt: 1, mb: 1 }}
+                deactivated={isLoadding}
               >
                 Crear Perfil
               </Button>

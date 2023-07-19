@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals";
+import { useState } from "preact/hooks";
 import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Box from "@mui/material/Box";
@@ -14,7 +14,7 @@ import { useUserDataStore } from "../../store/Store";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/logo.webp";
 
-const isLoadding = signal(false);
+const currentYear = new Date().getFullYear();
 
 function Copyright(props) {
   return (
@@ -31,7 +31,7 @@ function Copyright(props) {
         </NavLink>{" "}
         <br />
         {"Copyright Flechazo© "}
-        {new Date().getFullYear()}
+        {currentYear}
         {"."}{" "}
       </Typography>
       <Typography
@@ -58,6 +58,7 @@ const validationSchema = Yup.object().shape({
 });
 
 function Login() {
+  const [isLoading, setIsLoading] = useState(false);
   const [NewLogin] = useMutation(MutationLogin);
   const { ChangeToken, ChangeUser_Data, ChangeLogged } = useUserDataStore();
   const {
@@ -69,10 +70,10 @@ function Login() {
     ChangePositionH,
   } = useAlertStore();
   let navigate = useNavigate();
-  if (isLoadding.value) {
+  if (isLoading) {
     return <Loadding />;
   }
-  if (!isLoadding.value) {
+  if (!isLoading) {
     return (
       <>
         <>
@@ -96,7 +97,7 @@ function Login() {
               initialValues={{ username: "", password: "" }}
               validationSchema={validationSchema}
               onSubmit={async ({ username, password }, { resetForm }) => {
-                isLoadding.value = true;
+                setIsLoading(true);
                 // Aquí irá la lógica para enviar los datos del formulario al servidor
                 try {
                   const GET = await NewLogin({
@@ -108,7 +109,7 @@ function Login() {
                   ChangeUser_Data(user_data);
                   ChangeLogged(true);
                   resetForm();
-                  isLoadding.value = false;
+                  setIsLoading(false);
                   navigate("/profile", { replace: true });
                 } catch (error) {
                   //console.log(error.message);
@@ -124,7 +125,7 @@ function Login() {
                   ChangeDuration(2000);
                   ChangePositionV("top");
                   ChangePositionH("center");
-                  isLoadding.value = false;
+                  setIsLoading(false);
                 }
               }}
             >
@@ -177,6 +178,7 @@ function Login() {
                     fullWidth
                     variant="contained"
                     sx={{ mt: 1, mb: 1 }}
+                    disabled={isLoading}
                   >
                     Iniciar Sesión
                   </Button>
