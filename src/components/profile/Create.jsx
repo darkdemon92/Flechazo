@@ -6,12 +6,11 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
-import { useAlertStore } from "../../store/Store";
-import { useMutation } from "@apollo/client";
-import { MutationNewProfile } from "../../querys/mutations/ProfileMutations";
+import { toast } from "sonner";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
+import PocketBase from "pocketbase";
 
 const provincias = [
   "Pinar del Río",
@@ -34,10 +33,13 @@ const provincias = [
 
 const sexos = ["Masculino", "Femenino"];
 
+const intereses = ["Hombres", "Mujeres", "Ambos"];
+
 const validationSchema = Yup.object().shape({
   nombres_apellidos: Yup.string()
     .required("Los nombres y apellidos son obligatorios")
-    .min(8, "Debe tener mínimo 8 caracteres"),
+    .min(6, "Debe tener mínimo 6 caracteres")
+    .max(20, "Los caracteres no puede exceder de 99"),
   edad: Yup.number()
     .required("La edad es obligatoria")
     .min(15, "La edad debe ser mayor a 15")
@@ -46,24 +48,25 @@ const validationSchema = Yup.object().shape({
     .integer("La edad debe ser entera"),
   provincia: Yup.string()
     .required("La provincia es obligatoria")
-    .min(6, "Debe tener mínimo 6 dígitos"),
+    .min(6, "Debe tener mínimo 6 caracteres")
+    .max(20, "Los caracteres no puede exceder de 99"),
   sexo: Yup.string()
     .required("El sexo es obligatorio")
     .min(6, "Debe tener mínimo 6 dígitos")
     .matches(/^(Masculino|Femenino)$/, "El sexo debe ser Masculino o Femenino"),
+  intereses: Yup.string()
+    .required("Los Intereses son obligatorios")
+    .min(5, "Debe tener mínimo 5 dígitos")
+    .matches(
+      /^(Hombres|Mujeres|Ambos)$/,
+      "Los Intereses deben ser Hombres, Mujeres o Ambos"
+    ),
 });
 
 export default function CreateProfile({ user_id }) {
+  //console.log("RENDER CreateProfile");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   const [isLoadding, setIsLoadding] = useState(false);
-  const [NewProfile] = useMutation(MutationNewProfile);
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
   let navigate = useNavigate();
   if (isLoadding) {
     return <Loadding />;
@@ -80,40 +83,37 @@ export default function CreateProfile({ user_id }) {
             edad: "",
             provincia: "",
             sexo: "",
+            intereses: "",
           }}
           validationSchema={validationSchema}
           onSubmit={async (
-            { nombres_apellidos, edad, provincia, sexo },
+            { nombres_apellidos, edad, provincia, sexo, intereses },
             { resetForm }
           ) => {
             setIsLoadding(true);
             //console.log(user_id, nombres_apellidos, edad, provincia, sexo);
             // Aquí irá la lógica para enviar los datos del formulario al servidor
             try {
-              await NewProfile({
-                variables: {
-                  user_id,
-                  nombres_apellidos,
-                  edad,
-                  provincia,
-                  sexo,
-                },
-              });
+              const data = {
+                "user": user_id,
+                "nombres_apellidos": nombres_apellidos,
+                "edad": edad,
+                "provincia": provincia,
+                "sexo": sexo,
+                "intereses": intereses,
+              };
+              const record = await pb.collection("profile").create(data);
+              const data2 = {
+                profile: record.id,
+              };
+              await pb.collection("users").update(user_id, data2);
               resetForm();
               setIsLoadding(false);
+              toast.success("Perfil Creado, Ahora Suba sus fotos...");
               navigate("/profile", { replace: true });
             } catch (error) {
               //console.log(JSON.parse(error));
-              ChangeMsgOpen(true);
-              ChangeSeverity("error");
-              ChangeMsg(
-                error.message === "Failed to fetch"
-                  ? "Error al hacer la petición al Servidor!"
-                  : error.message
-              );
-              ChangeDuration(2000);
-              ChangePositionV("top");
-              ChangePositionH("center");
+              toast.error(error.message);
               setIsLoadding(false);
             }
           }}
@@ -211,6 +211,32 @@ export default function CreateProfile({ user_id }) {
                   name="sexo"
                   component={() => (
                     <Alert severity="warning">{errors.sexo}</Alert>
+                  )}
+                />
+              </div>
+              <div>
+                <Select
+                  required
+                  fullWidth
+                  id="intereses"
+                  labelId="select-intereses"
+                  label="Interés"
+                  name="intereses"
+                  autoComplete="intereses"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.intereses}
+                >
+                  {intereses.map((interes) => (
+                    <MenuItem key={interes} value={interes}>
+                      {interes}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <ErrorMessage
+                  name="intereses"
+                  component={() => (
+                    <Alert severity="warning">{errors.intereses}</Alert>
                   )}
                 />
               </div>

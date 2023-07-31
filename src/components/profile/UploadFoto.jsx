@@ -1,3 +1,4 @@
+import { signal } from "@preact/signals";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
@@ -7,13 +8,10 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import { useMutation } from "@apollo/client";
-import {
-  MutationUploadImgs,
-  MutationUpdateProfile,
-} from "../../querys/mutations/ProfileMutations";
 import Compressor from "compressorjs";
 import LinearProgress from "@mui/material/LinearProgress";
+import PocketBase from "pocketbase";
+
 const Box1 = {
   position: "absolute",
   top: "50%",
@@ -97,14 +95,15 @@ const compressImagePromise = (file) => {
   });
 };
 
-export default function UploadFoto({ modal3Status, data, refetch }) {
-  const user_id = data.id;
-  const ids = data?.attributes?.mis_fotos?.data?.map((obj) => obj.id) || [];
+const loading = signal(false);
+
+export default function UploadFoto({ modal3Status, data, setDataChange }) {
+  //console.log("RENDER UploadFoto");
+  //console.log(data);
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   const closeModal = () => {
     modal3Status.value = false;
   };
-  const [UploadFoto, { loading }] = useMutation(MutationUploadImgs);
-  const [UpdateProfile] = useMutation(MutationUpdateProfile);
   return (
     <Modal
       open={modal3Status.value}
@@ -125,7 +124,7 @@ export default function UploadFoto({ modal3Status, data, refetch }) {
         <Typography component="h1" variant="h4" style={{ color: "green" }}>
           Subir fotos
         </Typography>
-        {loading && (
+        {loading.value && (
           <>
             <br />
             <br />
@@ -148,31 +147,33 @@ export default function UploadFoto({ modal3Status, data, refetch }) {
             { fotos },
             { resetForm, setSubmitting, setFieldError }
           ) => {
+            loading.value = true;
+            const formData = new FormData();
             try {
-              // Redimensionar la imagen a XXXX x XXXX píxeles
-              const resizedAvatar = await resizeImage(fotos, 1280, 720);
+              //Redimensionar la imagen a XXXX x XXXX píxeles
+              const resizedImage = await resizeImage(fotos, 1280, 720);
               // Comprime la imagen utilizando la función compressImagePromise
-              const compressedAvatar = await compressImagePromise(
-                resizedAvatar
+              const compressedImage = await compressImagePromise(
+                resizedImage
               );
-
-              const response = await UploadFoto({
-                variables: {
-                  files: compressedAvatar,
-                },
-              });
-              //console.log(response?.data?.multipleUpload[0].data.id);
-              const { id } = response?.data?.multipleUpload[0]?.data;
-              await UpdateProfile({
-                variables: {
-                  id: user_id,
-                  foto: [...ids, id],
-                },
-              });
-              refetch();
+              formData.append('foto', compressedImage);
+              const createdRecord = await pb.collection("fotos").create(formData);
+              const datos = {
+                "nombres_apellidos": data.nombres_apellidos,
+                "edad": data.edad,
+                "provincia": data.provincia,
+                "sexo": data.sexo,
+                "intereses": data.intereses,
+                "avatar": data.avatar,
+                "mis_fotos": [...data.mis_fotos, createdRecord.id],
+              };
+              const response = await pb.collection("profile").update(data.id, datos);
+              setDataChange(response);
+              loading.value = false;
               resetForm();
               closeModal();
             } catch (error) {
+              loading.value = false;
               setSubmitting(false);
               setFieldError("fotos", error.message);
             }

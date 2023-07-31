@@ -5,14 +5,12 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import { toast } from "sonner";
 import Alert from "@mui/material/Alert";
 import Loadding from "../../helpers/Loadding";
-import { useAlertStore } from "../../store/Store";
-import { useMutation } from "@apollo/client";
-import { MutationRegister } from "../../querys/mutations/RegisterMutations";
-import { useUserDataStore } from "../../store/Store";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/logo.webp";
+import PocketBase from "pocketbase";
 
 const currentYear = new Date().getFullYear();
 
@@ -57,17 +55,9 @@ const validationSchema = Yup.object().shape({
 });
 
 function Register() {
+  //console.log("RENDER Register");
   const [isLoading, setIsLoading] = useState(false);
-  const [NewRegister] = useMutation(MutationRegister);
-  const { ChangeToken, ChangeUser_Data, ChangeLogged } = useUserDataStore();
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   let navigate = useNavigate();
   if (isLoading) {
     return <Loadding />;
@@ -102,31 +92,23 @@ function Register() {
                 setIsLoading(true);
                 // Aquí irá la lógica para enviar los datos del formulario al servidor
                 try {
-                  const GET = await NewRegister({
-                    variables: { username, email, password },
-                  });
-                  const token = GET.data.register.jwt;
-                  ChangeToken(token);
-                  const user_data = GET.data.register.user;
-                  ChangeUser_Data(user_data);
-                  ChangeLogged(true);
+                  // example create data
+                  const data = {
+                    "username": username,
+                    "email": email,
+                    "password": password,
+                    "passwordConfirm": password,
+                  };
+                  await pb.collection("users").create(data);
+                  // (optional) send an email verification request
+                  await pb.collection("users").requestVerification(email);
                   resetForm();
                   setIsLoading(false);
-                  navigate("/profile", { replace: true });
+                  toast.success("Usuario Creado Satisfactoriamente...");
+                  navigate("/", { replace: true });
                 } catch (error) {
-                  //console.log(error.message);
-                  ChangeMsgOpen(true);
-                  ChangeSeverity("error");
-                  ChangeMsg(
-                    error.message === "Email or Username are already taken"
-                      ? "El Usuario o el Email ya están en uso!"
-                      : error.message === "Failed to fetch"
-                      ? "Error al hacer la petición al Servidor!"
-                      : error.message
-                  );
-                  ChangeDuration(2000);
-                  ChangePositionV("top");
-                  ChangePositionH("center");
+                  //console.log(error);
+                  toast.error(error.message);
                   setIsLoading(false);
                 }
               }}

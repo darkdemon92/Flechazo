@@ -1,51 +1,71 @@
-import { useState } from "preact/hooks";
-import { useQuery } from "@apollo/client";
+import "./Messages.css";
+import { useState, useEffect } from "preact/hooks";
 import Grid from "@mui/material/Unstable_Grid2";
-import {
-  PerfilesMensajes,
-} from "../../querys/querys/MessagesQuerys";
-
-
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
-
+import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
+import PocketBase from "pocketbase";
+import { toast } from "sonner";
+import F from "../../assets/F.webp";
+import M from "../../assets/M.webp";
+import SendMessage from "./SendMessage";
 
-
-
-export default function Messages({ user_id }) {
+export default function Messages({ user_id, profile_id }) {
+  //console.log("RENDER MESSAGES");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   let navigate = useNavigate();
-  const [messagedme, setMessagedMe] = useState("");
+  const [message_me, setMessage_Me] = useState("");
+  const [destinatario, setDestinatario] = useState("");
+  const [messages, setMessages] = useState([]);
 
-  const { data: MessagedMeData, refetch: refetch_MessagedMeData } = useQuery(
-    PerfilesMensajes,
-    {
-      variables: { id: user_id },
-    }
-  );
-
-  if (user_id && user_id !== undefined) {
-    setMessagedMe(MessagedMeData?.usersPermissionsUsers?.data);
-    refetch_MessagedMeData();
+  if (profile_id) {
+    useEffect(async () => {
+      try {
+        const mensajes = await pb.collection('mensajes').getFullList({
+          sort: '+created',
+          filter: `destinatario="${profile_id}"`,
+          expand: "remitente, remitente.profile.avatar"
+        });
+        //console.log(mensajes);
+        let remitentes = {};
+        let mensajesSinDuplicados = [];
+        for (let i = 0; i < mensajes.length; i++) {
+          if (!remitentes[mensajes[i].remitente]) {
+            remitentes[mensajes[i].remitente] = true;
+            mensajesSinDuplicados.push(mensajes[i]);
+          }
+        }
+        //console.log(mensajesSinDuplicados);
+        setMessage_Me(mensajesSinDuplicados);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }, []);
+    //console.log(message_me);
   }
 
-  //console.log(messagedme);
 
-  const handleClick = async ({ sender_id }) => {
-    navigate(`/messages/${sender_id}/${user_id}`, {
-      replace: true,
-    })
+  const handleClick = async ({ senderUser_id, senderProfile_id }) => {
+    //console.log(senderUser_id, senderProfile_id, user_id, profile_id);
+    setDestinatario(senderProfile_id);
+    const mensajes = await pb.collection('mensajes').getFullList({
+      sort: '+created',
+      filter: `(destinatario="${profile_id}" && remitente="${senderUser_id}") || (destinatario="${senderProfile_id}" && remitente="${user_id}")`,
+      expand: "remitente, remitente.profile"
+    });
+    setMessages(mensajes);
+    //console.log(mensajes);
   };
-  //console.log(converzacion.value);
-
+  
   return (
     <>
       <Grid container spacing={2}>
         <Grid md={4} sx={{ maxWidth: "20%" }}>
-          {messagedme &&
-            messagedme.map((message) => (
+          {(message_me && message_me.length > 0) &&
+            message_me.map((person) => (
               <div
-                key={message?.id}
+                key={person.expand.remitente.profile}
                 style={{
                   position: "relative",
                   marginTop: "5px",
@@ -57,19 +77,18 @@ export default function Messages({ user_id }) {
                   aria-label="Ver Mensaje"
                   onClick={async () =>
                     handleClick({
-                      sender_id: message?.id,
+                      senderUser_id: person.expand.remitente.id,
+                      senderProfile_id: person.expand.remitente.profile,
                     })
                   }
                 >
                   <Avatar
                     alt={
-                      message?.attributes?.profile?.data?.attributes
-                        ?.nombres_apellidos
+                      person.expand.remitente.expand.profile.nombres_apellidos || null
                     }
-                    src={`${import.meta.env.VITE_BASE_URL}${
-                      message?.attributes?.profile?.data?.attributes?.avatar
-                        ?.data?.attributes?.url
-                    }`}
+                    src={
+                      person.expand.remitente.expand.profile.avatar ? `${import.meta.env.VITE_BASE_URL}/api/files/avatars/${person.expand.remitente.expand.profile.expand.avatar.id}/${person.expand.remitente.expand.profile.expand.avatar.avatar}` : person.expand.remitente.expand.profile.sexo === "Femenino" ? F : M || null
+                    }
                     sx={{ width: 56, height: 56 }}
                   />
                 </IconButton>
@@ -77,6 +96,47 @@ export default function Messages({ user_id }) {
             ))}
         </Grid>
         <Grid md={8} sx={{ maxWidth: "80%" }}>
+          {(messages && messages.length > 0) && 
+            <>
+              <SendMessage
+                user_id={user_id}
+                destinatario={destinatario}
+                messages = {messages}
+                setMessages = {setMessages}
+              />
+              {messages.map((mensaje) => (
+                <div
+                  key={mensaje.id}
+                  className={
+                    mensaje.remitente === user_id
+                    ? "message_send"
+                    : "message_recv"
+                  }
+                >
+                  <p>
+                    {`El ${new Date(
+                      mensaje.created
+                    ).toLocaleDateString()}`}{" "}
+                    {mensaje.remitente === user_id
+                      ? "Escribiste:"
+                      : `${mensaje.expand.remitente.expand.profile.nombres_apellidos} Escribió:`
+                    }
+                    <br />
+                    {mensaje.mensaje}
+                  </p>
+                </div>
+              ))}
+            </>
+          }
+          {(messages && messages.length === 0) &&
+            <Typography
+            component="h1"
+            variant="h6"
+            style={{ color: "green" }}
+            >
+              Seleccione el Avatar para ver los MENSAJES
+            </Typography>
+          }
         </Grid>
       </Grid>
     </>

@@ -1,3 +1,4 @@
+import { signal } from "@preact/signals";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
@@ -7,14 +8,10 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import { useMutation } from "@apollo/client";
-import {
-  MutationUploadImg,
-  MutationUpdateProfile,
-  MutationDeleteImg,
-} from "../../querys/mutations/ProfileMutations";
 import Compressor from "compressorjs";
 import LinearProgress from "@mui/material/LinearProgress";
+import PocketBase from "pocketbase";
+
 const Box1 = {
   position: "absolute",
   top: "50%",
@@ -96,14 +93,16 @@ const compressImagePromise = (file) => {
     });
   });
 };
-export default function UploadAvatar({ modal2Status, data, refetch }) {
-  const user_id = data.id;
+
+const loading = signal(false);
+
+export default function UploadAvatar({ modal2Status, data, setDataChange }) {
+  //console.log("RENDER UploadAvatar");
+  //console.log(data);
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   const closeModal = () => {
     modal2Status.value = false;
   };
-  const [UploadAvatar, { loading }] = useMutation(MutationUploadImg);
-  const [UpdateProfile] = useMutation(MutationUpdateProfile);
-  const [DeleteAvatar] = useMutation(MutationDeleteImg);
   return (
     <Modal
       open={modal2Status.value}
@@ -124,7 +123,7 @@ export default function UploadAvatar({ modal2Status, data, refetch }) {
         <Typography component="h1" variant="h4" style={{ color: "green" }}>
           Establecer Avatar
         </Typography>
-        {loading && (
+        {loading.value && (
           <>
             <br />
             <br />
@@ -147,6 +146,8 @@ export default function UploadAvatar({ modal2Status, data, refetch }) {
             { avatar },
             { resetForm, setSubmitting, setFieldError }
           ) => {
+            loading.value = true;
+            const formData = new FormData();
             try {
               // Redimensionar la imagen a XXXX x XXXX píxeles
               const resizedAvatar = await resizeImage(avatar, 1280, 720);
@@ -154,32 +155,26 @@ export default function UploadAvatar({ modal2Status, data, refetch }) {
               const compressedAvatar = await compressImagePromise(
                 resizedAvatar
               );
-
-              const response = await UploadAvatar({
-                variables: {
-                  file: compressedAvatar,
-                },
-              });
-              const { id } = response?.data?.upload?.data;
-              await UpdateProfile({
-                variables: {
-                  id: user_id,
-                  avatar: id,
-                },
-              });
-              if (data.attributes.avatar?.data?.id) {
-                const avatar_actual = data.attributes.avatar?.data?.id;
-                //console.log(avatar_actual)
-                await DeleteAvatar({
-                  variables: {
-                    id: avatar_actual,
-                  },
-                });
+              formData.append('avatar', compressedAvatar);
+              const createdRecord = await pb.collection("avatars").create(formData);
+              const datos = {
+                "nombres_apellidos": data.nombres_apellidos,
+                "edad": data.edad,
+                "provincia": data.provincia,
+                "sexo": data.sexo,
+                "intereses": data.intereses,
+                "avatar": createdRecord.id,
+              };
+              const response = await pb.collection("profile").update(data.id, datos);
+              setDataChange(response);
+              if (data.avatar) {
+                await pb.collection('avatars').delete(data.avatar);
               }
-              refetch();
+              loading.value = false;
               resetForm();
               closeModal();
             } catch (error) {
+              loading.value = false;
               setSubmitting(false);
               setFieldError("avatar", error.message);
             }

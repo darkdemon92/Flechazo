@@ -5,14 +5,12 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import { toast } from "sonner";
 import Alert from "@mui/material/Alert";
 import Loadding from "../../helpers/Loadding";
-import { useAlertStore } from "../../store/Store";
-import { useMutation } from "@apollo/client";
-import { MutationLogin } from "../../querys/mutations/LoginMutations";
-import { useUserDataStore } from "../../store/Store";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../../assets/logo.webp";
+import PocketBase from 'pocketbase';
 
 const currentYear = new Date().getFullYear();
 
@@ -34,11 +32,7 @@ function Copyright(props) {
         {currentYear}
         {"."}{" "}
       </Typography>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        align="center"
-      >
+      <Typography variant="body2" color="text.secondary" align="center">
         Al Entrar Usted Acepta Nuestros{" "}
         <NavLink to={"/terms"} end>
           Términos y Condiciones
@@ -58,17 +52,9 @@ const validationSchema = Yup.object().shape({
 });
 
 function Login() {
+  //console.log("RENDER Login");
   const [isLoading, setIsLoading] = useState(false);
-  const [NewLogin] = useMutation(MutationLogin);
-  const { ChangeToken, ChangeUser_Data, ChangeLogged } = useUserDataStore();
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   let navigate = useNavigate();
   if (isLoading) {
     return <Loadding />;
@@ -100,31 +86,13 @@ function Login() {
                 setIsLoading(true);
                 // Aquí irá la lógica para enviar los datos del formulario al servidor
                 try {
-                  const GET = await NewLogin({
-                    variables: { username, password },
-                  });
-                  const token = GET.data.login.jwt;
-                  ChangeToken(token);
-                  const user_data = GET.data.login.user;
-                  ChangeUser_Data(user_data);
-                  ChangeLogged(true);
+                  await pb.collection('users').authWithPassword(username, password);
                   resetForm();
                   setIsLoading(false);
-                  navigate("/profile", { replace: true });
+                  toast.success(`Bienvenido/a ${ pb.authStore.model.username }`);
+                  pb.authStore.model.profile ? navigate("/home", { replace: true }) : navigate("/profile/create", { replace: true });
                 } catch (error) {
-                  //console.log(error.message);
-                  ChangeMsgOpen(true);
-                  ChangeSeverity("error");
-                  ChangeMsg(
-                    error.message === "Invalid identifier or password"
-                      ? "Email o Password Incorrecto!"
-                      : error.message === "Failed to fetch"
-                      ? "Error al hacer la petición al Servidor!"
-                      : error.message
-                  );
-                  ChangeDuration(2000);
-                  ChangePositionV("top");
-                  ChangePositionH("center");
+                  toast.error(error.message);
                   setIsLoading(false);
                 }
               }}

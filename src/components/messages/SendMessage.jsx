@@ -1,15 +1,14 @@
 import { Formik, Form, ErrorMessage } from "formik";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { useMutation } from "@apollo/client";
-import { SendMensaje } from "../../querys/mutations/MessagesMutations";
 import Alert from "@mui/material/Alert";
-import LinearProgress from "@mui/material/LinearProgress";
 import SendIcon from "@mui/icons-material/Send";
+import PocketBase from "pocketbase";
 
-export default function SendMessage({ user_id, destinatario, refetch }) {
-  const [CreateMensaje, { loading }] = useMutation(SendMensaje);
+
+export default function SendMessage({ user_id, destinatario, messages, setMessages }) {
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
+
   return (
     <>
       <Formik
@@ -21,17 +20,21 @@ export default function SendMessage({ user_id, destinatario, refetch }) {
         ) => {
           // Aquí irá la lógica para enviar los datos del formulario al servidor
           //console.log(user_id, destinatario, mensaje);
+          setSubmitting(true);
           try {
-            await CreateMensaje({
-              variables: { user_id, destinatario, mensaje },
-            });
+            const data = {
+              "mensaje": mensaje,
+              "remitente": user_id,
+              "destinatario": destinatario,
+            };
+            const msg = await pb.collection("mensajes").create(data);
+            setMessages([...messages, msg]);
             resetForm();
-            refetch();
             setSubmitting(false);
           } catch (error) {
-            console.log(error.message);
-            setSubmitting(false);
+            //console.log(error.message);
             setFieldError("mensaje", error.message);
+            setSubmitting(false);
           }
         }}
       >
@@ -44,25 +47,6 @@ export default function SendMessage({ user_id, destinatario, refetch }) {
           isValid,
         }) => (
           <Form>
-            {loading && (
-              <>
-                <br />
-                <br />
-                <LinearProgress />
-                <br />
-                <Typography
-                  component="h1"
-                  variant="h6"
-                  style={{ color: "green" }}
-                >
-                  Enviando Mensaje...
-                </Typography>
-                <br />
-                <br />
-                <br />
-              </>
-            )}
-            <br />
             <>
               <div>
                 <TextField
@@ -78,7 +62,7 @@ export default function SendMessage({ user_id, destinatario, refetch }) {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.mensaje}
-                  autoFocus
+                  //autoFocus
                 />
                 <ErrorMessage
                   name="mensaje"
@@ -95,7 +79,7 @@ export default function SendMessage({ user_id, destinatario, refetch }) {
               variant="contained"
               color="success"
               sx={{ mt: 1, mb: 1 }}
-              disabled={isSubmitting || !isValid}
+              disabled={isSubmitting}
               endIcon={<SendIcon />}
             >
               Enviar Mensaje

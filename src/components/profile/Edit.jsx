@@ -6,15 +6,14 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { toast } from "sonner";
 import Alert from "@mui/material/Alert";
 import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
-import { useMutation } from "@apollo/client";
-import { MutationUpdateProfile } from "../../querys/mutations/ProfileMutations";
 import Loadding from "../../helpers/Loadding";
-import { useAlertStore } from "../../store/Store";
+import PocketBase from "pocketbase";
 
 const isLoadding = signal(false);
 
@@ -52,10 +51,13 @@ const provincias = [
 
 const sexos = ["Masculino", "Femenino"];
 
+const intereses = ["Hombres", "Mujeres", "Ambos"];
+
 const validationSchema = Yup.object().shape({
   nombres_apellidos: Yup.string()
     .required("Los nombres y apellidos son obligatorios")
-    .min(8, "Debe tener mínimo 8 caracteres"),
+    .min(6, "Debe tener mínimo 6 caracteres")
+    .max(20, "Los caracteres no puede exceder de 99"),
   edad: Yup.number()
     .required("La edad es obligatoria")
     .min(15, "La edad debe ser mayor a 15")
@@ -64,28 +66,29 @@ const validationSchema = Yup.object().shape({
     .integer("La edad debe ser entera"),
   provincia: Yup.string()
     .required("La provincia es obligatoria")
-    .min(6, "Debe tener mínimo 6 dígitos"),
+    .min(6, "Debe tener mínimo 6 caracteres")
+    .max(20, "Los caracteres no puede exceder de 99"),
   sexo: Yup.string()
     .required("El sexo es obligatorio")
     .min(6, "Debe tener mínimo 6 dígitos")
     .matches(/^(Masculino|Femenino)$/, "El sexo debe ser Masculino o Femenino"),
+  intereses: Yup.string()
+    .required("Los Intereses son obligatorios")
+    .min(5, "Debe tener mínimo 5 dígitos")
+    .matches(
+      /^(Hombres|Mujeres|Ambos)$/,
+      "Los Intereses deben ser Hombres, Mujeres o Ambos"
+    ),
 });
 
-function Edit({ modalStatus, data, refetch }) {
-  const { id } = data;
+function Edit({ modalStatus, data, setDataChange }) {
+  //console.log("RENDER Edit");
   //console.log(data);
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   const closeModal = () => {
     modalStatus.value = false;
   };
-  const [UpdateProfile] = useMutation(MutationUpdateProfile);
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
+
   if (isLoadding.value) {
     return <Loadding />;
   }
@@ -113,45 +116,38 @@ function Edit({ modalStatus, data, refetch }) {
             </Typography>
             <Formik
               initialValues={{
-                nombres_apellidos: data.attributes.nombres_apellidos,
-                edad: data.attributes.edad,
-                provincia: data.attributes.provincia,
-                sexo: data.attributes.sexo,
+                user: data.user_id,
+                nombres_apellidos: data.nombres_apellidos,
+                edad: data.edad,
+                provincia: data.provincia,
+                sexo: data.sexo,
+                intereses: data.intereses,
               }}
               validationSchema={validationSchema}
               onSubmit={async (
-                { nombres_apellidos, edad, provincia, sexo },
+                { user, nombres_apellidos, edad, provincia, sexo, intereses },
                 { resetForm }
               ) => {
                 isLoadding.value = true;
-                //console.log(user_id, nombres_apellidos, edad, provincia, sexo);
+                //console.log(id, nombres_apellidos, edad, provincia, sexo, intereses);
                 // Aquí irá la lógica para enviar los datos del formulario al servidor
                 try {
-                  await UpdateProfile({
-                    variables: {
-                      id,
-                      nombres_apellidos,
-                      edad,
-                      provincia,
-                      sexo,
-                    },
-                  });
+                  const datos = {
+                    "user": user,
+                    "nombres_apellidos": nombres_apellidos,
+                    "edad": edad,
+                    "provincia": provincia,
+                    "sexo": sexo,
+                    "intereses": intereses,
+                  };
+                  const response = await pb.collection("profile").update(data.id, datos);
+                  setDataChange(response);
                   resetForm();
                   isLoadding.value = false;
-                  refetch();
                   closeModal();
                 } catch (error) {
                   //console.log(JSON.parse(error));
-                  ChangeMsgOpen(true);
-                  ChangeSeverity("error");
-                  ChangeMsg(
-                    error.message === "Failed to fetch"
-                      ? "Error al hacer la petición al Servidor!"
-                      : error.message
-                  );
-                  ChangeDuration(2000);
-                  ChangePositionV("top");
-                  ChangePositionH("center");
+                  toast.error(error.message);
                   isLoadding.value = false;
                 }
               }}
@@ -170,7 +166,6 @@ function Edit({ modalStatus, data, refetch }) {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       value={values.nombres_apellidos}
-                      autoFocus
                     />
                     <ErrorMessage
                       name="nombres_apellidos"
@@ -251,6 +246,32 @@ function Edit({ modalStatus, data, refetch }) {
                       name="sexo"
                       component={() => (
                         <Alert severity="warning">{errors.sexo}</Alert>
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <Select
+                      required
+                      fullWidth
+                      id="intereses"
+                      labelId="select-intereses"
+                      label="Interés"
+                      name="intereses"
+                      autoComplete="intereses"
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.intereses}
+                    >
+                      {intereses.map((interes) => (
+                        <MenuItem key={interes} value={interes}>
+                          {interes}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <ErrorMessage
+                      name="intereses"
+                      component={() => (
+                        <Alert severity="warning">{errors.intereses}</Alert>
                       )}
                     />
                   </div>

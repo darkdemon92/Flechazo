@@ -1,84 +1,75 @@
+import { useState, useEffect } from "preact/hooks";
 import "./Likes.css";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@apollo/client";
 import Typography from "@mui/material/Typography";
-import { GetProfileDetails } from "../../querys/querys/ProfileQuerys";
-import { useAlertStore } from "../../store/Store";
-import Loadding from "../../helpers/Loadding";
+import { toast } from "sonner";
 import F from "../../assets/F.webp";
 import M from "../../assets/M.webp";
 import DoNotDisturbSharpIcon from "@mui/icons-material/DoNotDisturbSharp";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import VerifiedSharpIcon from "@mui/icons-material/VerifiedSharp";
+import PocketBase from "pocketbase";
 
 function ProfileDetails({ Plus }) {
+  //console.log("RENDER ProfileDetails");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   const { id } = useParams();
-  //console.log(id);
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
-  const { loading, error, data } = useQuery(GetProfileDetails, {
-    variables: { id: id },
-  });
+  const [data, setData] = useState("");
 
-  //console.log(data);
-  if (loading) {
-    return <Loadding />;
+  if (id) {
+    useEffect(async () => {
+      try {
+        const data = await pb.collection("profile").getOne(id, {
+          expand: "avatar, mis_fotos",
+        });
+        setData(data);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }, []);
+    //console.log(data);
   }
-  if (error) {
-    ChangeMsgOpen(true);
-    ChangeSeverity("error");
-    ChangeMsg(
-      error.message === "Failed to fetch"
-        ? "Error al hacer la petición al Servidor!"
-        : error.message
-    );
-    ChangeDuration(2000);
-    ChangePositionV("top");
-    ChangePositionH("center");
-    return null;
-  }
-  const profileData = data?.profile?.data;
-  const profileAttributes = profileData?.attributes;
-  if (profileData && profileAttributes) {
-    const avatarUrl = profileAttributes.avatar.data
-      ? `${import.meta.env.VITE_BASE_URL}${
-          profileAttributes.avatar.data?.attributes.url
-        }`
-      : profileAttributes.sexo === "Femenino"
-      ? F
-      : M;
-    const fotos = profileAttributes.mis_fotos?.data;
+
+  if (data) {
+    const profileData = data;
+    const Avatar = profileData.expand.avatar;
+    const fotos = profileData.expand.mis_fotos;
     return (
       <div className={Plus && Plus.pluses === null ? "avatar" : "avatar_plus"}>
         <Typography component="h1" variant="h3" style={{ color: "blue" }}>
-          Perfil de {profileAttributes.nombres_apellidos}
+          Perfil de {profileData.nombres_apellidos}
         </Typography>
         <img
-          src={avatarUrl}
+          src={
+            Avatar
+              ? `${import.meta.env.VITE_BASE_URL}/api/files/avatars/${
+                  Avatar.id
+                }/${Avatar.avatar}`
+              : profileData.sexo === "Femenino"
+              ? F
+              : M
+          }
           alt="Avatar"
           style={{ maxWidth: "300px", padding: "5px", borderRadius: "20px" }}
         />
         <Typography component="h1" variant="h4">
-          Nombres y Apellidos: {profileAttributes.nombres_apellidos}
+          Nombres y Apellidos: {profileData.nombres_apellidos || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          Edad: {profileAttributes.edad}
+          Edad: {profileData.edad || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          Sexo: {profileAttributes.sexo}
+          Sexo: {profileData.sexo || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          Provincia: {profileAttributes.provincia}
+          Interés en: {profileData.intereses || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          {profileAttributes.verificado ? (
+          Provincia: {profileData.provincia || null}
+        </Typography>
+        <Typography component="h1" variant="h4">
+          {profileData.verificado ? (
             <>
               Verificado:{" "}
               <VerifiedSharpIcon
@@ -94,7 +85,7 @@ function ProfileDetails({ Plus }) {
         </Typography>
         <br /> <br /> <br />
         <Typography component="h1" variant="h4" style={{ color: "gray" }}>
-          Fotos de {profileAttributes.nombres_apellidos}
+          Fotos de {profileData.nombres_apellidos}
         </Typography>
         <ImageList
           sx={{ width: "100%", height: "100%" }}
@@ -105,12 +96,12 @@ function ProfileDetails({ Plus }) {
             fotos?.map((fotos) => (
               <ImageListItem key={fotos.id}>
                 <img
-                  src={`${import.meta.env.VITE_BASE_URL}${
-                    fotos.attributes.url
-                  }?w=164&h=164&fit=crop&auto=format`}
-                  srcSet={`${import.meta.env.VITE_BASE_URL}${
-                    fotos.attributes.url
-                  }?w=164&h=164&fit=crop&auto=format`}
+                  src={`${import.meta.env.VITE_BASE_URL}/api/files/fotos/${
+                    fotos.id
+                  }/${fotos.foto}?w=164&h=164&fit=crop&auto=format`}
+                  srcSet={`${import.meta.env.VITE_BASE_URL}/api/files/fotos/${
+                    fotos.id
+                  }/${fotos.foto}?w=164&h=164&fit=crop&auto=format`}
                   alt="Foto"
                   loading="lazy"
                   //onClick={handleClick}

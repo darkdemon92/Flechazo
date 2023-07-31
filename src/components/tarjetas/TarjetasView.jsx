@@ -42,9 +42,11 @@ export default function TarjetasView({
   filter_sex,
   filterSex,
   Plus,
+  setFilters,
 }) {
-  if (data && data.profiles.data.length > 0) {
-    //console.log(data.profiles.data);
+  //console.log("RENDER TarjetasView");
+  if (data && data.length > 0) {
+    //console.log(data);
     return (
       <>
         {
@@ -68,7 +70,7 @@ export default function TarjetasView({
                 value={filter_prov}
                 onChange={filterProv}
                 label="Provincia"
-                disabled={Plus && Plus.pluses === null ? true : false}
+                disabled={!Plus}
               >
                 <MenuItem value="">
                   <em>Todas</em>
@@ -88,7 +90,7 @@ export default function TarjetasView({
                 value={filter_sex}
                 onChange={filterSex}
                 label="Sexo"
-                disabled={Plus && Plus.pluses === null ? true : false}
+                disabled={!Plus}
               >
                 <MenuItem value="">
                   <em>Todos</em>
@@ -103,46 +105,48 @@ export default function TarjetasView({
           </div>
         }
         <div className="tarjeta__contenedor">
-          {data.profiles.data.map((persona) => (
+          {data.map((persona) => (
             <TarjetaPersona
-              className="swipe"
-              key={persona.id}
-              preventSwipe={["up", "down", "left", "right"]}
-              onSwipe={(direction) => onSwiped(direction, persona.id)}
+            className="swipe"
+            key={persona.id}
+            preventSwipe={["up", "down", "left", "right"]}
+            onSwipe={(direction) => onSwiped(direction, persona.id)}
             >
               <div
                 className="tarjeta"
                 style={{
-                  backgroundImage: persona.attributes.avatar.data
-                    ? `url(${import.meta.env.VITE_BASE_URL}${
-                        persona.attributes.avatar.data.attributes.url
-                      })`
-                    : persona.attributes.sexo === "Femenino"
+                  backgroundImage: persona.avatar
+                    ? `url(${import.meta.env.VITE_BASE_URL}/api/files/avatars/${
+                      persona.expand.avatar.id
+                    }/${
+                      persona.expand.avatar.avatar
+                    })`
+                    : persona.sexo === "Femenino"
                     ? `url(${F})`
                     : `url(${M})`,
                 }}
               >
-                {persona.attributes.verificado ? (
+                {persona.verificado ? (
                   <VerifiedSharpIcon className="verified" fontSize="large" />
                 ) : (
                   <></>
                 )}
                 <h2>
-                  Nombre: {persona.attributes.nombres_apellidos}
-                  &nbsp;&nbsp; Edad: {persona.attributes.edad}
+                  Nombre: {persona.nombres_apellidos}
+                  &nbsp;&nbsp; Edad: {persona.edad}
                   <br />
-                  Provincia: {persona.attributes.provincia}
+                  Provincia: {persona.provincia}
                 </h2>
               </div>
               <div>
-                <IconButton onClick={() => onSwiped("left", persona.id)}>
+                <IconButton onClick={() => onSwiped("left", {persona:persona.id, dislike:persona.dislike})}>
                   <HeartBrokenSharpIcon
                     fontSize="large"
                     style={{ color: "black" }}
                   />
                 </IconButton>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <IconButton onClick={() => onSwiped("right", persona.id)}>
+                <IconButton onClick={() => onSwiped("right", {persona:persona.id, like:persona.like})}>
                   <FavoriteSharpIcon
                     fontSize="large"
                     style={{ color: "red" }}
@@ -178,7 +182,7 @@ export default function TarjetasView({
                 value={filter_prov}
                 onChange={filterProv}
                 label="Provincia"
-                disabled={Plus && Plus.pluses === null ? true : false}
+                disabled={!Plus}
               >
                 <MenuItem value="">
                   <em>Ninguna</em>
@@ -198,7 +202,7 @@ export default function TarjetasView({
                 value={filter_sex}
                 onChange={filterSex}
                 label="Sexo"
-                disabled={Plus && Plus.pluses === null ? true : false}
+                disabled={!Plus}
               >
                 <MenuItem value="">
                   <em>Ninguno</em>

@@ -1,13 +1,10 @@
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import ImageListItemBar from "@mui/material/ImageListItemBar";
 import Typography from "@mui/material/Typography";
 import "./Likes.css";
-import { useAlertStore } from "../../store/Store";
-import { useQuery } from "@apollo/client";
-import { Iliked } from "../../querys/querys/Like_DislakeQuerys";
-import Loadding from "../../helpers/Loadding";
+import { toast } from "sonner";
 import F from "../../assets/F.webp";
 import M from "../../assets/M.webp";
 import IconButton from "@mui/material/IconButton";
@@ -16,49 +13,43 @@ import CommentSharpIcon from "@mui/icons-material/CommentSharp";
 import ControlPointSharpIcon from "@mui/icons-material/ControlPointSharp";
 import VerifiedSharpIcon from "@mui/icons-material/VerifiedSharp";
 import { useNavigate } from "react-router-dom";
+import PocketBase from "pocketbase";
 import SendMessage from "./SendMessage";
 
-export default function Likes({ Plus, user_id }) {
+export default function Likes({ Plus, user_id, profile_id }) {
+  //console.log("RENDER LIKES");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   const [openmsg, setOpenmsg] = useState(false);
+  const [msg_enviado, setMsg_enviado] = useState("");
   const [destinatario, setDestinatario] = useState("");
   let navigate = useNavigate();
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
-  const Existe_Mensaje = async ({ profile_id }) => {
-    //console.log(profile_id);
-    setDestinatario(profile_id);
+  const Existe_Mensaje = async ({ destinatario_id }) => {
+    //console.log(profile_id, message_me);
+    setDestinatario(destinatario_id);
     setOpenmsg(true);
   };
-  const { loading, error, data, refetch } = useQuery(Iliked, {
-    variables: { id: user_id },
-  });
-  if (loading) {
-    return <Loadding />;
+  const [data, setData] = useState("");
+
+  if (profile_id) {
+    useEffect(async () => {
+      try {
+        const data = await pb.collection("users").getFullList({
+          sort: "-created",
+          filter: `id!="${user_id}" && like_me~"${profile_id}"`,
+          expand: "profile, profile.avatar",
+        });
+        setData(data);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }, [msg_enviado]);
+    //console.log(data);
   }
-  if (error) {
-    ChangeMsgOpen(true);
-    ChangeSeverity("error");
-    ChangeMsg(
-      error.message === "Failed to fetch"
-        ? "Error al hacer la petición al Servidor!"
-        : error.message
-    );
-    ChangeDuration(2000);
-    ChangePositionV("top");
-    ChangePositionH("center");
-  }
-  if (data) {
-    //console.log(data.profiles.data[0].attributes.likes.data);
-    const { profiles } = data;
+
+  if (data && data.length > 0) {
     return (
       <>
-        {Plus && Plus.pluses === null ? (
+        {!Plus ? (
           <Typography
             component="h1"
             variant="h6"
@@ -88,26 +79,25 @@ export default function Likes({ Plus, user_id }) {
           <SendMessage
             openmsg={openmsg}
             setOpenmsg={setOpenmsg}
+            setMsg_enviado={setMsg_enviado}
             user_id={user_id}
             destinatario={destinatario}
           />
-          {profiles.data[0].attributes.likes.data.map((likes) => {
-            const ProfileData =
-              likes?.attributes.user.data.attributes.profile.data;
-            const ProfileAtrributes = ProfileData?.attributes;
-            const AvatarUrl = ProfileAtrributes?.avatar?.data?.attributes?.url;
+          {data.map((user) => {
+            const ProfileData = user.expand.profile;
+            const Avatar = ProfileData.expand.avatar;
             return (
               <ImageListItem
-                className={
-                  Plus && Plus.pluses === null ? "avatar" : "avatar_plus"
-                }
-                key={likes.id}
+                className={!Plus ? "avatar" : "avatar_plus"}
+                key={user.id}
               >
                 <img
                   src={
-                    AvatarUrl
-                      ? `${import.meta.env.VITE_BASE_URL}${AvatarUrl}`
-                      : ProfileAtrributes.sexo === "Femenino"
+                    Avatar
+                      ? `${import.meta.env.VITE_BASE_URL}/api/files/avatars/${
+                          Avatar.id
+                        }/${Avatar.avatar}`
+                      : ProfileData.sexo === "Femenino"
                       ? F
                       : M
                   }
@@ -124,33 +114,22 @@ export default function Likes({ Plus, user_id }) {
                     //cursor: "pointer",
                   }}
                 />
-                {ProfileAtrributes?.verificado ? (
+                {ProfileData?.verificado ? (
                   <VerifiedSharpIcon className="verified" fontSize="large" />
                 ) : (
                   <></>
                 )}
                 <ImageListItemBar
                   title={
-                    <>
-                      Nombres y Apellidos:{" "}
-                      {ProfileAtrributes?.nombres_apellidos}
-                    </>
+                    <>Nombres y Apellidos: {ProfileData?.nombres_apellidos}</>
                   }
                   subtitle={
                     <>
-                      Edad: {ProfileAtrributes?.edad}
+                      Edad: {ProfileData?.edad}
                       <br />
-                      Sexo: {ProfileAtrributes?.sexo}
+                      Sexo: {ProfileData?.sexo}
                       <br />
-                      Provincia: {ProfileAtrributes?.provincia}
-                      <br />
-                      Fecha en que le gustaste:{" "}
-                      {new Date(
-                        likes?.attributes?.createdAt
-                      ).toLocaleDateString()}{" "}
-                      {new Date(
-                        likes?.attributes?.createdAt
-                      ).toLocaleTimeString()}
+                      Provincia: {ProfileData?.provincia}
                       <br />
                       Ver Perfil:
                       {
@@ -173,12 +152,10 @@ export default function Likes({ Plus, user_id }) {
                       {
                         <IconButton
                           aria-label="Enviar Mensaje"
-                          onClick={() => {
-                            Existe_Mensaje({
-                              profile_id:
-                                ProfileData?.attributes.user?.data?.id,
-                            });
-                          }}
+                          onClick={() => {Existe_Mensaje({
+                            destinatario_id:
+                              ProfileData.id,
+                          });}}
                         >
                           <CommentSharpIcon
                             fontSize="medium"

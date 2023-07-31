@@ -1,3 +1,4 @@
+import { signal } from "@preact/signals";
 import { Formik, Form, ErrorMessage } from "formik";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -9,19 +10,23 @@ import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
-import { useMutation } from "@apollo/client";
-import { SendMensaje } from "../../querys/mutations/MessagesMutations";
 import Alert from "@mui/material/Alert";
 import LinearProgress from "@mui/material/LinearProgress";
 import SendIcon from "@mui/icons-material/Send";
+import PocketBase from "pocketbase";
+
+const loading = signal(false);
 
 export default function SendMessage({
   openmsg,
+  setMsg_enviado,
   setOpenmsg,
   user_id,
   destinatario,
 }) {
-  const [CreateMensaje, { loading }] = useMutation(SendMensaje);
+  //console.log("RENDER SEND_MSG");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
+
   return (
     <Dialog open={openmsg} onClose={() => setOpenmsg(false)}>
       <DialogTitle>
@@ -45,15 +50,22 @@ export default function SendMessage({
         ) => {
           // Aquí irá la lógica para enviar los datos del formulario al servidor
           //console.log(user_id, destinatario, mensaje);
+          loading.value = true;
           try {
-            await CreateMensaje({
-              variables: { user_id, destinatario, mensaje },
-            });
+            const data = {
+              "mensaje": mensaje,
+              "remitente": user_id,
+              "destinatario": destinatario,
+            };
+            const msg = await pb.collection("mensajes").create(data);
+            setMsg_enviado(msg);
             resetForm();
+            loading.value = false;
             setSubmitting(false);
             setOpenmsg(false);
           } catch (error) {
             console.log(error);
+            loading.value = false;
             setSubmitting(false);
             setFieldError("mensaje", error.message);
           }
@@ -69,7 +81,7 @@ export default function SendMessage({
         }) => (
           <Form>
             <DialogContent>
-              {loading && (
+              {loading.value && (
                 <DialogContentText>
                   <br />
                   <br />
@@ -87,7 +99,7 @@ export default function SendMessage({
                   <br />
                 </DialogContentText>
               )}
-              {!loading && (
+              {!loading.value && (
                 <DialogContentText>
                   Recuerde ser respetuoso/a...
                 </DialogContentText>
@@ -108,7 +120,7 @@ export default function SendMessage({
                     onChange={handleChange}
                     onBlur={handleBlur}
                     value={values.mensaje}
-                    autoFocus
+                    //autoFocus
                   />
                   <ErrorMessage
                     name="mensaje"

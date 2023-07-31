@@ -9,30 +9,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@apollo/client": "^3.7.15",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@fontsource/roboto": "^5.0.3",
-    "@mui/icons-material": "^5.11.16",
-    "@mui/lab": "5.0.0-alpha.134",
-    "@mui/material": "^5.13.5",
-    "@mui/utils": "^5.13.1",
-    "@mui/x-date-pickers": "^6.7.0",
-    "@preact/signals": "^1.1.3",
-    "@react-spring/web": "^9.7.2",
-    "apollo-upload-client": "^17.0.0",
+    "@fontsource/roboto": "^5.0.5",
+    "@mui/icons-material": "^5.14.1",
+    "@mui/lab": "5.0.0-alpha.137",
+    "@mui/material": "^5.14.2",
+    "@mui/utils": "^5.14.1",
+    "@mui/x-date-pickers": "^6.10.2",
+    "@preact/signals": "^1.1.5",
+    "@react-spring/web": "^9.7.3",
     "compressorjs": "^1.2.1",
-    "formik": "^2.4.1",
-    "graphql": "^16.6.0",
-    "preact": "^10.13.2",
-    "react-router-dom": "^6.12.1",
+    "formik": "^2.4.2",
+    "pocketbase": "^0.15.3",
+    "preact": "^10.16.0",
+    "react-router-dom": "^6.14.2",
     "react-tinder-card": "^1.6.2",
-    "yup": "^1.2.0",
-    "zustand": "^4.3.8"
+    "sonner": "^0.6.2",
+    "yup": "^1.2.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",
-    "vite": "^4.3.9",
-    "vite-plugin-pwa": "^0.16.4"
+    "vite": "^4.4.5"
   }
 }

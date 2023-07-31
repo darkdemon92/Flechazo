@@ -1,7 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { IconButton } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useUserDataStore } from "../../store/Store";
 import PersonSharpIcon from "@mui/icons-material/PersonSharp";
 import Badge from "@mui/material/Badge";
 import MailIcon from "@mui/icons-material/Mail";
@@ -11,43 +10,48 @@ import ArrowBackIosNewSharpIcon from "@mui/icons-material/ArrowBackIosNewSharp";
 import CampaignSharpIcon from "@mui/icons-material/CampaignSharp";
 import Logo from "../../assets/logo.webp";
 import "./Header.css";
-import { useApolloClient, useQuery } from "@apollo/client";
-import { cantidad_likes } from "../../querys/querys/Like_DislakeQuerys";
-import { cantidad_mensajes } from "../../querys/querys/MessagesQuerys";
+import { toast } from "sonner";
+import PocketBase from 'pocketbase';
 
-export default function Header({ user_id, retroceder }) {
-  const client = useApolloClient();
+export default function Header({ user_id, profile_id, retroceder }) {
+  //console.log("RENDER Header");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   //console.log(user_id);
   const [likes, setlikes] = useState(0);
   const [mensajes, setmensajes] = useState(0);
-  const { data: cant_likes, refetch: refetch_likes } = useQuery(
-    cantidad_likes,
-    {
-      variables: { id: user_id },
-      skip: !user_id,
-    }
-  );
-  const { data: cant_mensajes, refetch: refetch_mensajes } = useQuery(
-    cantidad_mensajes,
-    {
-      variables: { id: user_id },
-      skip: !user_id,
-    }
-  );
 
-  useEffect(() => {
-    if (cant_likes?.likes?.data?.length) {
-      setlikes(cant_likes.likes.data.length);
-      refetch_likes();
+  useEffect(async () => {
+    try {
+      const cantlikes = await pb.collection("users").getFullList({
+        sort: "-created",
+        filter:`id!="${user_id}" && like_me~"${profile_id}"`,
+      });
+      setlikes(cantlikes.length);
+    } catch (error) {
+      toast.error(error.message);
     }
-    if (cant_mensajes?.messages?.data?.length) {
-      setmensajes(cant_mensajes.messages.data.length);
-      refetch_mensajes();
+    try {
+      const mensajes = await pb.collection('mensajes').getFullList({
+        sort: '+created',
+        filter: `destinatario="${profile_id}"`,
+      });
+      //console.log(mensajes);
+      let remitentes = {};
+      let mensajesSinDuplicados = [];
+      for (let i = 0; i < mensajes.length; i++) {
+        if (!remitentes[mensajes[i].remitente]) {
+          remitentes[mensajes[i].remitente] = true;
+          mensajesSinDuplicados.push(mensajes[i]);
+        }
+      }
+      //console.log(mensajesSinDuplicados);
+      setmensajes(mensajesSinDuplicados.length);
+    } catch (error) {
+      toast.error(error.message);
     }
-  }, [cant_likes, cant_mensajes, refetch_likes, refetch_mensajes]);
+  }, []);
 
   let navigate = useNavigate();
-  const { ClearStore } = useUserDataStore();
   return (
     <div className="header">
       {retroceder ? (
@@ -94,7 +98,8 @@ export default function Header({ user_id, retroceder }) {
 
           <IconButton
             onClick={() => {
-              ClearStore();
+              toast.message(`Hasta Pronto ${ pb.authStore.model.username }`);
+              pb.authStore.clear();
               navigate("/", { replace: true });
             }}
           >

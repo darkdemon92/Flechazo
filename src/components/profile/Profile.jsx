@@ -1,11 +1,7 @@
-import { useEffect } from "preact/hooks";
 import { signal } from "@preact/signals";
-import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
-import { GetProfile } from "../../querys/querys/ProfileQuerys";
-import { useAlertStore } from "../../store/Store";
-import Loadding from "../../helpers/Loadding";
+import { toast } from "sonner";
 import F from "../../assets/F.webp";
 import M from "../../assets/M.webp";
 import { IconButton } from "@mui/material";
@@ -19,48 +15,34 @@ import UploadFoto from "./UploadFoto";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import VerifiedSharpIcon from "@mui/icons-material/VerifiedSharp";
+import PocketBase from "pocketbase";
+import { useEffect, useState } from "preact/hooks";
 
 const modalStatus = signal(false);
 const modal2Status = signal(false);
 const modal3Status = signal(false);
 
-function Profile({ Plus, user_id }) {
-  //console.log("render profile");
-  //console.log(user_id);
+function Profile({ profile_id }) {
+  //console.log("RENDER PROFILE");
+  const pb = new PocketBase(`${import.meta.env.VITE_BASE_URL}`);
   let navigate = useNavigate();
-  const {
-    ChangeMsgOpen,
-    ChangeSeverity,
-    ChangeMsg,
-    ChangeDuration,
-    ChangePositionV,
-    ChangePositionH,
-  } = useAlertStore();
-  const { loading, error, data, refetch } = useQuery(GetProfile, {
-    variables: { id: user_id },
-  });
-  useEffect(() => {
-    //console.log("refetch");
-    refetch();
-  });
+  const [data, setData] = useState("");
+  const [dataChange, setDataChange] = useState("");
 
-  //console.log(data);
-  if (loading) {
-    return <Loadding />;
-  }
-  if (error) {
-    ChangeMsgOpen(true);
-    ChangeSeverity("error");
-    ChangeMsg(
-      error.message === "Failed to fetch"
-        ? "Error al hacer la petición al Servidor!"
-        : error.message
-    );
-    ChangeDuration(2000);
-    ChangePositionV("top");
-    ChangePositionH("center");
-  }
-  if (data && data.profiles.data.length > 0) {
+  if (profile_id) {
+    useEffect(async () => {
+      try {
+        const data = await pb
+          .collection("profile")
+          .getFirstListItem(`id="${ profile_id }"`, {
+            expand: 'avatar, mis_fotos',
+        });
+        setData(data);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }, [dataChange]);
+
     //console.log(data);
     return (
       <>
@@ -75,29 +57,31 @@ function Profile({ Plus, user_id }) {
         </Typography>{" "}
         <Edit
           modalStatus={modalStatus}
-          data={data.profiles.data[0]}
-          refetch={refetch}
+          data={data}
+          setDataChange={setDataChange}
         />
         <UploadAvatar
           modal2Status={modal2Status}
-          data={data.profiles.data[0]}
-          refetch={refetch}
+          data={data}
+          setDataChange={setDataChange}
         />
         <UploadFoto
           modal3Status={modal3Status}
-          data={data.profiles.data[0]}
-          refetch={refetch}
+          data={data}
+          setDataChange={setDataChange}
         />
         <br />
         <img
           src={
-            data.profiles.data[0].attributes.avatar.data
-              ? `${import.meta.env.VITE_BASE_URL}${
-                  data.profiles.data[0].attributes.avatar.data?.attributes.url
+            data.avatar
+              ? `${import.meta.env.VITE_BASE_URL}/api/files/avatars/${
+                  data.expand.avatar.id
+                }/${
+                  data.expand.avatar.avatar
                 }`
-              : data.profiles.data[0].attributes.sexo === "Femenino"
+              : data.sexo === "Femenino"
               ? F
-              : M
+              : M || null
           }
           alt="Avatar"
           style={{ maxWidth: "300px", padding: "5px", borderRadius: "20px" }}
@@ -110,19 +94,22 @@ function Profile({ Plus, user_id }) {
         </IconButton>
         <Typography component="h1" variant="h4">
           Nombres y Apellidos:{" "}
-          {data.profiles.data[0].attributes.nombres_apellidos}
+          {data.nombres_apellidos || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          Edad: {data.profiles.data[0].attributes.edad}
+          Edad: {data.edad || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          Sexo: {data.profiles.data[0].attributes.sexo}
+          Sexo: {data.sexo || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          Provincia: {data.profiles.data[0].attributes.provincia}
+          Interés en: {data.intereses || null}
         </Typography>
         <Typography component="h1" variant="h4">
-          {data.profiles.data[0].attributes.verificado ? (
+          Provincia: {data.provincia || null}
+        </Typography>
+        <Typography component="h1" variant="h4">
+          {data.verificado ? (
             <>
               Verificado:{" "}
               <VerifiedSharpIcon
@@ -151,15 +138,19 @@ function Profile({ Plus, user_id }) {
           cols={3}
           rowHeight="auto"
         >
-          {data.profiles.data[0].attributes.mis_fotos?.data?.length > 0 ? (
-            data.profiles.data[0].attributes.mis_fotos?.data.map((fotos) => (
+          {data.mis_fotos?.length > 0 ? (
+            data.expand.mis_fotos.map((fotos) => (
               <ImageListItem key={fotos.id}>
                 <img
-                  src={`${import.meta.env.VITE_BASE_URL}${
-                    fotos.attributes.url
+                  src={`${import.meta.env.VITE_BASE_URL}/api/files/fotos/${
+                    fotos.id
+                  }/${
+                    fotos.foto
                   }?w=164&h=164&fit=crop&auto=format`}
-                  srcSet={`${import.meta.env.VITE_BASE_URL}${
-                    fotos.attributes.url
+                  srcSet={`${import.meta.env.VITE_BASE_URL}/api/files/fotos/${
+                    fotos.id
+                  }/${
+                    fotos.foto
                   }?w=164&h=164&fit=crop&auto=format`}
                   alt="Foto"
                   loading="lazy"
@@ -185,8 +176,11 @@ function Profile({ Plus, user_id }) {
       </>
     );
   }
-  if (data && data.profiles.data.length === 0) {
-    navigate("/profile/create", { replace: true });
+  if (!profile_id) {
+    toast.error("Debe Crear su Perfil");
+    useEffect(() => {
+      navigate("/profile/create", { replace: true });
+    }, []);
   }
 }
 
