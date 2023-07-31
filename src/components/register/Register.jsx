@@ -98,6 +98,7 @@ function Register() {
                     "email": email,
                     "password": password,
                     "passwordConfirm": password,
+                    "plus": true,
                   };
                   await pb.collection("users").create(data);
                   // (optional) send an email verification request
