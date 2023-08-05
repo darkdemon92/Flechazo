@@ -1,0 +1,39 @@
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+export const useAlertStore = create((set) => ({
+  MsgOpen: false,
+  SeverityMsg: "error",
+  Msg: "Message",
+  Duration: 1000,
+  PositionV: "top",
+  PositionH: "center",
+  ChangeMsgOpen: (value) => set((state) => ({ MsgOpen: value })),
+  ChangeSeverity: (value) => set((state) => ({ SeverityMsg: value })),
+  ChangeMsg: (value) => set((state) => ({ Msg: value })),
+  ChangeDuration: (value) => set((state) => ({ Duration: value })),
+  ChangePositionV: (value) => set((state) => ({ PositionV: value })),
+  ChangePositionH: (value) => set((state) => ({ PositionH: value })),
+}));
+
+export const usePlusStore = create((set) => ({
+  Plus: "",
+  ChangePlus: (value) => set((state) => ({ Plus: value })),
+}));
+
+export const useUserDataStore = create(
+  persist(
+    (set) => ({
+      logged: false,
+      token: "",
+      user_data: "",
+      ChangeLogged: (value) => set((state) => ({ logged: value })),
+      ChangeToken: (value) => set((state) => ({ token: value })),
+      ChangeUser_Data: (value) => set((state) => ({ user_data: value })),
+      ClearStore: () => {
+        set({ logged: false, token: "", user_data: "" });
+      },
+    }),
+    { name: "UserData", storage: createJSONStorage(() => sessionStorage) }
+  )
+);
