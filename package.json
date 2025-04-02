@@ -7,36 +7,32 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    // Añade este script para instalación segura
     "install:ci": "npm install --legacy-peer-deps"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@fontsource/roboto": "^5.0.5",
-    "@mui/icons-material": "^5.14.1",
-    // Actualiza MUI Lab a última versión alpha compatible
-    "@mui/lab": "^5.0.0-alpha.151",
-    "@mui/material": "^5.14.2",
-    "@mui/utils": "^5.14.1",
-    // Actualiza Date Pickers para compatibilidad
-    "@mui/x-date-pickers": "^6.11.0",
-    "@preact/signals": "^1.1.5",
-    "@react-spring/web": "^9.7.3",
-    "compressorjs": "^1.2.1",
-    "formik": "^2.4.2",
-    "million": "^2.5.4-beta.2",
-    "pocketbase": "^0.15.3",
-    // Cambia a React 18 (versión estable compatible)
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.14.2",
-    "react-tinder-card": "^1.6.2",
-    "sonner": "^0.6.2",
-    "yup": "^1.2.0"
+    "@emotion/react": "11.11.1",
+    "@emotion/styled": "11.11.0",
+    "@fontsource/roboto": "5.0.5",
+    "@mui/icons-material": "5.14.1",
+    "@mui/lab": "5.0.0-alpha.151",
+    "@mui/material": "5.14.2",
+    "@mui/utils": "5.14.1",
+    "@mui/x-date-pickers": "6.11.0",
+    "@preact/signals": "1.1.5",
+    "@react-spring/web": "9.7.3",
+    "compressorjs": "1.2.1",
+    "formik": "2.4.2",
+    "million": "2.5.4-beta.2",
+    "pocketbase": "0.15.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-router-dom": "6.14.2",
+    "react-tinder-card": "1.6.2",
+    "sonner": "0.6.2",
+    "yup": "1.2.0"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.5.0",
-    "vite": "^4.4.5"
+    "@preact/preset-vite": "2.5.0",
+    "vite": "4.4.5"
   }
 }
