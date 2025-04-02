@@ -77,7 +77,7 @@ function Login() {
               style={{ width: "20%", height: "auto" }}
             />
             <Typography component="h1" variant="h3">
-              Flechazo
+              Fl3chazo
             </Typography>
             <Formik
               initialValues={{ username: "", password: "" }}
