@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stream Viewer Multi-Usuario</title>
+  <style>
+    body { 
+      margin: 0; 
+      background: #1a1a1a; 
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .user-selector {
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #2a2a2a;
+      border-radius: 8px;
+    }
+    select, button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+    }
+    iframe { 
+      width: 100%; 
+      height: 80vh; 
+      border: none;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="user-selector">
+      <label for="userSelect">Seleccionar usuario:</label>
+      <select id="userSelect">
+        <option value="tricio">tricio</option>
+        <option value="user2">user2</option>
+        <option value="user3">user3</option>
+        <option value="user4">user4</option>
+      </select>
+      <button onclick="loadStream()">Cargar Stream</button>
+      <button onclick="addUser()">Agregar Usuario</button>
+    </div>
+    <iframe id="streamFrame"></iframe>
+  </div>
+
+  <script>
+    const userSelect = document.getElementById('userSelect');
+    
+    // Cargar usuarios guardados
+    function loadUsers() {
+      const savedUsers = localStorage.getItem('streamUsers');
+      if (savedUsers) {
+        const users = JSON.parse(savedUsers);
+        userSelect.innerHTML = '';
+        users.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user;
+          option.textContent = user;
+          userSelect.appendChild(option);
+        });
+      }
+    }
+    
+    function loadStream() {
+      const user = userSelect.value;
+      const streamUrl = `https://irc.elchatcam.com:4000/subscribe.html?user=${user}`;
+      document.getElementById('streamFrame').src = streamUrl;
+    }
+    
+    function addUser() {
+      const newUser = prompt('Ingresa el nombre de usuario:');
+      if (newUser && !Array.from(userSelect.options).some(opt => opt.value === newUser)) {
+        // Agregar al select
+        const option = document.createElement('option');
+        option.value = newUser;
+        option.textContent = newUser;
+        userSelect.appendChild(option);
+        
+        // Guardar en localStorage
+        const users = Array.from(userSelect.options).map(opt => opt.value);
+        localStorage.setItem('streamUsers', JSON.stringify(users));
+      }
+    }
+    
+    // Cargar al iniciar
+    loadUsers();
+    if (userSelect.options.length > 0) {
+      loadStream();
+    }
+  </script>
+</body>
+</html>
