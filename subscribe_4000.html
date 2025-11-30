@@ -110,26 +110,6 @@
             box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
         }
         
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #0da271;
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-        }
-        
         .btn-outline {
             background: transparent;
             border: 2px solid var(--primary);
@@ -220,12 +200,6 @@
             font-weight: 600;
         }
         
-        .quick-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
         .streams-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
@@ -280,14 +254,6 @@
             animation: pulse 2s infinite;
         }
         
-        .status-indicator.inactive {
-            background: var(--danger);
-        }
-        
-        .status-indicator.paused {
-            background: var(--warning);
-        }
-        
         .stream-container {
             height: 280px;
             background: #1a1a1a;
@@ -303,27 +269,15 @@
             border: none;
         }
         
-        .stream-placeholder {
-            text-align: center;
-            color: #94a3b8;
-            padding: 20px;
-        }
-        
-        .stream-placeholder i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #475569;
-        }
-        
         .stream-controls {
             padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
         }
         
         .control-btn {
-            padding: 12px 8px;
+            padding: 12px 24px;
             border: none;
             border-radius: 10px;
             font-weight: 600;
@@ -331,29 +285,12 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            flex-direction: column;
+            gap: 8px;
+            font-size: 0.9rem;
         }
         
         .control-btn i {
             font-size: 1.1rem;
-        }
-        
-        .control-btn.play {
-            background: var(--success);
-            color: white;
-        }
-        
-        .control-btn.pause {
-            background: var(--warning);
-            color: white;
-        }
-        
-        .control-btn.stop {
-            background: var(--danger);
-            color: white;
         }
         
         .control-btn.reload {
@@ -362,7 +299,7 @@
         }
         
         .control-btn.remove {
-            background: var(--gray);
+            background: var(--danger);
             color: white;
         }
         
@@ -430,16 +367,6 @@
                 width: 100%;
                 justify-content: space-between;
             }
-            
-            .stream-controls {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-            
-            .control-btn {
-                padding: 10px 5px;
-                font-size: 0.8rem;
-            }
         }
         
         /* Animaciones */
@@ -466,44 +393,6 @@
             background: linear-gradient(120deg, #f0f9ff, #e0f2fe);
             border-left: 4px solid var(--primary);
         }
-        
-        .saved-urls {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-        
-        .saved-urls h4 {
-            margin-bottom: 10px;
-            color: var(--dark);
-            font-size: 1rem;
-        }
-        
-        .url-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .url-tag {
-            background: var(--primary);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .url-tag:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
     </style>
 </head>
 <body>
@@ -528,14 +417,6 @@
         <div class="control-panel">
             <div class="panel-header">
                 <h2>Agregar Nueva Transmisión</h2>
-                <div class="quick-actions">
-                    <button class="btn btn-success" id="playAllBtn">
-                        <i class="fas fa-play"></i> Activar Todas
-                    </button>
-                    <button class="btn btn-danger" id="stopAllBtn">
-                        <i class="fas fa-stop"></i> Detener Todas
-                    </button>
-                </div>
             </div>
             
             <div class="add-stream-form">
@@ -555,13 +436,6 @@
                 
                 <div class="url-preview" id="urlPreview">
                     <strong>URL que se generará:</strong> <span id="previewUrl"></span>
-                </div>
-            </div>
-            
-            <div class="saved-urls" id="savedUrls" style="display: none;">
-                <h4>URLs Base Guardadas</h4>
-                <div class="url-tags" id="urlTags">
-                    <!-- Las URLs guardadas aparecerán aquí -->
                 </div>
             </div>
             
@@ -593,13 +467,9 @@
         const addStreamBtn = document.getElementById('addStreamBtn');
         const streamNameInput = document.getElementById('streamName');
         const streamUrlInput = document.getElementById('streamUrl');
-        const playAllBtn = document.getElementById('playAllBtn');
-        const stopAllBtn = document.getElementById('stopAllBtn');
         const exportBtn = document.getElementById('exportBtn');
         const urlPreview = document.getElementById('urlPreview');
         const previewUrl = document.getElementById('previewUrl');
-        const savedUrls = document.getElementById('savedUrls');
-        const urlTags = document.getElementById('urlTags');
         
         // Array para almacenar los streams
         let streams = JSON.parse(localStorage.getItem('streams')) || [];
@@ -609,48 +479,6 @@
         if (savedBaseUrl) {
             streamUrlInput.value = savedBaseUrl;
             updateUrlPreview();
-        }
-        
-        // Cargar URLs base utilizadas
-        let usedBaseUrls = JSON.parse(localStorage.getItem('usedBaseUrls')) || [];
-        renderUrlTags();
-        
-        // Función para renderizar las etiquetas de URLs
-        function renderUrlTags() {
-            if (usedBaseUrls.length === 0) {
-                savedUrls.style.display = 'none';
-                return;
-            }
-            
-            savedUrls.style.display = 'block';
-            urlTags.innerHTML = '';
-            
-            // Mostrar solo las últimas 5 URLs
-            const recentUrls = usedBaseUrls.slice(-5);
-            
-            recentUrls.forEach(url => {
-                const tag = document.createElement('div');
-                tag.className = 'url-tag';
-                tag.innerHTML = `
-                    <span>${url}</span>
-                    <i class="fas fa-times" data-url="${url}"></i>
-                `;
-                
-                tag.addEventListener('click', function(e) {
-                    if (e.target.tagName === 'I') {
-                        // Eliminar URL de la lista
-                        usedBaseUrls = usedBaseUrls.filter(u => u !== url);
-                        localStorage.setItem('usedBaseUrls', JSON.stringify(usedBaseUrls));
-                        renderUrlTags();
-                    } else {
-                        // Usar esta URL
-                        streamUrlInput.value = url;
-                        updateUrlPreview();
-                    }
-                });
-                
-                urlTags.appendChild(tag);
-            });
         }
         
         // Función para actualizar la vista previa de URL
@@ -683,13 +511,6 @@
             const baseUrl = streamUrlInput.value.trim();
             if (baseUrl) {
                 localStorage.setItem('savedBaseUrl', baseUrl);
-                
-                // Agregar a la lista de URLs usadas si no existe
-                if (!usedBaseUrls.includes(baseUrl)) {
-                    usedBaseUrls.push(baseUrl);
-                    localStorage.setItem('usedBaseUrls', JSON.stringify(usedBaseUrls));
-                    renderUrlTags();
-                }
             }
         }
         
@@ -710,39 +531,23 @@
                 streamCard.className = 'stream-card';
                 streamCard.dataset.index = index;
                 
-                const statusClass = stream.status === 'active' ? '' : 
-                                  stream.status === 'paused' ? 'paused' : 'inactive';
-                
                 streamCard.innerHTML = `
                     <div class="stream-header">
                         <div class="stream-title">${stream.name}</div>
                         <div class="stream-status">
-                            <span class="status-indicator ${statusClass}"></span>
-                            ${stream.status === 'active' ? 'En Vivo' : 
-                              stream.status === 'paused' ? 'Pausado' : 'Detenido'}
+                            <span class="status-indicator"></span>
+                            En Vivo
                         </div>
                     </div>
                     <div class="stream-container">
-                        ${stream.status !== 'stopped' ? 
-                            `<iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>` :
-                            `<div class="stream-placeholder">
-                                <i class="fas fa-video-slash"></i>
-                                <p>Transmisión detenida</p>
-                            </div>`
-                        }
+                        <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>
                     </div>
                     <div class="stream-controls">
-                        <button class="control-btn play" data-action="play" data-index="${index}" title="Activar transmisión">
-                            <i class="fas fa-play"></i> <span>Activar</span>
-                        </button>
-                        <button class="control-btn pause" data-action="pause" data-index="${index}" title="Pausar transmisión">
-                            <i class="fas fa-pause"></i> <span>Pausar</span>
-                        </button>
-                        <button class="control-btn stop" data-action="stop" data-index="${index}" title="Detener transmisión">
-                            <i class="fas fa-stop"></i> <span>Detener</span>
-                        </button>
                         <button class="control-btn reload" data-action="reload" data-index="${index}" title="Recargar transmisión">
-                            <i class="fas fa-redo"></i> <span>Recargar</span>
+                            <i class="fas fa-redo"></i> Recargar
+                        </button>
+                        <button class="control-btn remove" data-action="remove" data-index="${index}" title="Eliminar transmisión">
+                            <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </div>
                 `;
@@ -766,15 +571,6 @@
             const stream = streams[index];
             
             switch(action) {
-                case 'play':
-                    stream.status = 'active';
-                    break;
-                case 'pause':
-                    stream.status = 'paused';
-                    break;
-                case 'stop':
-                    stream.status = 'stopped';
-                    break;
                 case 'reload':
                     // Para recargar, forzamos una actualización del iframe
                     const iframe = document.querySelector(`[data-index="${index}"] .stream-frame`);
@@ -782,24 +578,15 @@
                         iframe.src = iframe.src;
                     }
                     showNotification(`Transmisión "${stream.name}" recargada`);
-                    return; // No guardamos ni re-renderizamos para evitar parpadeo
-            }
-            
-            saveStreams();
-            renderStreams();
-            
-            if (action !== 'reload') {
-                showNotification(`Transmisión "${stream.name}" ${getActionText(action)}`);
-            }
-        }
-        
-        // Función para obtener el texto de la acción
-        function getActionText(action) {
-            switch(action) {
-                case 'play': return 'activada';
-                case 'pause': return 'pausada';
-                case 'stop': return 'detenida';
-                default: return 'actualizada';
+                    break;
+                case 'remove':
+                    if (confirm(`¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`)) {
+                        streams.splice(index, 1);
+                        saveStreams();
+                        renderStreams();
+                        showNotification(`Transmisión "${stream.name}" eliminada`);
+                    }
+                    break;
             }
         }
         
@@ -821,8 +608,7 @@
             
             streams.push({
                 name: name,
-                url: finalUrl,
-                status: 'active'
+                url: finalUrl
             });
             
             saveStreams();
@@ -839,17 +625,6 @@
             showNotification(`Transmisión "${name}" agregada correctamente`);
         }
         
-        // Función para eliminar un stream
-        function removeStream(index) {
-            if (confirm(`¿Estás seguro de que quieres eliminar la transmisión "${streams[index].name}"?`)) {
-                const streamName = streams[index].name;
-                streams.splice(index, 1);
-                saveStreams();
-                renderStreams();
-                showNotification(`Transmisión "${streamName}" eliminada`);
-            }
-        }
-        
         // Función para mostrar notificaciones
         function showNotification(message) {
             // Crear elemento de notificación
@@ -858,7 +633,7 @@
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: var(--success);
+                background: var(--primary);
                 color: white;
                 padding: 15px 20px;
                 border-radius: 10px;
@@ -884,28 +659,6 @@
                     document.body.removeChild(notification);
                 }, 300);
             }, 3000);
-        }
-        
-        // Función para iniciar todos los streams
-        function playAllStreams() {
-            streams.forEach(stream => {
-                stream.status = 'active';
-            });
-            
-            saveStreams();
-            renderStreams();
-            showNotification('Todas las transmisiones activadas');
-        }
-        
-        // Función para detener todos los streams
-        function stopAllStreams() {
-            streams.forEach(stream => {
-                stream.status = 'stopped';
-            });
-            
-            saveStreams();
-            renderStreams();
-            showNotification('Todas las transmisiones detenidas');
         }
         
         // Función para exportar la lista de streams
@@ -940,8 +693,6 @@
             }
         });
         
-        playAllBtn.addEventListener('click', playAllStreams);
-        stopAllBtn.addEventListener('click', stopAllStreams);
         exportBtn.addEventListener('click', exportStreams);
         
         // Inicializar la aplicación
