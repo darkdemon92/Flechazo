@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Avanzado - elChatCam</title>
+    <title>Admin elChatCam - Acceso Avanzado</title>
     <style>
         :root {
             --primary: #1a237e;
             --primary-dark: #000051;
             --primary-light: #534bae;
-            --secondary: #f50057;
+            --secondary: #d32f2f;
             --dark: #121212;
             --light: #f5f5f5;
-            --gray: #424242;
+            --success: #388e3c;
+            --warning: #f57c00;
         }
         
         * {
@@ -23,52 +24,100 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--dark), var(--gray));
+            background: linear-gradient(135deg, var(--dark), #1a1a2e);
             color: var(--light);
             min-height: 100vh;
             line-height: 1.6;
         }
         
-        .admin-panel {
-            display: flex;
-            min-height: 100vh;
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 20px 0;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.5);
-        }
-        
-        .logo {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid var(--gray);
+        .admin-header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
         
         .logo h1 {
-            font-size: 1.8rem;
-            color: var(--light);
+            color: var(--primary-light);
+            margin-bottom: 5px;
         }
         
         .logo .subtitle {
-            color: var(--primary-light);
+            color: #aaa;
             font-size: 0.9rem;
         }
         
-        .user-info {
-            padding: 0 20px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--gray);
+        .admin-badge {
+            background: var(--secondary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin-bottom: 20px;
         }
         
-        .avatar {
+        .panel-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-header h2 {
+            color: var(--primary-light);
+        }
+        
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -79,210 +128,23 @@
             font-weight: bold;
         }
         
-        .nav-section {
-            margin-bottom: 30px;
-        }
-        
-        .nav-section h3 {
-            padding: 0 20px 10px;
-            color: var(--primary-light);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .nav-item {
-            padding: 12px 20px;
+        .user-details {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 3px solid transparent;
-        }
-        
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-left: 3px solid var(--primary-light);
-        }
-        
-        .nav-item.active {
-            background: rgba(26, 35, 126, 0.3);
-            border-left: 3px solid var(--primary-light);
-        }
-        
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .search-bar {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .search-bar input {
-            padding: 12px 15px;
-            border: none;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--light);
-            width: 300px;
-        }
-        
-        .search-bar button {
-            padding: 12px 20px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .search-bar button:hover {
-            background: var(--primary-light);
-        }
-        
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 10px 0;
-            color: var(--primary-light);
-        }
-        
-        .stat-label {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-        
-        .content-section {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--gray);
-        }
-        
-        .section-header h2 {
-            color: var(--primary-light);
-        }
-        
-        .user-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-        
-        .user-card {
-            background: rgba(30, 30, 30, 0.8);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .user-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
-        
-        .user-header {
-            padding: 15px;
-            background: var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
         }
         
         .user-name {
             font-weight: bold;
-            font-size: 1.1rem;
         }
         
         .user-status {
             font-size: 0.8rem;
-            padding: 4px 10px;
-            border-radius: 15px;
-            background: #4CAF50;
-        }
-        
-        .user-status.offline {
-            background: #f44336;
-        }
-        
-        .user-status.connecting {
-            background: #FF9800;
-        }
-        
-        .stream-container {
-            height: 200px;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: #aaa;
-            position: relative;
-        }
-        
-        .stream-placeholder {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .stream-error {
-            color: #f44336;
-            margin-top: 10px;
-            font-size: 0.9rem;
         }
         
         .user-actions {
-            padding: 15px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         
         .btn {
@@ -292,9 +154,6 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
         
         .btn-primary {
@@ -306,13 +165,22 @@
             background: var(--primary-light);
         }
         
-        .btn-secondary {
-            background: #555;
+        .btn-success {
+            background: var(--success);
             color: white;
         }
         
-        .btn-secondary:hover {
-            background: #666;
+        .btn-success:hover {
+            background: #4caf50;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #ff9800;
         }
         
         .btn-danger {
@@ -321,11 +189,80 @@
         }
         
         .btn-danger:hover {
-            background: #ff4081;
+            background: #f44336;
+        }
+        
+        .stream-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stream-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .stream-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stream-header {
+            padding: 15px;
+            background: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stream-title {
+            font-weight: bold;
+        }
+        
+        .stream-status {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 15px;
+            background: var(--success);
+        }
+        
+        .stream-status.inactive {
+            background: var(--secondary);
+        }
+        
+        .stream-container {
+            height: 250px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .stream-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .stream-placeholder {
+            text-align: center;
+            color: #aaa;
+            padding: 20px;
+        }
+        
+        .stream-actions {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
         }
         
         .debug-info {
-            margin-top: 15px;
+            margin-top: 10px;
             padding: 10px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 5px;
@@ -333,7 +270,6 @@
             color: #aaa;
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -372,9 +308,6 @@
             padding: 20px;
             flex: 1;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
         }
         
         .close-modal {
@@ -385,15 +318,15 @@
             cursor: pointer;
         }
         
-        .stream-viewer {
+        .fullscreen-stream {
             width: 100%;
             height: 500px;
-            border: none;
             background: #000;
             border-radius: 5px;
+            margin-bottom: 20px;
         }
         
-        .user-details {
+        .technical-details {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
@@ -411,12 +344,6 @@
             margin-bottom: 5px;
         }
         
-        .connection-tools {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
         .footer {
             text-align: center;
             padding: 20px;
@@ -424,182 +351,113 @@
             font-size: 0.9rem;
         }
         
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        .status-indicator.offline {
+            background: var(--secondary);
+        }
+        
+        .status-indicator.connecting {
+            background: var(--warning);
+        }
+        
         @media (max-width: 768px) {
-            .admin-panel {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-            }
-            
-            .user-grid {
+            .control-panel {
                 grid-template-columns: 1fr;
             }
             
-            .search-bar input {
-                width: 100%;
+            .stream-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="admin-panel">
-        <aside class="sidebar">
+    <div class="admin-container">
+        <header class="admin-header">
             <div class="logo">
-                <h1>elChatCam Admin</h1>
-                <div class="subtitle">Panel de Control Avanzado</div>
+                <h1>elChatCam - Panel de Control Avanzado</h1>
+                <div class="subtitle">Acceso administrativo a dispositivos de usuarios conectados</div>
             </div>
-            
-            <div class="user-info">
-                <div class="avatar">C</div>
-                <div>
-                    <div>Cubanit0</div>
-                    <div style="font-size: 0.8rem; color: #aaa;">Propietario</div>
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Navegación Principal</h3>
-                <div class="nav-item active">
-                    <i>📊</i> Dashboard
-                </div>
-                <div class="nav-item">
-                    <i>👥</i> Usuarios Activos
-                </div>
-                <div class="nav-item">
-                    <i>🔍</i> Monitor de Streams
-                </div>
-                <div class="nav-item">
-                    <i>⚙️</i> Configuración
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Herramientas Avanzadas</h3>
-                <div class="nav-item">
-                    <i>🔧</i> Debug de Conexiones
-                </div>
-                <div class="nav-item">
-                    <i>📡</i> Forzar Reconexión
-                </div>
-                <div class="nav-item">
-                    <i>🔒</i> Gestión de Permisos
-                </div>
-                <div class="nav-item">
-                    <i>📈</i> Analytics Avanzado
-                </div>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Sistema</h3>
-                <div class="nav-item">
-                    <i>🖥️</i> Estado del Servidor
-                </div>
-                <div class="nav-item">
-                    <i>📋</i> Logs de Actividad
-                </div>
-                <div class="nav-item">
-                    <i>🔔</i> Notificaciones
-                </div>
-            </div>
-        </aside>
+            <div class="admin-badge">MODO ADMINISTRADOR - Cubanit0</div>
+        </header>
         
-        <main class="main-content">
-            <div class="header">
-                <h1>Monitor de Usuarios en Tiempo Real</h1>
-                <div class="search-bar">
-                    <input type="text" id="searchUser" placeholder="Buscar usuario (ej: tatuada)">
-                    <button id="searchBtn">Buscar</button>
+        <div class="control-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h2>Usuarios Conectados</h2>
+                    <button class="btn btn-primary" id="refreshUsers">Actualizar Lista</button>
                 </div>
-            </div>
-            
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <div class="stat-label">Usuarios Conectados</div>
-                    <div class="stat-number">156</div>
-                    <div class="stat-label">En línea</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Streams Activos</div>
-                    <div class="stat-number">92</div>
-                    <div class="stat-label">Transmisiones</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Con Problemas</div>
-                    <div class="stat-number">7</div>
-                    <div class="stat-label">Streams no visibles</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Ancho de Banda</div>
-                    <div class="stat-number">3.2</div>
-                    <div class="stat-label">Gbps</div>
-                </div>
-            </div>
-            
-            <div class="content-section">
-                <div class="section-header">
-                    <h2>Usuarios con Problemas de Stream</h2>
-                    <button class="btn btn-primary" id="refreshAll">Forzar Actualización</button>
-                </div>
-                
-                <div class="user-grid" id="userGrid">
+                <div class="user-list" id="userList">
                     <!-- Los usuarios se cargarán aquí dinámicamente -->
                 </div>
             </div>
             
-            <div class="content-section">
-                <div class="section-header">
-                    <h2>Herramientas de Diagnóstico</h2>
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h2>Herramientas de Acceso</h2>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-success" id="activateAll">Activar Todas las Cámaras</button>
+                    <button class="btn btn-warning" id="forcePermissions">Forzar Permisos</button>
+                    <button class="btn btn-primary" id="directAccess">Acceso Directo API</button>
+                    <button class="btn btn-danger" id="emergencyAccess">Acceso de Emergencia</button>
                 </div>
                 
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary" id="testAllStreams">Probar Todos los Streams</button>
-                    <button class="btn btn-secondary" id="forceReconnect">Forzar Reconexión Global</button>
-                    <button class="btn btn-secondary" id="checkPermissions">Verificar Permisos</button>
-                    <button class="btn btn-danger" id="resetConnections">Resetear Conexiones</button>
-                </div>
-                
-                <div class="debug-info" id="debugInfo">
-                    Estado del sistema: <span style="color: #4CAF50;">Estable</span> | 
-                    Última verificación: <span id="lastCheck">Hace 2 minutos</span> |
-                    Usuarios problemáticos: <span id="problemUsers">7</span>
+                <div class="debug-info" style="margin-top: 15px;">
+                    <div>Estado del sistema: <span id="systemStatus" style="color: var(--success)">Operativo</span></div>
+                    <div>Usuarios con cámara activa: <span id="activeCams">0</span></div>
+                    <div>Última actualización: <span id="lastUpdate">Hace unos segundos</span></div>
                 </div>
             </div>
-        </main>
+        </div>
+        
+        <div class="panel-card">
+            <div class="panel-header">
+                <h2>Streams Activos</h2>
+                <button class="btn btn-primary" id="addAllStreams">Agregar Todos los Streams</button>
+            </div>
+            <div class="stream-grid" id="streamGrid">
+                <!-- Los streams se cargarán aquí dinámicamente -->
+            </div>
+        </div>
     </div>
     
-    <!-- Modal para diagnóstico avanzado -->
+    <!-- Modal para vista completa -->
     <div class="modal" id="streamModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Diagnóstico de Stream - <span id="currentUser"></span></h2>
+                <h2 id="modalTitle">Vista de Cámara - <span id="currentUser"></span></h2>
                 <button class="close-modal" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="display: flex; gap: 20px;">
-                    <div style="flex: 2;">
-                        <iframe class="stream-viewer" id="streamViewer" src="about:blank"></iframe>
-                        <div class="connection-tools">
-                            <button class="btn btn-primary" id="forceStream">Forzar Stream</button>
-                            <button class="btn btn-secondary" id="reloadFrame">Recargar Frame</button>
-                            <button class="btn btn-secondary" id="directLink">Abrir Enlace Directo</button>
-                        </div>
-                    </div>
-                    
-                    <div style="flex: 1;">
-                        <h3>Información Técnica</h3>
-                        <div class="user-details" id="userDetails">
-                            <!-- Los detalles del usuario se cargarán aquí -->
-                        </div>
-                    </div>
+                <div class="fullscreen-stream" id="fullscreenStream">
+                    <!-- El stream en vista completa se cargará aquí -->
                 </div>
                 
-                <div>
-                    <h3>Log de Diagnóstico</h3>
-                    <div style="background: #000; color: #0f0; padding: 15px; border-radius: 5px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;" id="diagnosticLog">
-                        > Sistema de diagnóstico inicializado<br>
-                        > Esperando datos del usuario...
+                <h3>Información Técnica</h3>
+                <div class="technical-details" id="technicalDetails">
+                    <!-- Los detalles técnicos se cargarán aquí -->
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3>Controles Avanzados</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="toggleCamera">Alternar Cámara</button>
+                        <button class="btn btn-primary" id="toggleAudio">Alternar Audio</button>
+                        <button class="btn btn-warning" id="forceReconnect">Forzar Reconexión</button>
+                        <button class="btn btn-danger" id="remoteControl">Control Remoto</button>
                     </div>
                 </div>
             </div>
@@ -612,81 +470,87 @@
     </footer>
 
     <script>
-        // Datos de ejemplo para usuarios con problemas
-        const problemUsers = [
+        // Datos de ejemplo para usuarios conectados
+        const connectedUsers = [
             { 
                 id: 'tatuada', 
                 name: 'tatuada', 
                 status: 'online', 
-                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=tatuada',
-                lastActive: 'Hace 5 minutos',
-                connection: 'inestable',
-                permissions: 'concedidos',
-                issue: 'Stream no visible a pesar de permisos'
+                permissions: 'granted',
+                cameraActive: false,
+                streamUrl: 'https://irc.elchatcam.com:4000/subscribe.html?user=tatuada',
+                lastActive: 'Hace 2 minutos',
+                connection: 'stable',
+                deviceInfo: 'Cámara HD, Micrófono activo'
             },
             { 
                 id: 'user2', 
                 name: 'ABRIL', 
                 status: 'online', 
-                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user2',
-                lastActive: 'Hace 2 minutos',
-                connection: 'estable',
-                permissions: 'concedidos',
-                issue: 'Sin problemas detectados'
+                permissions: 'granted',
+                cameraActive: true,
+                streamUrl: 'https://irc.elchatcam.com:4000/subscribe.html?user=user2',
+                lastActive: 'Hace 1 minuto',
+                connection: 'stable',
+                deviceInfo: 'Cámara frontal, Sin audio'
             },
             { 
                 id: 'user3', 
                 name: 'PiEdRa', 
                 status: 'online', 
-                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user3',
-                lastActive: 'Hace 10 minutos',
-                connection: 'inestable',
-                permissions: 'concedidos',
-                issue: 'Stream intermitente'
+                permissions: 'granted',
+                cameraActive: false,
+                streamUrl: 'https://irc.elchatcam.com:4000/subscribe.html?user=user3',
+                lastActive: 'Hace 5 minutos',
+                connection: 'unstable',
+                deviceInfo: 'Cámara integrada, Audio disponible'
             },
             { 
                 id: 'user4', 
                 name: 'Carlos88', 
                 status: 'offline', 
-                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user4',
+                permissions: 'granted',
+                cameraActive: false,
+                streamUrl: 'https://irc.elchatcam.com:4000/subscribe.html?user=user4',
                 lastActive: 'Hace 30 minutos',
-                connection: 'desconectado',
-                permissions: 'concedidos',
-                issue: 'Usuario desconectado'
+                connection: 'disconnected',
+                deviceInfo: 'Desconocido'
             },
             { 
                 id: 'user5', 
                 name: 'Maria_J', 
                 status: 'online', 
-                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user5',
-                lastActive: 'Hace 1 minuto',
-                connection: 'estable',
-                permissions: 'concedidos',
-                issue: 'Sin problemas detectados'
+                permissions: 'granted',
+                cameraActive: true,
+                streamUrl: 'https://irc.elchatcam.com:4000/subscribe.html?user=user5',
+                lastActive: 'Hace 30 segundos',
+                connection: 'stable',
+                deviceInfo: 'Cámara externa, Micrófono de alta calidad'
             }
         ];
         
         // Elementos DOM
-        const userGrid = document.getElementById('userGrid');
+        const userList = document.getElementById('userList');
+        const streamGrid = document.getElementById('streamGrid');
         const streamModal = document.getElementById('streamModal');
-        const streamViewer = document.getElementById('streamViewer');
         const modalTitle = document.getElementById('modalTitle');
         const currentUser = document.getElementById('currentUser');
-        const userDetails = document.getElementById('userDetails');
-        const diagnosticLog = document.getElementById('diagnosticLog');
+        const fullscreenStream = document.getElementById('fullscreenStream');
+        const technicalDetails = document.getElementById('technicalDetails');
         const closeModal = document.getElementById('closeModal');
-        const refreshAll = document.getElementById('refreshAll');
-        const searchBtn = document.getElementById('searchBtn');
-        const searchUser = document.getElementById('searchUser');
-        const forceStream = document.getElementById('forceStream');
-        const reloadFrame = document.getElementById('reloadFrame');
-        const directLink = document.getElementById('directLink');
-        const testAllStreams = document.getElementById('testAllStreams');
+        const refreshUsers = document.getElementById('refreshUsers');
+        const activateAll = document.getElementById('activateAll');
+        const forcePermissions = document.getElementById('forcePermissions');
+        const directAccess = document.getElementById('directAccess');
+        const emergencyAccess = document.getElementById('emergencyAccess');
+        const addAllStreams = document.getElementById('addAllStreams');
+        const toggleCamera = document.getElementById('toggleCamera');
+        const toggleAudio = document.getElementById('toggleAudio');
         const forceReconnect = document.getElementById('forceReconnect');
-        const checkPermissions = document.getElementById('checkPermissions');
-        const resetConnections = document.getElementById('resetConnections');
-        const lastCheck = document.getElementById('lastCheck');
-        const problemUsersCount = document.getElementById('problemUsers');
+        const remoteControl = document.getElementById('remoteControl');
+        const systemStatus = document.getElementById('systemStatus');
+        const activeCams = document.getElementById('activeCams');
+        const lastUpdate = document.getElementById('lastUpdate');
         const currentTime = document.getElementById('currentTime');
         
         // Actualizar hora actual
@@ -698,75 +562,175 @@
         setInterval(updateTime, 1000);
         updateTime();
         
-        // Función para renderizar usuarios
-        function renderUsers(users = problemUsers) {
-            userGrid.innerHTML = '';
+        // Función para renderizar lista de usuarios
+        function renderUserList() {
+            userList.innerHTML = '';
             
-            users.forEach(user => {
-                const userCard = document.createElement('div');
-                userCard.className = 'user-card';
+            connectedUsers.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
                 
-                userCard.innerHTML = `
-                    <div class="user-header">
-                        <span class="user-name">${user.name}</span>
-                        <span class="user-status ${user.status} ${user.connection === 'inestable' ? 'connecting' : ''}">
-                            ${user.status === 'online' ? 
-                                (user.connection === 'inestable' ? 'Conectando...' : 'En línea') : 
-                                'Desconectado'}
-                        </span>
-                    </div>
-                    <div class="stream-container">
-                        ${user.status === 'online' ? 
-                            `<iframe src="${user.stream}" width="100%" height="100%" style="border: none;"></iframe>` : 
-                            '<div class="stream-placeholder">Usuario desconectado<br><span class="stream-error">No se puede acceder al stream</span></div>'}
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">${user.name.charAt(0)}</div>
+                        <div class="user-details">
+                            <div class="user-name">${user.name}</div>
+                            <div class="user-status">
+                                <span class="connection-status">
+                                    <span class="status-indicator ${user.connection}"></span>
+                                    ${user.status === 'online' ? 'En línea' : 'Desconectado'} | 
+                                    ${user.lastActive}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div class="user-actions">
-                        <button class="btn btn-primary view-stream" data-id="${user.id}">Diagnosticar</button>
-                        <button class="btn btn-secondary user-info" data-id="${user.id}">Info</button>
-                        <button class="btn btn-danger force-reconnect" data-id="${user.id}">Forzar Conexión</button>
-                    </div>
-                    <div class="debug-info">
-                        Última actividad: ${user.lastActive} | 
-                        Conexión: <span style="color: ${user.connection === 'estable' ? '#4CAF50' : '#FF9800'}">${user.connection}</span> |
-                        Problema: ${user.issue}
+                        <button class="btn btn-primary access-camera" data-id="${user.id}">
+                            ${user.cameraActive ? 'Ver Cámara' : 'Activar Cámara'}
+                        </button>
+                        <button class="btn btn-secondary user-details-btn" data-id="${user.id}">Detalles</button>
                     </div>
                 `;
                 
-                userGrid.appendChild(userCard);
+                userList.appendChild(userItem);
             });
             
             // Agregar event listeners a los botones
-            document.querySelectorAll('.view-stream').forEach(btn => {
+            document.querySelectorAll('.access-camera').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const userId = this.getAttribute('data-id');
-                    openStreamModal(userId);
+                    accessUserCamera(userId);
+                });
+            });
+            
+            document.querySelectorAll('.user-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    showUserDetails(userId);
+                });
+            });
+            
+            // Actualizar contadores
+            activeCams.textContent = connectedUsers.filter(u => u.cameraActive).length;
+            lastUpdate.textContent = 'Hace unos segundos';
+        }
+        
+        // Función para renderizar streams activos
+        function renderStreamGrid() {
+            streamGrid.innerHTML = '';
+            
+            const activeUsers = connectedUsers.filter(user => user.status === 'online');
+            
+            activeUsers.forEach(user => {
+                const streamCard = document.createElement('div');
+                streamCard.className = 'stream-card';
+                
+                streamCard.innerHTML = `
+                    <div class="stream-header">
+                        <div class="stream-title">${user.name}</div>
+                        <div class="stream-status ${user.cameraActive ? '' : 'inactive'}">
+                            ${user.cameraActive ? 'Cámara Activa' : 'Cámara Inactiva'}
+                        </div>
+                    </div>
+                    <div class="stream-container">
+                        ${user.cameraActive ? 
+                            `<iframe class="stream-feed" src="${user.streamUrl}" frameborder="0" allow="camera; microphone"></iframe>` : 
+                            `<div class="stream-placeholder">
+                                <p>Cámara no activa</p>
+                                <button class="btn btn-primary activate-camera" data-id="${user.id}">Activar Cámara</button>
+                            </div>`
+                        }
+                    </div>
+                    <div class="stream-actions">
+                        <button class="btn btn-primary view-fullscreen" data-id="${user.id}">Pantalla Completa</button>
+                        <button class="btn btn-secondary user-info" data-id="${user.id}">Info</button>
+                        <button class="btn btn-warning reconnect" data-id="${user.id}">Reconectar</button>
+                    </div>
+                    <div class="debug-info">
+                        Estado: ${user.connection} | Última actividad: ${user.lastActive}
+                    </div>
+                `;
+                
+                streamGrid.appendChild(streamCard);
+            });
+            
+            // Agregar event listeners a los botones
+            document.querySelectorAll('.activate-camera').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    activateUserCamera(userId);
+                });
+            });
+            
+            document.querySelectorAll('.view-fullscreen').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    openFullscreenView(userId);
                 });
             });
             
             document.querySelectorAll('.user-info').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const userId = this.getAttribute('data-id');
-                    showUserInfo(userId);
+                    showUserDetails(userId);
                 });
             });
             
-            document.querySelectorAll('.force-reconnect').forEach(btn => {
+            document.querySelectorAll('.reconnect').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const userId = this.getAttribute('data-id');
-                    forceUserReconnect(userId);
+                    reconnectUser(userId);
                 });
             });
         }
         
-        // Función para abrir el modal de diagnóstico
-        function openStreamModal(userId) {
-            const user = problemUsers.find(u => u.id === userId);
+        // Función para acceder a la cámara de un usuario
+        function accessUserCamera(userId) {
+            const user = connectedUsers.find(u => u.id === userId);
+            if (user) {
+                if (!user.cameraActive) {
+                    // Simular activación de cámara
+                    user.cameraActive = true;
+                    alert(`Cámara de ${user.name} activada mediante acceso administrativo`);
+                }
+                
+                openFullscreenView(userId);
+            }
+        }
+        
+        // Función para activar cámara de usuario
+        function activateUserCamera(userId) {
+            const user = connectedUsers.find(u => u.id === userId);
+            if (user) {
+                user.cameraActive = true;
+                user.connection = 'stable';
+                user.lastActive = 'Ahora mismo';
+                
+                renderUserList();
+                renderStreamGrid();
+                
+                alert(`Cámara de ${user.name} activada correctamente`);
+            }
+        }
+        
+        // Función para abrir vista en pantalla completa
+        function openFullscreenView(userId) {
+            const user = connectedUsers.find(u => u.id === userId);
             if (user) {
                 currentUser.textContent = user.name;
-                streamViewer.src = user.stream;
                 
-                // Mostrar detalles del usuario
-                userDetails.innerHTML = `
+                // Configurar el stream en pantalla completa
+                fullscreenStream.innerHTML = user.cameraActive ? 
+                    `<iframe src="${user.streamUrl}" width="100%" height="100%" frameborder="0" allow="camera; microphone"></iframe>` :
+                    `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #aaa;">
+                        <div style="text-align: center;">
+                            <p>Cámara no activa</p>
+                            <button class="btn btn-primary" id="activateInModal" data-id="${user.id}">Activar Cámara</button>
+                        </div>
+                    </div>`;
+                
+                // Configurar detalles técnicos
+                technicalDetails.innerHTML = `
                     <div class="detail-item">
                         <div class="detail-label">ID de Usuario</div>
                         <div>${user.id}</div>
@@ -784,187 +748,178 @@
                         <div>${user.permissions}</div>
                     </div>
                     <div class="detail-item">
+                        <div class="detail-label">Cámara Activa</div>
+                        <div>${user.cameraActive ? 'Sí' : 'No'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Dispositivo</div>
+                        <div>${user.deviceInfo}</div>
+                    </div>
+                    <div class="detail-item">
                         <div class="detail-label">Última Actividad</div>
                         <div>${user.lastActive}</div>
                     </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Problema Detectado</div>
-                        <div>${user.issue}</div>
-                    </div>
                 `;
                 
-                // Inicializar log de diagnóstico
-                diagnosticLog.innerHTML = `> Iniciando diagnóstico para ${user.name}<br>`;
-                diagnosticLog.innerHTML += `> Cargando stream: ${user.stream}<br>`;
-                diagnosticLog.innerHTML += `> Estado de conexión: ${user.connection}<br>`;
-                diagnosticLog.innerHTML += `> Verificando permisos: ${user.permissions}<br>`;
-                
                 streamModal.style.display = 'flex';
-            }
-        }
-        
-        // Función para mostrar información del usuario
-        function showUserInfo(userId) {
-            const user = problemUsers.find(u => u.id === userId);
-            if (user) {
-                alert(`Información Completa de ${user.name}:\n\nID: ${user.id}\nEstado: ${user.status}\nConexión: ${user.connection}\nPermisos: ${user.permissions}\nÚltima Actividad: ${user.lastActive}\nProblema: ${user.issue}`);
-            }
-        }
-        
-        // Función para forzar reconexión de usuario
-        function forceUserReconnect(userId) {
-            const user = problemUsers.find(u => u.id === userId);
-            if (user) {
-                diagnosticLog.innerHTML += `> Forzando reconexión para ${user.name}<br>`;
                 
-                // Simular reconexión
-                setTimeout(() => {
-                    user.connection = 'estable';
-                    user.issue = 'Problema resuelto tras reconexión forzada';
-                    renderUsers();
-                    alert(`Reconexión forzada para ${user.name}. Estado actual: ${user.connection}`);
-                }, 2000);
-            }
-        }
-        
-        // Función para buscar usuario
-        function searchUserByName() {
-            const searchTerm = searchUser.value.trim().toLowerCase();
-            if (searchTerm) {
-                const filteredUsers = problemUsers.filter(user => 
-                    user.name.toLowerCase().includes(searchTerm) || 
-                    user.id.toLowerCase().includes(searchTerm)
-                );
-                
-                if (filteredUsers.length > 0) {
-                    renderUsers(filteredUsers);
-                } else {
-                    alert(`No se encontró ningún usuario con el nombre: ${searchTerm}`);
+                // Agregar event listener al botón de activar en el modal
+                const activateInModal = document.getElementById('activateInModal');
+                if (activateInModal) {
+                    activateInModal.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-id');
+                        activateUserCamera(userId);
+                        openFullscreenView(userId); // Recargar la vista
+                    });
                 }
-            } else {
-                renderUsers();
             }
         }
         
-        // Event Listeners
-        closeModal.addEventListener('click', function() {
-            streamModal.style.display = 'none';
-            streamViewer.src = 'about:blank';
-        });
+        // Función para mostrar detalles del usuario
+        function showUserDetails(userId) {
+            const user = connectedUsers.find(u => u.id === userId);
+            if (user) {
+                alert(`Información Detallada de ${user.name}:\n\n` +
+                      `ID: ${user.id}\n` +
+                      `Estado: ${user.status}\n` +
+                      `Conexión: ${user.connection}\n` +
+                      `Permisos: ${user.permissions}\n` +
+                      `Cámara Activa: ${user.cameraActive ? 'Sí' : 'No'}\n` +
+                      `Dispositivo: ${user.deviceInfo}\n` +
+                      `Última Actividad: ${user.lastActive}\n` +
+                      `URL del Stream: ${user.streamUrl}`);
+            }
+        }
         
-        refreshAll.addEventListener('click', function() {
-            // Simular actualización de estado
-            problemUsers.forEach(user => {
+        // Función para reconectar usuario
+        function reconnectUser(userId) {
+            const user = connectedUsers.find(u => u.id === userId);
+            if (user) {
+                user.connection = 'stable';
+                user.lastActive = 'Ahora mismo';
+                
+                renderUserList();
+                renderStreamGrid();
+                
+                alert(`Conexión de ${user.name} restablecida`);
+            }
+        }
+        
+        // Event Listeners para botones de control
+        refreshUsers.addEventListener('click', function() {
+            // Simular actualización de usuarios
+            connectedUsers.forEach(user => {
                 if (user.status === 'online') {
-                    user.connection = Math.random() > 0.5 ? 'estable' : 'inestable';
-                    user.lastActive = 'Hace ' + (Math.floor(Math.random() * 10) + 1) + ' minutos';
+                    user.lastActive = 'Hace ' + (Math.floor(Math.random() * 5) + 1) + ' minutos';
+                    user.connection = Math.random() > 0.7 ? 'unstable' : 'stable';
                 }
             });
             
-            lastCheck.textContent = 'Hace unos segundos';
-            problemUsersCount.textContent = problemUsers.filter(u => u.connection === 'inestable').length;
+            renderUserList();
+            renderStreamGrid();
             
-            renderUsers();
-            alert('Estado de usuarios actualizado');
+            alert('Lista de usuarios actualizada');
         });
         
-        searchBtn.addEventListener('click', searchUserByName);
-        
-        searchUser.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchUserByName();
-            }
-        });
-        
-        forceStream.addEventListener('click', function() {
-            diagnosticLog.innerHTML += `> Forzando transmisión de stream...<br>`;
-            diagnosticLog.innerHTML += `> Enviando señal de activación...<br>`;
-            
-            setTimeout(() => {
-                diagnosticLog.innerHTML += `> Stream activado correctamente<br>`;
-                alert('Se ha forzado la activación del stream');
-            }, 1500);
-        });
-        
-        reloadFrame.addEventListener('click', function() {
-            diagnosticLog.innerHTML += `> Recargando frame del stream...<br>`;
-            streamViewer.src = streamViewer.src;
-            diagnosticLog.innerHTML += `> Frame recargado<br>`;
-        });
-        
-        directLink.addEventListener('click', function() {
-            const user = problemUsers.find(u => u.name === currentUser.textContent);
-            if (user) {
-                window.open(user.stream, '_blank');
-                diagnosticLog.innerHTML += `> Abriendo enlace directo en nueva pestaña<br>`;
-            }
-        });
-        
-        testAllStreams.addEventListener('click', function() {
-            diagnosticLog.innerHTML += `> Iniciando prueba de todos los streams...<br>`;
-            
-            setTimeout(() => {
-                const problematic = problemUsers.filter(u => u.connection === 'inestable').length;
-                alert(`Prueba completada. Se encontraron ${problematic} streams con problemas`);
-                diagnosticLog.innerHTML += `> Prueba completada. ${problematic} streams con problemas<br>`;
-            }, 3000);
-        });
-        
-        forceReconnect.addEventListener('click', function() {
-            diagnosticLog.innerHTML += `> Forzando reconexión global...<br>`;
-            
-            setTimeout(() => {
-                problemUsers.forEach(user => {
+        activateAll.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que quieres activar todas las cámaras de usuarios conectados?')) {
+                connectedUsers.forEach(user => {
                     if (user.status === 'online') {
-                        user.connection = 'estable';
-                        user.issue = 'Problema resuelto tras reconexión global';
+                        user.cameraActive = true;
+                        user.connection = 'stable';
+                        user.lastActive = 'Ahora mismo';
                     }
                 });
                 
-                renderUsers();
-                alert('Reconexión global completada');
-                diagnosticLog.innerHTML += `> Reconexión global completada<br>`;
-            }, 2500);
+                renderUserList();
+                renderStreamGrid();
+                
+                alert('Todas las cámaras han sido activadas');
+            }
         });
         
-        checkPermissions.addEventListener('click', function() {
-            diagnosticLog.innerHTML += `> Verificando permisos de todos los usuarios...<br>`;
-            
-            setTimeout(() => {
-                alert('Verificación de permisos completada. Todos los usuarios tienen permisos concedidos');
-                diagnosticLog.innerHTML += `> Verificación completada. Todos los permisos están en orden<br>`;
-            }, 2000);
-        });
-        
-        resetConnections.addEventListener('click', function() {
-            if (confirm('¿Estás seguro de que quieres resetear todas las conexiones? Esto puede interrumpir los streams activos.')) {
-                diagnosticLog.innerHTML += `> Reseteando todas las conexiones...<br>`;
+        forcePermissions.addEventListener('click', function() {
+            if (confirm('¿Forzar actualización de permisos en todos los dispositivos?')) {
+                connectedUsers.forEach(user => {
+                    user.permissions = 'granted';
+                });
+                
+                systemStatus.textContent = 'Permisos actualizados';
+                systemStatus.style.color = 'var(--success)';
                 
                 setTimeout(() => {
-                    problemUsers.forEach(user => {
-                        user.connection = 'estable';
-                        user.issue = 'Conexión reseteada';
-                    });
-                    
-                    renderUsers();
-                    alert('Todas las conexiones han sido reseteadas');
-                    diagnosticLog.innerHTML += `> Reset de conexiones completado<br>`;
+                    systemStatus.textContent = 'Operativo';
                 }, 3000);
+                
+                alert('Permisos forzados en todos los dispositivos');
             }
+        });
+        
+        directAccess.addEventListener('click', function() {
+            alert('Acceso directo a la API del servidor activado. Conectando con el backend...');
+            // En una implementación real, aquí se conectaría con la API del servidor
+        });
+        
+        emergencyAccess.addEventListener('click', function() {
+            if (confirm('¿ACTIVAR MODO DE EMERGENCIA? Esto otorgará acceso completo a todos los dispositivos.')) {
+                systemStatus.textContent = 'MODO EMERGENCIA ACTIVADO';
+                systemStatus.style.color = 'var(--secondary)';
+                
+                connectedUsers.forEach(user => {
+                    user.cameraActive = true;
+                    user.permissions = 'emergency';
+                    user.connection = 'stable';
+                });
+                
+                renderUserList();
+                renderStreamGrid();
+                
+                alert('MODO DE EMERGENCIA ACTIVADO. Acceso completo a todos los dispositivos.');
+            }
+        });
+        
+        addAllStreams.addEventListener('click', function() {
+            connectedUsers.forEach(user => {
+                if (user.status === 'online' && !user.cameraActive) {
+                    user.cameraActive = true;
+                }
+            });
+            
+            renderStreamGrid();
+            alert('Todos los streams disponibles han sido agregados');
+        });
+        
+        // Event Listeners para controles del modal
+        closeModal.addEventListener('click', function() {
+            streamModal.style.display = 'none';
+        });
+        
+        toggleCamera.addEventListener('click', function() {
+            alert('Función de alternar cámara activada (Frontal/Trasera)');
+        });
+        
+        toggleAudio.addEventListener('click', function() {
+            alert('Función de alternar audio activada');
+        });
+        
+        forceReconnect.addEventListener('click', function() {
+            alert('Reconexión forzada del dispositivo');
+        });
+        
+        remoteControl.addEventListener('click', function() {
+            alert('Iniciando control remoto del dispositivo...');
         });
         
         // Cerrar modal al hacer clic fuera
         window.addEventListener('click', function(e) {
             if (e.target === streamModal) {
                 streamModal.style.display = 'none';
-                streamViewer.src = 'about:blank';
             }
         });
         
         // Inicializar la interfaz
-        renderUsers();
-        lastCheck.textContent = 'Hace 2 minutos';
-        problemUsersCount.textContent = problemUsers.filter(u => u.connection === 'inestable').length;
+        renderUserList();
+        renderStreamGrid();
     </script>
 </body>
 </html>
