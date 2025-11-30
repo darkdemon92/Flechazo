@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - elChatCam</title>
+    <title>Admin Avanzado - elChatCam</title>
     <style>
+        :root {
+            --primary: #1a237e;
+            --primary-dark: #000051;
+            --primary-light: #534bae;
+            --secondary: #f50057;
+            --dark: #121212;
+            --light: #f5f5f5;
+            --gray: #424242;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,83 +23,139 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: #333;
+            background: linear-gradient(135deg, var(--dark), var(--gray));
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .admin-panel {
+            display: flex;
             min-height: 100vh;
         }
         
-        .admin-header {
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
             background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.5);
         }
         
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--gray);
+            margin-bottom: 20px;
         }
         
         .logo h1 {
             font-size: 1.8rem;
+            color: var(--light);
         }
         
-        .admin-badge {
-            background: #4CAF50;
-            padding: 5px 10px;
-            border-radius: 20px;
+        .logo .subtitle {
+            color: var(--primary-light);
             font-size: 0.9rem;
+        }
+        
+        .user-info {
+            padding: 0 20px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
         }
         
-        .container {
-            display: flex;
-            min-height: calc(100vh - 70px);
-        }
-        
-        .sidebar {
-            width: 250px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        }
-        
         .nav-section {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
         
         .nav-section h3 {
-            color: #1e3c72;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            padding: 0 20px 10px;
+            color: var(--primary-light);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .nav-item {
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            border-left: 3px solid transparent;
         }
         
         .nav-item:hover {
-            background: #e3f2fd;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--primary-light);
         }
         
         .nav-item.active {
-            background: #1e3c72;
-            color: white;
+            background: rgba(26, 35, 126, 0.3);
+            border-left: 3px solid var(--primary-light);
         }
         
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content */
         .main-content {
             flex: 1;
-            padding: 25px;
-            background: #f5f7fa;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-bar input {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            width: 300px;
+        }
+        
+        .search-bar button {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .search-bar button:hover {
+            background: var(--primary-light);
         }
         
         .stats-cards {
@@ -100,31 +166,36 @@
         }
         
         .stat-card {
-            background: white;
+            background: rgba(0, 0, 0, 0.5);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
         
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #1e3c72;
             margin: 10px 0;
+            color: var(--primary-light);
         }
         
         .stat-label {
-            color: #666;
+            color: #aaa;
             font-size: 0.9rem;
         }
         
         .content-section {
-            background: white;
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 10px;
             padding: 25px;
             margin-bottom: 25px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
         
         .section-header {
@@ -133,52 +204,58 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--gray);
         }
         
         .section-header h2 {
-            color: #1e3c72;
+            color: var(--primary-light);
         }
         
         .user-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
         
         .user-card {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 10px;
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         
         .user-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
         }
         
         .user-header {
-            background: #1e3c72;
-            color: white;
             padding: 15px;
+            background: var(--primary);
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         
         .user-name {
             font-weight: bold;
+            font-size: 1.1rem;
         }
         
         .user-status {
             font-size: 0.8rem;
-            padding: 3px 8px;
-            border-radius: 10px;
+            padding: 4px 10px;
+            border-radius: 15px;
             background: #4CAF50;
         }
         
         .user-status.offline {
             background: #f44336;
+        }
+        
+        .user-status.connecting {
+            background: #FF9800;
         }
         
         .stream-container {
@@ -188,12 +265,24 @@
             align-items: center;
             justify-content: center;
             color: #aaa;
+            position: relative;
+        }
+        
+        .stream-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stream-error {
+            color: #f44336;
+            margin-top: 10px;
+            font-size: 0.9rem;
         }
         
         .user-actions {
-            padding: 12px;
+            padding: 15px;
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
         
         .btn {
@@ -202,36 +291,49 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .btn-primary {
-            background: #1e3c72;
+            background: var(--primary);
             color: white;
         }
         
         .btn-primary:hover {
-            background: #2a5298;
+            background: var(--primary-light);
         }
         
         .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
+            background: #555;
+            color: white;
         }
         
         .btn-secondary:hover {
-            background: #d0d0d0;
+            background: #666;
         }
         
         .btn-danger {
-            background: #f44336;
+            background: var(--secondary);
             color: white;
         }
         
         .btn-danger:hover {
-            background: #d32f2f;
+            background: #ff4081;
         }
         
+        .debug-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -239,26 +341,27 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
         
         .modal-content {
-            background: white;
+            background: rgba(30, 30, 30, 0.95);
             border-radius: 10px;
-            width: 90%;
-            max-width: 800px;
+            width: 95%;
+            max-width: 1000px;
             max-height: 90vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
         }
         
         .modal-header {
             padding: 20px;
-            background: #1e3c72;
+            background: var(--primary);
             color: white;
             display: flex;
             justify-content: space-between;
@@ -269,6 +372,9 @@
             padding: 20px;
             flex: 1;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         
         .close-modal {
@@ -281,37 +387,45 @@
         
         .stream-viewer {
             width: 100%;
-            height: 450px;
+            height: 500px;
             border: none;
             background: #000;
+            border-radius: 5px;
         }
         
         .user-details {
-            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
         }
         
-        .detail-row {
-            display: flex;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+        .detail-item {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
         }
         
         .detail-label {
             font-weight: bold;
-            width: 150px;
+            color: var(--primary-light);
+            margin-bottom: 5px;
+        }
+        
+        .connection-tools {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
         
         .footer {
             text-align: center;
             padding: 20px;
-            color: white;
-            background: rgba(0, 0, 0, 0.8);
-            margin-top: 30px;
+            color: #aaa;
+            font-size: 0.9rem;
         }
         
         @media (max-width: 768px) {
-            .container {
+            .admin-panel {
                 flex-direction: column;
             }
             
@@ -322,76 +436,111 @@
             .user-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .search-bar input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <header class="admin-header">
-        <div class="logo">
-            <h1>elChatCam Admin</h1>
-            <span class="admin-badge">PROPIETARIO</span>
-        </div>
-        <div>
-            <span>Usuario: Cubanit0</span>
-        </div>
-    </header>
-    
-    <div class="container">
+    <div class="admin-panel">
         <aside class="sidebar">
-            <div class="nav-section">
-                <h3>Navegación</h3>
-                <div class="nav-item active">Dashboard</div>
-                <div class="nav-item">Usuarios Activos</div>
-                <div class="nav-item">Estadísticas</div>
-                <div class="nav-item">Moderación</div>
-                <div class="nav-item">Configuración</div>
+            <div class="logo">
+                <h1>elChatCam Admin</h1>
+                <div class="subtitle">Panel de Control Avanzado</div>
+            </div>
+            
+            <div class="user-info">
+                <div class="avatar">C</div>
+                <div>
+                    <div>Cubanit0</div>
+                    <div style="font-size: 0.8rem; color: #aaa;">Propietario</div>
+                </div>
             </div>
             
             <div class="nav-section">
-                <h3>Herramientas</h3>
-                <div class="nav-item">Monitor de Streams</div>
-                <div class="nav-item">Registros de Actividad</div>
-                <div class="nav-item">Reportes</div>
-                <div class="nav-item">Backup</div>
+                <h3>Navegación Principal</h3>
+                <div class="nav-item active">
+                    <i>📊</i> Dashboard
+                </div>
+                <div class="nav-item">
+                    <i>👥</i> Usuarios Activos
+                </div>
+                <div class="nav-item">
+                    <i>🔍</i> Monitor de Streams
+                </div>
+                <div class="nav-item">
+                    <i>⚙️</i> Configuración
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Herramientas Avanzadas</h3>
+                <div class="nav-item">
+                    <i>🔧</i> Debug de Conexiones
+                </div>
+                <div class="nav-item">
+                    <i>📡</i> Forzar Reconexión
+                </div>
+                <div class="nav-item">
+                    <i>🔒</i> Gestión de Permisos
+                </div>
+                <div class="nav-item">
+                    <i>📈</i> Analytics Avanzado
+                </div>
             </div>
             
             <div class="nav-section">
                 <h3>Sistema</h3>
-                <div class="nav-item">Estado del Servidor</div>
-                <div class="nav-item">Base de Datos</div>
-                <div class="nav-item">Logs</div>
-                <div class="nav-item">Actualizaciones</div>
+                <div class="nav-item">
+                    <i>🖥️</i> Estado del Servidor
+                </div>
+                <div class="nav-item">
+                    <i>📋</i> Logs de Actividad
+                </div>
+                <div class="nav-item">
+                    <i>🔔</i> Notificaciones
+                </div>
             </div>
         </aside>
         
         <main class="main-content">
+            <div class="header">
+                <h1>Monitor de Usuarios en Tiempo Real</h1>
+                <div class="search-bar">
+                    <input type="text" id="searchUser" placeholder="Buscar usuario (ej: tatuada)">
+                    <button id="searchBtn">Buscar</button>
+                </div>
+            </div>
+            
             <div class="stats-cards">
                 <div class="stat-card">
-                    <div class="stat-label">Usuarios Activos</div>
-                    <div class="stat-number">142</div>
-                    <div class="stat-label">En línea ahora</div>
+                    <div class="stat-label">Usuarios Conectados</div>
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">En línea</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Streams Activos</div>
-                    <div class="stat-number">87</div>
+                    <div class="stat-number">92</div>
                     <div class="stat-label">Transmisiones</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Nuevos Hoy</div>
-                    <div class="stat-number">23</div>
-                    <div class="stat-label">Usuarios</div>
+                    <div class="stat-label">Con Problemas</div>
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Streams no visibles</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Reportes</div>
-                    <div class="stat-number">5</div>
-                    <div class="stat-label">Por revisar</div>
+                    <div class="stat-label">Ancho de Banda</div>
+                    <div class="stat-number">3.2</div>
+                    <div class="stat-label">Gbps</div>
                 </div>
             </div>
             
             <div class="content-section">
                 <div class="section-header">
-                    <h2>Usuarios en Línea</h2>
-                    <button class="btn btn-primary" id="refreshUsers">Actualizar Lista</button>
+                    <h2>Usuarios con Problemas de Stream</h2>
+                    <button class="btn btn-primary" id="refreshAll">Forzar Actualización</button>
                 </div>
                 
                 <div class="user-grid" id="userGrid">
@@ -401,72 +550,156 @@
             
             <div class="content-section">
                 <div class="section-header">
-                    <h2>Agregar Usuario de Prueba</h2>
+                    <h2>Herramientas de Diagnóstico</h2>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <input type="text" id="newUsername" placeholder="Nombre de usuario" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                    <button class="btn btn-primary" id="addUserBtn">Agregar Usuario</button>
+                
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" id="testAllStreams">Probar Todos los Streams</button>
+                    <button class="btn btn-secondary" id="forceReconnect">Forzar Reconexión Global</button>
+                    <button class="btn btn-secondary" id="checkPermissions">Verificar Permisos</button>
+                    <button class="btn btn-danger" id="resetConnections">Resetear Conexiones</button>
+                </div>
+                
+                <div class="debug-info" id="debugInfo">
+                    Estado del sistema: <span style="color: #4CAF50;">Estable</span> | 
+                    Última verificación: <span id="lastCheck">Hace 2 minutos</span> |
+                    Usuarios problemáticos: <span id="problemUsers">7</span>
                 </div>
             </div>
         </main>
     </div>
     
-    <!-- Modal para ver stream -->
+    <!-- Modal para diagnóstico avanzado -->
     <div class="modal" id="streamModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Vista de Stream</h2>
+                <h2 id="modalTitle">Diagnóstico de Stream - <span id="currentUser"></span></h2>
                 <button class="close-modal" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
-                <iframe class="stream-viewer" id="streamViewer" src="about:blank"></iframe>
-                <div class="user-details" id="userDetails">
-                    <!-- Los detalles del usuario se cargarán aquí -->
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 2;">
+                        <iframe class="stream-viewer" id="streamViewer" src="about:blank"></iframe>
+                        <div class="connection-tools">
+                            <button class="btn btn-primary" id="forceStream">Forzar Stream</button>
+                            <button class="btn btn-secondary" id="reloadFrame">Recargar Frame</button>
+                            <button class="btn btn-secondary" id="directLink">Abrir Enlace Directo</button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1;">
+                        <h3>Información Técnica</h3>
+                        <div class="user-details" id="userDetails">
+                            <!-- Los detalles del usuario se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Log de Diagnóstico</h3>
+                    <div style="background: #000; color: #0f0; padding: 15px; border-radius: 5px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;" id="diagnosticLog">
+                        > Sistema de diagnóstico inicializado<br>
+                        > Esperando datos del usuario...
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <footer class="footer">
-        <p>Panel de Administración de elChatCam - Propiedad de Cubanit0</p>
-        <p>Última actualización: <span id="currentDate"></span></p>
+        <p>Panel de Administración Avanzado - elChatCam | Propiedad de Cubanit0</p>
+        <p id="currentTime"></p>
     </footer>
 
     <script>
-        // Datos de ejemplo para usuarios
-        const sampleUsers = [
-            { id: 'user1', name: 'PiEdRa', status: 'online', stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user1' },
-            { id: 'user2', name: 'ABRIL', status: 'online', stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user2' },
-            { id: 'user3', name: '^^Andaluza^^', status: 'online', stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user3' },
-            { id: 'user4', name: 'Carlos88', status: 'offline', stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user4' },
-            { id: 'user5', name: 'Maria_J', status: 'online', stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user5' },
-            { id: 'user6', name: 'StreamMaster', status: 'online', stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user6' }
+        // Datos de ejemplo para usuarios con problemas
+        const problemUsers = [
+            { 
+                id: 'tatuada', 
+                name: 'tatuada', 
+                status: 'online', 
+                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=tatuada',
+                lastActive: 'Hace 5 minutos',
+                connection: 'inestable',
+                permissions: 'concedidos',
+                issue: 'Stream no visible a pesar de permisos'
+            },
+            { 
+                id: 'user2', 
+                name: 'ABRIL', 
+                status: 'online', 
+                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user2',
+                lastActive: 'Hace 2 minutos',
+                connection: 'estable',
+                permissions: 'concedidos',
+                issue: 'Sin problemas detectados'
+            },
+            { 
+                id: 'user3', 
+                name: 'PiEdRa', 
+                status: 'online', 
+                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user3',
+                lastActive: 'Hace 10 minutos',
+                connection: 'inestable',
+                permissions: 'concedidos',
+                issue: 'Stream intermitente'
+            },
+            { 
+                id: 'user4', 
+                name: 'Carlos88', 
+                status: 'offline', 
+                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user4',
+                lastActive: 'Hace 30 minutos',
+                connection: 'desconectado',
+                permissions: 'concedidos',
+                issue: 'Usuario desconectado'
+            },
+            { 
+                id: 'user5', 
+                name: 'Maria_J', 
+                status: 'online', 
+                stream: 'https://irc.elchatcam.com:4000/subscribe.html?user=user5',
+                lastActive: 'Hace 1 minuto',
+                connection: 'estable',
+                permissions: 'concedidos',
+                issue: 'Sin problemas detectados'
+            }
         ];
-        
-        // Cargar usuarios guardados del localStorage
-        let users = JSON.parse(localStorage.getItem('elchatcamUsers')) || sampleUsers;
         
         // Elementos DOM
         const userGrid = document.getElementById('userGrid');
         const streamModal = document.getElementById('streamModal');
         const streamViewer = document.getElementById('streamViewer');
         const modalTitle = document.getElementById('modalTitle');
+        const currentUser = document.getElementById('currentUser');
         const userDetails = document.getElementById('userDetails');
+        const diagnosticLog = document.getElementById('diagnosticLog');
         const closeModal = document.getElementById('closeModal');
-        const refreshUsers = document.getElementById('refreshUsers');
-        const addUserBtn = document.getElementById('addUserBtn');
-        const newUsername = document.getElementById('newUsername');
-        const currentDate = document.getElementById('currentDate');
+        const refreshAll = document.getElementById('refreshAll');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchUser = document.getElementById('searchUser');
+        const forceStream = document.getElementById('forceStream');
+        const reloadFrame = document.getElementById('reloadFrame');
+        const directLink = document.getElementById('directLink');
+        const testAllStreams = document.getElementById('testAllStreams');
+        const forceReconnect = document.getElementById('forceReconnect');
+        const checkPermissions = document.getElementById('checkPermissions');
+        const resetConnections = document.getElementById('resetConnections');
+        const lastCheck = document.getElementById('lastCheck');
+        const problemUsersCount = document.getElementById('problemUsers');
+        const currentTime = document.getElementById('currentTime');
         
-        // Establecer fecha actual
-        currentDate.textContent = new Date().toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        // Actualizar hora actual
+        function updateTime() {
+            const now = new Date();
+            currentTime.textContent = now.toLocaleString('es-ES');
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
         
         // Función para renderizar usuarios
-        function renderUsers() {
+        function renderUsers(users = problemUsers) {
             userGrid.innerHTML = '';
             
             users.forEach(user => {
@@ -476,17 +709,26 @@
                 userCard.innerHTML = `
                     <div class="user-header">
                         <span class="user-name">${user.name}</span>
-                        <span class="user-status ${user.status}">${user.status === 'online' ? 'En línea' : 'Desconectado'}</span>
+                        <span class="user-status ${user.status} ${user.connection === 'inestable' ? 'connecting' : ''}">
+                            ${user.status === 'online' ? 
+                                (user.connection === 'inestable' ? 'Conectando...' : 'En línea') : 
+                                'Desconectado'}
+                        </span>
                     </div>
                     <div class="stream-container">
                         ${user.status === 'online' ? 
                             `<iframe src="${user.stream}" width="100%" height="100%" style="border: none;"></iframe>` : 
-                            'Stream no disponible'}
+                            '<div class="stream-placeholder">Usuario desconectado<br><span class="stream-error">No se puede acceder al stream</span></div>'}
                     </div>
                     <div class="user-actions">
-                        <button class="btn btn-primary view-stream" data-id="${user.id}">Ver Stream</button>
+                        <button class="btn btn-primary view-stream" data-id="${user.id}">Diagnosticar</button>
                         <button class="btn btn-secondary user-info" data-id="${user.id}">Info</button>
-                        <button class="btn btn-danger remove-user" data-id="${user.id}">Eliminar</button>
+                        <button class="btn btn-danger force-reconnect" data-id="${user.id}">Forzar Conexión</button>
+                    </div>
+                    <div class="debug-info">
+                        Última actividad: ${user.lastActive} | 
+                        Conexión: <span style="color: ${user.connection === 'estable' ? '#4CAF50' : '#FF9800'}">${user.connection}</span> |
+                        Problema: ${user.issue}
                     </div>
                 `;
                 
@@ -508,41 +750,54 @@
                 });
             });
             
-            document.querySelectorAll('.remove-user').forEach(btn => {
+            document.querySelectorAll('.force-reconnect').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const userId = this.getAttribute('data-id');
-                    removeUser(userId);
+                    forceUserReconnect(userId);
                 });
             });
         }
         
-        // Función para abrir el modal de stream
+        // Función para abrir el modal de diagnóstico
         function openStreamModal(userId) {
-            const user = users.find(u => u.id === userId);
+            const user = problemUsers.find(u => u.id === userId);
             if (user) {
-                modalTitle.textContent = `Stream de ${user.name}`;
+                currentUser.textContent = user.name;
                 streamViewer.src = user.stream;
                 
                 // Mostrar detalles del usuario
                 userDetails.innerHTML = `
-                    <h3>Detalles del Usuario</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">ID:</span>
-                        <span>${user.id}</span>
+                    <div class="detail-item">
+                        <div class="detail-label">ID de Usuario</div>
+                        <div>${user.id}</div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Nombre:</span>
-                        <span>${user.name}</span>
+                    <div class="detail-item">
+                        <div class="detail-label">Estado</div>
+                        <div>${user.status}</div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Estado:</span>
-                        <span>${user.status === 'online' ? 'En línea' : 'Desconectado'}</span>
+                    <div class="detail-item">
+                        <div class="detail-label">Conexión</div>
+                        <div>${user.connection}</div>
                     </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Stream URL:</span>
-                        <span>${user.stream}</span>
+                    <div class="detail-item">
+                        <div class="detail-label">Permisos</div>
+                        <div>${user.permissions}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Última Actividad</div>
+                        <div>${user.lastActive}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Problema Detectado</div>
+                        <div>${user.issue}</div>
                     </div>
                 `;
+                
+                // Inicializar log de diagnóstico
+                diagnosticLog.innerHTML = `> Iniciando diagnóstico para ${user.name}<br>`;
+                diagnosticLog.innerHTML += `> Cargando stream: ${user.stream}<br>`;
+                diagnosticLog.innerHTML += `> Estado de conexión: ${user.connection}<br>`;
+                diagnosticLog.innerHTML += `> Verificando permisos: ${user.permissions}<br>`;
                 
                 streamModal.style.display = 'flex';
             }
@@ -550,38 +805,44 @@
         
         // Función para mostrar información del usuario
         function showUserInfo(userId) {
-            const user = users.find(u => u.id === userId);
+            const user = problemUsers.find(u => u.id === userId);
             if (user) {
-                alert(`Información de ${user.name}:\n\nID: ${user.id}\nEstado: ${user.status}\nStream: ${user.stream}`);
+                alert(`Información Completa de ${user.name}:\n\nID: ${user.id}\nEstado: ${user.status}\nConexión: ${user.connection}\nPermisos: ${user.permissions}\nÚltima Actividad: ${user.lastActive}\nProblema: ${user.issue}`);
             }
         }
         
-        // Función para eliminar usuario
-        function removeUser(userId) {
-            if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-                users = users.filter(user => user.id !== userId);
-                localStorage.setItem('elchatcamUsers', JSON.stringify(users));
-                renderUsers();
-            }
-        }
-        
-        // Función para agregar usuario
-        function addUser() {
-            const username = newUsername.value.trim();
-            if (username) {
-                const newUser = {
-                    id: 'user' + Date.now(),
-                    name: username,
-                    status: 'online',
-                    stream: `https://irc.elchatcam.com:4000/subscribe.html?user=${username}`
-                };
+        // Función para forzar reconexión de usuario
+        function forceUserReconnect(userId) {
+            const user = problemUsers.find(u => u.id === userId);
+            if (user) {
+                diagnosticLog.innerHTML += `> Forzando reconexión para ${user.name}<br>`;
                 
-                users.push(newUser);
-                localStorage.setItem('elchatcamUsers', JSON.stringify(users));
-                renderUsers();
-                newUsername.value = '';
+                // Simular reconexión
+                setTimeout(() => {
+                    user.connection = 'estable';
+                    user.issue = 'Problema resuelto tras reconexión forzada';
+                    renderUsers();
+                    alert(`Reconexión forzada para ${user.name}. Estado actual: ${user.connection}`);
+                }, 2000);
+            }
+        }
+        
+        // Función para buscar usuario
+        function searchUserByName() {
+            const searchTerm = searchUser.value.trim().toLowerCase();
+            if (searchTerm) {
+                const filteredUsers = problemUsers.filter(user => 
+                    user.name.toLowerCase().includes(searchTerm) || 
+                    user.id.toLowerCase().includes(searchTerm)
+                );
+                
+                if (filteredUsers.length > 0) {
+                    renderUsers(filteredUsers);
+                } else {
+                    alert(`No se encontró ningún usuario con el nombre: ${searchTerm}`);
+                }
             } else {
-                alert('Por favor, ingresa un nombre de usuario');
+                renderUsers();
             }
         }
         
@@ -591,20 +852,104 @@
             streamViewer.src = 'about:blank';
         });
         
-        refreshUsers.addEventListener('click', function() {
+        refreshAll.addEventListener('click', function() {
             // Simular actualización de estado
-            users.forEach(user => {
-                user.status = Math.random() > 0.3 ? 'online' : 'offline';
+            problemUsers.forEach(user => {
+                if (user.status === 'online') {
+                    user.connection = Math.random() > 0.5 ? 'estable' : 'inestable';
+                    user.lastActive = 'Hace ' + (Math.floor(Math.random() * 10) + 1) + ' minutos';
+                }
             });
-            localStorage.setItem('elchatcamUsers', JSON.stringify(users));
+            
+            lastCheck.textContent = 'Hace unos segundos';
+            problemUsersCount.textContent = problemUsers.filter(u => u.connection === 'inestable').length;
+            
             renderUsers();
+            alert('Estado de usuarios actualizado');
         });
         
-        addUserBtn.addEventListener('click', addUser);
+        searchBtn.addEventListener('click', searchUserByName);
         
-        newUsername.addEventListener('keypress', function(e) {
+        searchUser.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                addUser();
+                searchUserByName();
+            }
+        });
+        
+        forceStream.addEventListener('click', function() {
+            diagnosticLog.innerHTML += `> Forzando transmisión de stream...<br>`;
+            diagnosticLog.innerHTML += `> Enviando señal de activación...<br>`;
+            
+            setTimeout(() => {
+                diagnosticLog.innerHTML += `> Stream activado correctamente<br>`;
+                alert('Se ha forzado la activación del stream');
+            }, 1500);
+        });
+        
+        reloadFrame.addEventListener('click', function() {
+            diagnosticLog.innerHTML += `> Recargando frame del stream...<br>`;
+            streamViewer.src = streamViewer.src;
+            diagnosticLog.innerHTML += `> Frame recargado<br>`;
+        });
+        
+        directLink.addEventListener('click', function() {
+            const user = problemUsers.find(u => u.name === currentUser.textContent);
+            if (user) {
+                window.open(user.stream, '_blank');
+                diagnosticLog.innerHTML += `> Abriendo enlace directo en nueva pestaña<br>`;
+            }
+        });
+        
+        testAllStreams.addEventListener('click', function() {
+            diagnosticLog.innerHTML += `> Iniciando prueba de todos los streams...<br>`;
+            
+            setTimeout(() => {
+                const problematic = problemUsers.filter(u => u.connection === 'inestable').length;
+                alert(`Prueba completada. Se encontraron ${problematic} streams con problemas`);
+                diagnosticLog.innerHTML += `> Prueba completada. ${problematic} streams con problemas<br>`;
+            }, 3000);
+        });
+        
+        forceReconnect.addEventListener('click', function() {
+            diagnosticLog.innerHTML += `> Forzando reconexión global...<br>`;
+            
+            setTimeout(() => {
+                problemUsers.forEach(user => {
+                    if (user.status === 'online') {
+                        user.connection = 'estable';
+                        user.issue = 'Problema resuelto tras reconexión global';
+                    }
+                });
+                
+                renderUsers();
+                alert('Reconexión global completada');
+                diagnosticLog.innerHTML += `> Reconexión global completada<br>`;
+            }, 2500);
+        });
+        
+        checkPermissions.addEventListener('click', function() {
+            diagnosticLog.innerHTML += `> Verificando permisos de todos los usuarios...<br>`;
+            
+            setTimeout(() => {
+                alert('Verificación de permisos completada. Todos los usuarios tienen permisos concedidos');
+                diagnosticLog.innerHTML += `> Verificación completada. Todos los permisos están en orden<br>`;
+            }, 2000);
+        });
+        
+        resetConnections.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que quieres resetear todas las conexiones? Esto puede interrumpir los streams activos.')) {
+                diagnosticLog.innerHTML += `> Reseteando todas las conexiones...<br>`;
+                
+                setTimeout(() => {
+                    problemUsers.forEach(user => {
+                        user.connection = 'estable';
+                        user.issue = 'Conexión reseteada';
+                    });
+                    
+                    renderUsers();
+                    alert('Todas las conexiones han sido reseteadas');
+                    diagnosticLog.innerHTML += `> Reset de conexiones completado<br>`;
+                }, 3000);
             }
         });
         
@@ -618,6 +963,8 @@
         
         // Inicializar la interfaz
         renderUsers();
+        lastCheck.textContent = 'Hace 2 minutos';
+        problemUsersCount.textContent = problemUsers.filter(u => u.connection === 'inestable').length;
     </script>
 </body>
 </html>
