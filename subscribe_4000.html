@@ -466,6 +466,39 @@
             background: linear-gradient(120deg, #f0f9ff, #e0f2fe);
             border-left: 4px solid var(--primary);
         }
+        
+        .stream-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 10;
+        }
+        
+        .stream-overlay.hidden {
+            display: none;
+        }
+        
+        .overlay-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -613,7 +646,14 @@
                     </div>
                     <div class="stream-container">
                         ${stream.status !== 'stopped' ? 
-                            `<iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>` :
+                            `<div class="stream-overlay ${stream.overlayHidden ? 'hidden' : ''}" id="overlay-${index}">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                                <p>Para ver esta transmisión, debes hacer clic en el botón "Ver Transmisión" dentro del reproductor</p>
+                                <button class="overlay-btn" onclick="hideOverlay(${index})">
+                                    <i class="fas fa-times"></i> Ocultar mensaje
+                                </button>
+                            </div>
+                            <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>` :
                             `<div class="stream-placeholder">
                                 <i class="fas fa-video-slash"></i>
                                 <p>Transmisión detenida</p>
@@ -621,19 +661,19 @@
                         }
                     </div>
                     <div class="stream-controls">
-                        <button class="control-btn play" data-action="play" title="Iniciar transmisión">
-                            <i class="fas fa-play"></i> <span>Iniciar</span>
+                        <button class="control-btn play" data-action="play" data-index="${index}" title="Activar transmisión">
+                            <i class="fas fa-play"></i> <span>Activar</span>
                         </button>
-                        <button class="control-btn pause" data-action="pause" title="Pausar transmisión">
+                        <button class="control-btn pause" data-action="pause" data-index="${index}" title="Pausar transmisión">
                             <i class="fas fa-pause"></i> <span>Pausar</span>
                         </button>
-                        <button class="control-btn stop" data-action="stop" title="Detener transmisión">
+                        <button class="control-btn stop" data-action="stop" data-index="${index}" title="Detener transmisión">
                             <i class="fas fa-stop"></i> <span>Detener</span>
                         </button>
-                        <button class="control-btn reload" data-action="reload" title="Recargar transmisión">
+                        <button class="control-btn reload" data-action="reload" data-index="${index}" title="Recargar transmisión">
                             <i class="fas fa-redo"></i> <span>Recargar</span>
                         </button>
-                        <button class="control-btn remove" data-action="remove" title="Eliminar transmisión">
+                        <button class="control-btn remove" data-action="remove" data-index="${index}" title="Eliminar transmisión">
                             <i class="fas fa-trash"></i> <span>Eliminar</span>
                         </button>
                     </div>
@@ -646,12 +686,18 @@
             document.querySelectorAll('.control-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const action = this.getAttribute('data-action');
-                    const card = this.closest('.stream-card');
-                    const index = parseInt(card.dataset.index);
+                    const index = parseInt(this.getAttribute('data-index'));
                     
                     handleStreamAction(index, action);
                 });
             });
+        }
+        
+        // Función para ocultar el overlay de un stream específico
+        function hideOverlay(index) {
+            streams[index].overlayHidden = true;
+            saveStreams();
+            renderStreams();
         }
         
         // Función para manejar las acciones de los streams
@@ -661,6 +707,7 @@
             switch(action) {
                 case 'play':
                     stream.status = 'active';
+                    stream.overlayHidden = false;
                     break;
                 case 'pause':
                     stream.status = 'paused';
@@ -669,9 +716,13 @@
                     stream.status = 'stopped';
                     break;
                 case 'reload':
-                    // Para recargar, mantenemos el estado pero forzamos una actualización visual
-                    renderStreams();
-                    return;
+                    // Para recargar, forzamos una actualización del iframe
+                    const iframe = document.querySelector(`[data-index="${index}"] .stream-frame`);
+                    if (iframe) {
+                        iframe.src = iframe.src;
+                    }
+                    showNotification(`Transmisión "${stream.name}" recargada`);
+                    return; // No guardamos ni re-renderizamos para evitar parpadeo
                 case 'remove':
                     if (confirm(`¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`)) {
                         streams.splice(index, 1);
@@ -681,6 +732,21 @@
             
             saveStreams();
             renderStreams();
+            
+            if (action !== 'reload') {
+                showNotification(`Transmisión "${stream.name}" ${getActionText(action)}`);
+            }
+        }
+        
+        // Función para obtener el texto de la acción
+        function getActionText(action) {
+            switch(action) {
+                case 'play': return 'activada';
+                case 'pause': return 'pausada';
+                case 'stop': return 'detenida';
+                case 'remove': return 'eliminada';
+                default: return 'actualizada';
+            }
         }
         
         // Función para agregar un nuevo stream
@@ -697,7 +763,8 @@
             streams.push({
                 name: name,
                 url: finalUrl,
-                status: 'active'
+                status: 'active',
+                overlayHidden: false
             });
             
             saveStreams();
@@ -752,11 +819,12 @@
         function playAllStreams() {
             streams.forEach(stream => {
                 stream.status = 'active';
+                stream.overlayHidden = false;
             });
             
             saveStreams();
             renderStreams();
-            showNotification('Todas las transmisiones iniciadas');
+            showNotification('Todas las transmisiones activadas');
         }
         
         // Función para detener todos los streams
