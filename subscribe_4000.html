@@ -110,6 +110,16 @@
             box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
         }
         
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #0da271;
+            transform: translateY(-2px);
+        }
+        
         .btn-outline {
             background: transparent;
             border: 2px solid var(--primary);
@@ -198,6 +208,31 @@
         .url-preview span {
             color: var(--primary);
             font-weight: 600;
+        }
+        
+        .import-export-section {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            flex: 1;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
         }
         
         .streams-grid {
@@ -367,6 +402,10 @@
                 width: 100%;
                 justify-content: space-between;
             }
+            
+            .import-export-section {
+                flex-direction: column;
+            }
         }
         
         /* Animaciones */
@@ -393,6 +432,54 @@
             background: linear-gradient(120deg, #f0f9ff, #e0f2fe);
             border-left: 4px solid var(--primary);
         }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
     </style>
 </head>
 <body>
@@ -411,6 +498,12 @@
                 <button class="btn btn-outline" id="exportBtn">
                     <i class="fas fa-download"></i> Exportar
                 </button>
+                <div class="file-input-wrapper">
+                    <button class="btn btn-success" id="importBtn">
+                        <i class="fas fa-upload"></i> Importar
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
             </div>
         </header>
         
@@ -439,10 +532,23 @@
                 </div>
             </div>
             
+            <div class="import-export-section">
+                <div class="file-input-wrapper">
+                    <button class="btn btn-outline" id="importReplaceBtn">
+                        <i class="fas fa-file-import"></i> Importar y Reemplazar
+                    </button>
+                    <input type="file" id="importReplaceFile" accept=".json">
+                </div>
+                
+                <button class="btn btn-outline" id="clearAllBtn">
+                    <i class="fas fa-trash-alt"></i> Limpiar Todo
+                </button>
+            </div>
+            
             <div class="highlight" style="padding: 15px; border-radius: 12px; margin-top: 15px;">
                 <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-                    <span>La URL base se mantendrá después de agregar usuarios para trabajar eficientemente</span>
+                    <span>Usa "Importar" para agregar streams desde un archivo, o "Importar y Reemplazar" para sustituir todos los streams actuales</span>
                 </p>
             </div>
         </div>
@@ -460,6 +566,21 @@
         </footer>
     </div>
 
+    <!-- Modal de confirmación -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Confirmar acción</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <p id="modalMessage">¿Estás seguro de que quieres realizar esta acción?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancelModal">Cancelar</button>
+                <button class="btn btn-danger" id="confirmModalBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Elementos DOM
         const streamsGrid = document.getElementById('streamsGrid');
@@ -468,8 +589,19 @@
         const streamNameInput = document.getElementById('streamName');
         const streamUrlInput = document.getElementById('streamUrl');
         const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+        const importReplaceBtn = document.getElementById('importReplaceBtn');
+        const importReplaceFile = document.getElementById('importReplaceFile');
+        const clearAllBtn = document.getElementById('clearAllBtn');
         const urlPreview = document.getElementById('urlPreview');
         const previewUrl = document.getElementById('previewUrl');
+        const confirmModal = document.getElementById('confirmModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const closeModal = document.getElementById('closeModal');
+        const cancelModal = document.getElementById('cancelModal');
+        const confirmModalBtn = document.getElementById('confirmModalBtn');
         
         // Array para almacenar los streams
         let streams = JSON.parse(localStorage.getItem('streams')) || [];
@@ -480,6 +612,9 @@
             streamUrlInput.value = savedBaseUrl;
             updateUrlPreview();
         }
+        
+        // Variables para el modal
+        let pendingAction = null;
         
         // Función para actualizar la vista previa de URL
         function updateUrlPreview() {
@@ -580,12 +715,16 @@
                     showNotification(`Transmisión "${stream.name}" recargada`);
                     break;
                 case 'remove':
-                    if (confirm(`¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`)) {
-                        streams.splice(index, 1);
-                        saveStreams();
-                        renderStreams();
-                        showNotification(`Transmisión "${stream.name}" eliminada`);
-                    }
+                    showConfirmModal(
+                        'Eliminar transmisión',
+                        `¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`,
+                        () => {
+                            streams.splice(index, 1);
+                            saveStreams();
+                            renderStreams();
+                            showNotification(`Transmisión "${stream.name}" eliminada`);
+                        }
+                    );
                     break;
             }
         }
@@ -625,6 +764,91 @@
             showNotification(`Transmisión "${name}" agregada correctamente`);
         }
         
+        // Función para exportar la lista de streams
+        function exportStreams() {
+            if (streams.length === 0) {
+                alert('No hay streams para exportar');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(streams, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'streams-backup.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Lista de streams exportada correctamente');
+        }
+        
+        // Función para importar streams desde un archivo
+        function importStreams(file, replace = false) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const importedStreams = JSON.parse(e.target.result);
+                    
+                    // Validar que sea un array
+                    if (!Array.isArray(importedStreams)) {
+                        throw new Error('El archivo no contiene una lista válida de streams');
+                    }
+                    
+                    // Validar que cada elemento tenga name y url
+                    for (let stream of importedStreams) {
+                        if (!stream.name || !stream.url) {
+                            throw new Error('El archivo contiene streams inválidos');
+                        }
+                    }
+                    
+                    if (replace) {
+                        // Reemplazar todos los streams
+                        streams = importedStreams;
+                        showNotification(`Se importaron ${importedStreams.length} streams (reemplazando los existentes)`);
+                    } else {
+                        // Agregar a los streams existentes
+                        const originalCount = streams.length;
+                        streams = streams.concat(importedStreams);
+                        showNotification(`Se agregaron ${importedStreams.length} nuevos streams`);
+                    }
+                    
+                    saveStreams();
+                    renderStreams();
+                    
+                } catch (error) {
+                    alert('Error al importar el archivo: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Función para mostrar el modal de confirmación
+        function showConfirmModal(title, message, confirmCallback) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            pendingAction = confirmCallback;
+            confirmModal.style.display = 'flex';
+        }
+        
+        // Función para limpiar todos los streams
+        function clearAllStreams() {
+            showConfirmModal(
+                'Limpiar todos los streams',
+                '¿Estás seguro de que quieres eliminar todos los streams? Esta acción no se puede deshacer.',
+                () => {
+                    streams = [];
+                    saveStreams();
+                    renderStreams();
+                    showNotification('Todos los streams han sido eliminados');
+                }
+            );
+        }
+        
         // Función para mostrar notificaciones
         function showNotification(message) {
             // Crear elemento de notificación
@@ -661,27 +885,6 @@
             }, 3000);
         }
         
-        // Función para exportar la lista de streams
-        function exportStreams() {
-            if (streams.length === 0) {
-                alert('No hay streams para exportar');
-                return;
-            }
-            
-            const dataStr = JSON.stringify(streams, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'streams-backup.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('Lista de streams exportada');
-        }
-        
         // Event Listeners
         addStreamBtn.addEventListener('click', () => {
             addStream(streamNameInput.value.trim(), streamUrlInput.value.trim());
@@ -694,6 +897,56 @@
         });
         
         exportBtn.addEventListener('click', exportStreams);
+        
+        // Importar (agregar)
+        importBtn.addEventListener('click', () => {
+            importFile.click();
+        });
+        
+        importFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importStreams(e.target.files[0], false);
+                e.target.value = ''; // Resetear el input
+            }
+        });
+        
+        // Importar y reemplazar
+        importReplaceBtn.addEventListener('click', () => {
+            importReplaceFile.click();
+        });
+        
+        importReplaceFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importStreams(e.target.files[0], true);
+                e.target.value = ''; // Resetear el input
+            }
+        });
+        
+        // Limpiar todo
+        clearAllBtn.addEventListener('click', clearAllStreams);
+        
+        // Modal events
+        closeModal.addEventListener('click', () => {
+            confirmModal.style.display = 'none';
+        });
+        
+        cancelModal.addEventListener('click', () => {
+            confirmModal.style.display = 'none';
+        });
+        
+        confirmModalBtn.addEventListener('click', () => {
+            if (pendingAction) {
+                pendingAction();
+            }
+            confirmModal.style.display = 'none';
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', (e) => {
+            if (e.target === confirmModal) {
+                confirmModal.style.display = 'none';
+            }
+        });
         
         // Inicializar la aplicación
         renderStreams();
