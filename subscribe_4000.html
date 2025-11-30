@@ -499,6 +499,44 @@
             align-items: center;
             gap: 8px;
         }
+        
+        .saved-urls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .saved-urls h4 {
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+        
+        .url-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .url-tag {
+            background: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .url-tag:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -525,7 +563,7 @@
                 <h2>Agregar Nueva Transmisión</h2>
                 <div class="quick-actions">
                     <button class="btn btn-success" id="playAllBtn">
-                        <i class="fas fa-play"></i> Iniciar Todas
+                        <i class="fas fa-play"></i> Activar Todas
                     </button>
                     <button class="btn btn-danger" id="stopAllBtn">
                         <i class="fas fa-stop"></i> Detener Todas
@@ -553,10 +591,17 @@
                 </div>
             </div>
             
+            <div class="saved-urls" id="savedUrls" style="display: none;">
+                <h4>URLs Base Guardadas</h4>
+                <div class="url-tags" id="urlTags">
+                    <!-- Las URLs guardadas aparecerán aquí -->
+                </div>
+            </div>
+            
             <div class="highlight" style="padding: 15px; border-radius: 12px; margin-top: 15px;">
                 <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-                    <span>El sistema concatenará automáticamente el nombre de usuario a la URL base</span>
+                    <span>La URL base se mantendrá después de agregar usuarios para trabajar eficientemente</span>
                 </p>
             </div>
         </div>
@@ -586,9 +631,60 @@
         const exportBtn = document.getElementById('exportBtn');
         const urlPreview = document.getElementById('urlPreview');
         const previewUrl = document.getElementById('previewUrl');
+        const savedUrls = document.getElementById('savedUrls');
+        const urlTags = document.getElementById('urlTags');
         
         // Array para almacenar los streams
         let streams = JSON.parse(localStorage.getItem('streams')) || [];
+        
+        // Cargar URL base guardada si existe
+        const savedBaseUrl = localStorage.getItem('savedBaseUrl');
+        if (savedBaseUrl) {
+            streamUrlInput.value = savedBaseUrl;
+            updateUrlPreview();
+        }
+        
+        // Cargar URLs base utilizadas
+        let usedBaseUrls = JSON.parse(localStorage.getItem('usedBaseUrls')) || [];
+        renderUrlTags();
+        
+        // Función para renderizar las etiquetas de URLs
+        function renderUrlTags() {
+            if (usedBaseUrls.length === 0) {
+                savedUrls.style.display = 'none';
+                return;
+            }
+            
+            savedUrls.style.display = 'block';
+            urlTags.innerHTML = '';
+            
+            // Mostrar solo las últimas 5 URLs
+            const recentUrls = usedBaseUrls.slice(-5);
+            
+            recentUrls.forEach(url => {
+                const tag = document.createElement('div');
+                tag.className = 'url-tag';
+                tag.innerHTML = `
+                    <span>${url}</span>
+                    <i class="fas fa-times" data-url="${url}"></i>
+                `;
+                
+                tag.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'I') {
+                        // Eliminar URL de la lista
+                        usedBaseUrls = usedBaseUrls.filter(u => u !== url);
+                        localStorage.setItem('usedBaseUrls', JSON.stringify(usedBaseUrls));
+                        renderUrlTags();
+                    } else {
+                        // Usar esta URL
+                        streamUrlInput.value = url;
+                        updateUrlPreview();
+                    }
+                });
+                
+                urlTags.appendChild(tag);
+            });
+        }
         
         // Función para actualizar la vista previa de URL
         function updateUrlPreview() {
@@ -613,6 +709,21 @@
         // Función para guardar streams en localStorage
         function saveStreams() {
             localStorage.setItem('streams', JSON.stringify(streams));
+        }
+        
+        // Función para guardar la URL base actual
+        function saveBaseUrl() {
+            const baseUrl = streamUrlInput.value.trim();
+            if (baseUrl) {
+                localStorage.setItem('savedBaseUrl', baseUrl);
+                
+                // Agregar a la lista de URLs usadas si no existe
+                if (!usedBaseUrls.includes(baseUrl)) {
+                    usedBaseUrls.push(baseUrl);
+                    localStorage.setItem('usedBaseUrls', JSON.stringify(usedBaseUrls));
+                    renderUrlTags();
+                }
+            }
         }
         
         // Función para renderizar los streams
@@ -751,8 +862,13 @@
         
         // Función para agregar un nuevo stream
         function addStream(name, baseUrl) {
-            if (!name || !baseUrl) {
-                alert('Por favor, completa ambos campos');
+            if (!name) {
+                alert('Por favor, ingresa un nombre de usuario');
+                return;
+            }
+            
+            if (!baseUrl) {
+                alert('Por favor, ingresa una URL base');
                 return;
             }
             
@@ -770,10 +886,12 @@
             saveStreams();
             renderStreams();
             
-            // Limpiar los campos
+            // Limpiar solo el campo del nombre, mantener la URL base
             streamNameInput.value = '';
-            streamUrlInput.value = '';
             urlPreview.classList.remove('active');
+            
+            // Guardar la URL base
+            saveBaseUrl();
             
             // Mostrar confirmación
             showNotification(`Transmisión "${name}" agregada correctamente`);
@@ -865,12 +983,6 @@
         });
         
         streamNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addStream(streamNameInput.value.trim(), streamUrlInput.value.trim());
-            }
-        });
-        
-        streamUrlInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 addStream(streamNameInput.value.trim(), streamUrlInput.value.trim());
             }
