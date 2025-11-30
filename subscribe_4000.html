@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Manager Pro - Dashboard</title>
+    <title>Stream Manager Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -484,9 +484,6 @@
                 <button class="btn btn-outline" id="exportBtn">
                     <i class="fas fa-download"></i> Exportar
                 </button>
-                <button class="btn btn-primary" id="addSampleBtn">
-                    <i class="fas fa-plus"></i> Agregar Ejemplo
-                </button>
             </div>
         </header>
         
@@ -506,11 +503,11 @@
             <div class="add-stream-form">
                 <div class="form-group">
                     <label for="streamName">Nombre de Usuario</label>
-                    <input type="text" id="streamName" class="form-control" placeholder="Ej: Cieli, Maria, Juan...">
+                    <input type="text" id="streamName" class="form-control" placeholder="Ingresa el nombre de usuario">
                 </div>
                 <div class="form-group">
                     <label for="streamUrl">URL Base de Transmisión</label>
-                    <input type="text" id="streamUrl" class="form-control" value="https://irc.elchatcam.com:4000/subscribe.html">
+                    <input type="text" id="streamUrl" class="form-control" placeholder="https://tuservidor.com/ruta/stream">
                 </div>
                 <div class="form-group" style="display: flex; align-items: flex-end;">
                     <button class="btn btn-primary" id="addStreamBtn" style="height: 50px; white-space: nowrap;">
@@ -519,7 +516,7 @@
                 </div>
                 
                 <div class="url-preview" id="urlPreview">
-                    <strong>URL que se generará:</strong> <span id="previewUrl">https://irc.elchatcam.com:4000/subscribe.html?user=</span>
+                    <strong>URL que se generará:</strong> <span id="previewUrl"></span>
                 </div>
             </div>
             
@@ -540,7 +537,7 @@
         </div>
         
         <footer class="footer">
-            <p>Stream Manager Pro &copy; 2023 - Diseñado para una gestión eficiente de transmisiones en tiempo real</p>
+            <p>Stream Manager Pro &copy; 2023 - Gestión de transmisiones en tiempo real</p>
         </footer>
     </div>
 
@@ -553,7 +550,6 @@
         const streamUrlInput = document.getElementById('streamUrl');
         const playAllBtn = document.getElementById('playAllBtn');
         const stopAllBtn = document.getElementById('stopAllBtn');
-        const addSampleBtn = document.getElementById('addSampleBtn');
         const exportBtn = document.getElementById('exportBtn');
         const urlPreview = document.getElementById('urlPreview');
         const previewUrl = document.getElementById('previewUrl');
@@ -566,8 +562,10 @@
             const name = streamNameInput.value.trim();
             const baseUrl = streamUrlInput.value.trim();
             
-            if (name) {
-                const finalUrl = `${baseUrl}?user=${encodeURIComponent(name)}`;
+            if (name && baseUrl) {
+                // Verificar si la URL base ya tiene parámetros
+                const separator = baseUrl.includes('?') ? '&' : '?';
+                const finalUrl = `${baseUrl}${separator}user=${encodeURIComponent(name)}`;
                 previewUrl.textContent = finalUrl;
                 urlPreview.classList.add('active');
             } else {
@@ -687,13 +685,14 @@
         
         // Función para agregar un nuevo stream
         function addStream(name, baseUrl) {
-            if (!name) {
-                alert('Por favor, ingresa un nombre de usuario');
+            if (!name || !baseUrl) {
+                alert('Por favor, completa ambos campos');
                 return;
             }
             
             // Construir la URL final concatenando el nombre de usuario
-            const finalUrl = `${baseUrl}?user=${encodeURIComponent(name)}`;
+            const separator = baseUrl.includes('?') ? '&' : '?';
+            const finalUrl = `${baseUrl}${separator}user=${encodeURIComponent(name)}`;
             
             streams.push({
                 name: name,
@@ -704,8 +703,9 @@
             saveStreams();
             renderStreams();
             
-            // Limpiar el campo del nombre
+            // Limpiar los campos
             streamNameInput.value = '';
+            streamUrlInput.value = '';
             urlPreview.classList.remove('active');
             
             // Mostrar confirmación
@@ -746,13 +746,6 @@
                     document.body.removeChild(notification);
                 }, 300);
             }, 3000);
-        }
-        
-        // Función para agregar un stream de ejemplo
-        function addSampleStream() {
-            const sampleUsers = ["Cieli", "Maria", "Alex", "Sophia", "David"];
-            const randomUser = sampleUsers[Math.floor(Math.random() * sampleUsers.length)];
-            addStream(randomUser, streamUrlInput.value);
         }
         
         // Función para iniciar todos los streams
@@ -809,9 +802,14 @@
             }
         });
         
+        streamUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addStream(streamNameInput.value.trim(), streamUrlInput.value.trim());
+            }
+        });
+        
         playAllBtn.addEventListener('click', playAllStreams);
         stopAllBtn.addEventListener('click', stopAllStreams);
-        addSampleBtn.addEventListener('click', addSampleStream);
         exportBtn.addEventListener('click', exportStreams);
         
         // Inicializar la aplicación
