@@ -385,11 +385,11 @@
             padding: 20px;
         }
         
-        /* Ventana flotante */
+        /* Ventana flotante - ARREGLADA */
         .popup-window {
             position: fixed;
-            top: 50px;
-            right: 50px;
+            top: 100px;
+            left: 100px;
             width: 800px;
             height: 600px;
             background: white;
@@ -402,8 +402,8 @@
             border: 1px solid var(--border);
             resize: both;
             overflow: hidden;
-            min-width: 400px;
-            min-height: 300px;
+            min-width: 500px;
+            min-height: 400px;
         }
         
         .popup-window.active {
@@ -454,12 +454,30 @@
             flex: 1;
             background: #1a1a1a;
             overflow: hidden;
+            position: relative;
         }
         
+        /* ESTO ES IMPORTANTE: El iframe debe ocupar TODO el espacio disponible */
         .popup-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             border: none;
+            object-fit: contain;
+        }
+        
+        /* Control para redimensionar */
+        .popup-resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            cursor: se-resize;
+            background: transparent;
+            z-index: 1001;
         }
         
         /* Overlay para ventanas flotantes */
@@ -489,7 +507,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
@@ -559,7 +577,9 @@
                 width: 90vw;
                 height: 70vh;
                 top: 20px;
-                right: 20px;
+                left: 20px;
+                min-width: 300px;
+                min-height: 300px;
             }
         }
         
@@ -715,7 +735,7 @@
             <div class="highlight" style="padding: 15px; border-radius: 12px; margin-top: 15px; background: linear-gradient(120deg, #f0f9ff, #e0f2fe);">
                 <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-external-link-alt" style="color: var(--secondary);"></i>
-                    <span><strong>Nueva función:</strong> Haz clic en el botón "Ventana" en cualquier stream para abrirlo en una ventana flotante redimensionable y movible.</span>
+                    <span><strong>Nueva función:</strong> Haz clic en el botón "Ventana" en cualquier stream para abrirlo en una ventana flotante redimensionable y movible. ¡Ahora se muestra en tamaño completo!</span>
                 </p>
             </div>
         </div>
@@ -802,11 +822,11 @@
         // Variables para el modal
         let pendingAction = null;
         
-        // Variables para arrastrar ventanas
+        // Variables para arrastrar ventanas (ARREGLADO)
         let isDragging = false;
         let currentPopup = null;
-        let offsetX = 0;
-        let offsetY = 0;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
         
         // Función para actualizar la vista previa de URL
         function updateUrlPreview() {
@@ -952,10 +972,10 @@
             popupWindow.style.zIndex = 1000 + floatingWindows.length;
             
             // Posición inicial (en cascada)
-            const startTop = 50 + (floatingWindows.length * 30);
-            const startRight = 50 + (floatingWindows.length * 30);
+            const startTop = 100 + (floatingWindows.length * 40);
+            const startLeft = 100 + (floatingWindows.length * 40);
             popupWindow.style.top = `${startTop}px`;
-            popupWindow.style.right = `${startRight}px`;
+            popupWindow.style.left = `${startLeft}px`;
             
             popupWindow.innerHTML = `
                 <div class="popup-header" id="${windowId}-header">
@@ -973,7 +993,8 @@
                     </div>
                 </div>
                 <div class="popup-content">
-                    <iframe class="popup-iframe" src="${url}" frameborder="0" allowfullscreen></iframe>
+                    <iframe class="popup-iframe" src="${url}" frameborder="0" allowfullscreen allow="autoplay; fullscreen"></iframe>
+                    <div class="popup-resize-handle"></div>
                 </div>
             `;
             
@@ -984,6 +1005,20 @@
             setTimeout(() => {
                 popupWindow.classList.add('active');
                 popupOverlay.classList.add('active');
+                
+                // Configurar el iframe para que ocupe todo el espacio
+                const iframe = popupWindow.querySelector('.popup-iframe');
+                if (iframe) {
+                    // Asegurar que el iframe tenga las dimensiones correctas
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.objectFit = 'contain';
+                    
+                    // Forzar una recarga para asegurar que se muestre el tamaño completo
+                    setTimeout(() => {
+                        iframe.src = iframe.src;
+                    }, 100);
+                }
             }, 10);
             
             // Configurar eventos para la ventana
@@ -1001,13 +1036,14 @@
             // Actualizar contador
             updateFloatingWindowsCount();
             
-            showNotification(`Ventana flotante abierta para "${title}"`);
+            showNotification(`Ventana flotante abierta para "${title}" (tamaño completo)`);
         }
         
-        // Configurar eventos para una ventana flotante
+        // Configurar eventos para una ventana flotante (ARREGLADO)
         function setupPopupEvents(popupWindow, streamIndex, windowId, url, title) {
             const header = document.getElementById(`${windowId}-header`);
             const controls = popupWindow.querySelectorAll('.popup-btn');
+            const resizeHandle = popupWindow.querySelector('.popup-resize-handle');
             
             // Eventos para controles
             controls.forEach(btn => {
@@ -1033,11 +1069,13 @@
                 });
             });
             
-            // Eventos para arrastrar
-            header.addEventListener('mousedown', startDrag);
+            // Eventos para arrastrar - ARREGLADO
+            header.addEventListener('mousedown', (e) => {
+                startDrag(e, popupWindow);
+            });
             
             // Hacer que la ventana sea redimensionable
-            makeResizable(popupWindow);
+            makeResizable(popupWindow, resizeHandle);
             
             // Traer al frente al hacer clic
             popupWindow.addEventListener('mousedown', () => {
@@ -1045,40 +1083,41 @@
             });
         }
         
-        // Función para iniciar el arrastre de ventana
-        function startDrag(e) {
+        // Función para iniciar el arrastre de ventana - ARREGLADO
+        function startDrag(e, popupWindow) {
             if (e.target.closest('.popup-btn')) return;
             
             isDragging = true;
-            currentPopup = e.target.closest('.popup-window');
+            currentPopup = popupWindow;
             
+            // Calcular el desplazamiento desde el borde superior izquierdo de la ventana
             const rect = currentPopup.getBoundingClientRect();
-            offsetX = e.clientX - rect.right;
-            offsetY = e.clientY - rect.top;
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
             
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', stopDrag);
             
             // Traer al frente
             bringToFront(currentPopup.id);
+            
+            e.preventDefault();
         }
         
-        // Función para arrastrar ventana
+        // Función para arrastrar ventana - ARREGLADO
         function drag(e) {
             if (!isDragging || !currentPopup) return;
             
-            e.preventDefault();
-            
             // Calcular nueva posición
-            const right = window.innerWidth - e.clientX - offsetX;
-            const top = e.clientY - offsetY;
+            const left = e.clientX - dragOffsetX;
+            const top = e.clientY - dragOffsetY;
             
             // Limitar a los bordes de la ventana
-            const maxRight = window.innerWidth - 50;
-            const maxTop = window.innerHeight - 100;
+            const maxLeft = window.innerWidth - currentPopup.offsetWidth;
+            const maxTop = window.innerHeight - currentPopup.offsetHeight;
             
-            currentPopup.style.right = `${Math.min(Math.max(right, 50), maxRight)}px`;
-            currentPopup.style.top = `${Math.min(Math.max(top, 50), maxTop)}px`;
+            currentPopup.style.left = `${Math.min(Math.max(left, 0), maxLeft)}px`;
+            currentPopup.style.top = `${Math.min(Math.max(top, 0), maxTop)}px`;
         }
         
         // Función para detener el arrastre
@@ -1089,23 +1128,10 @@
             document.removeEventListener('mouseup', stopDrag);
         }
         
-        // Hacer una ventana redimensionable
-        function makeResizable(element) {
-            const resizeHandle = document.createElement('div');
-            resizeHandle.style.position = 'absolute';
-            resizeHandle.style.bottom = '0';
-            resizeHandle.style.right = '0';
-            resizeHandle.style.width = '20px';
-            resizeHandle.style.height = '20px';
-            resizeHandle.style.cursor = 'se-resize';
-            resizeHandle.style.zIndex = '1001';
-            resizeHandle.style.background = 'transparent';
-            
-            element.style.position = 'fixed';
-            element.appendChild(resizeHandle);
-            
+        // Hacer una ventana redimensionable - MEJORADO
+        function makeResizable(element, resizeHandle) {
             let isResizing = false;
-            let startX, startY, startWidth, startHeight, startRight, startTop;
+            let startX, startY, startWidth, startHeight, startLeft, startTop;
             
             resizeHandle.addEventListener('mousedown', initResize);
             
@@ -1115,7 +1141,7 @@
                 startY = e.clientY;
                 startWidth = parseInt(getComputedStyle(element).width, 10);
                 startHeight = parseInt(getComputedStyle(element).height, 10);
-                startRight = parseInt(getComputedStyle(element).right, 10);
+                startLeft = parseInt(getComputedStyle(element).left, 10);
                 startTop = parseInt(getComputedStyle(element).top, 10);
                 
                 document.addEventListener('mousemove', resize);
@@ -1128,27 +1154,42 @@
             function resize(e) {
                 if (!isResizing) return;
                 
-                const dx = startX - e.clientX;
+                const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
                 
-                const newWidth = Math.max(400, startWidth + dx);
-                const newHeight = Math.max(300, startHeight + dy);
-                
-                element.style.width = `${newWidth}px`;
-                element.style.height = `${newHeight}px`;
+                // Nuevas dimensiones (con límites mínimos)
+                const newWidth = Math.max(500, startWidth + dx);
+                const newHeight = Math.max(400, startHeight + dy);
                 
                 // Ajustar posición para que no se salga de la pantalla
-                const newRight = startRight + (startWidth - newWidth);
+                const newLeft = startLeft;
                 const newTop = startTop;
                 
-                element.style.right = `${newRight}px`;
-                element.style.top = `${newTop}px`;
+                // Verificar límites de pantalla
+                if (newLeft + newWidth > window.innerWidth) {
+                    element.style.width = `${window.innerWidth - newLeft}px`;
+                } else {
+                    element.style.width = `${newWidth}px`;
+                }
+                
+                if (newTop + newHeight > window.innerHeight) {
+                    element.style.height = `${window.innerHeight - newTop}px`;
+                } else {
+                    element.style.height = `${newHeight}px`;
+                }
             }
             
             function stopResize() {
                 isResizing = false;
                 document.removeEventListener('mousemove', resize);
                 document.removeEventListener('mouseup', stopResize);
+                
+                // Asegurar que el iframe se redimensione correctamente
+                const iframe = element.querySelector('.popup-iframe');
+                if (iframe) {
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                }
             }
         }
         
