@@ -31,11 +31,13 @@
             color: var(--dark);
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
         
         .dashboard {
             max-width: 1600px;
             margin: 0 auto;
+            position: relative;
         }
         
         .header {
@@ -309,6 +311,7 @@
             display: flex;
             gap: 15px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         
         .control-btn {
@@ -330,6 +333,11 @@
         
         .control-btn.reload {
             background: var(--primary);
+            color: white;
+        }
+        
+        .control-btn.popout {
+            background: var(--secondary);
             color: white;
         }
         
@@ -377,9 +385,149 @@
             padding: 20px;
         }
         
+        /* Ventana flotante */
+        .popup-window {
+            position: fixed;
+            top: 50px;
+            right: 50px;
+            width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            resize: both;
+            overflow: hidden;
+            min-width: 400px;
+            min-height: 300px;
+        }
+        
+        .popup-window.active {
+            display: flex;
+            animation: popupFadeIn 0.3s ease;
+        }
+        
+        .popup-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .popup-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .popup-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .popup-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .popup-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .popup-content {
+            flex: 1;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+        
+        .popup-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Overlay para ventanas flotantes */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .popup-overlay.active {
+            display: block;
+        }
+        
+        /* Botón para mostrar todas las ventanas flotantes */
+        .floating-windows-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 998;
+            background: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .floating-windows-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+        
+        .floating-windows-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
         @media (max-width: 1200px) {
             .streams-grid {
                 grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            }
+            
+            .popup-window {
+                width: 700px;
+                height: 500px;
             }
         }
         
@@ -406,12 +554,24 @@
             .import-export-section {
                 flex-direction: column;
             }
+            
+            .popup-window {
+                width: 90vw;
+                height: 70vh;
+                top: 20px;
+                right: 20px;
+            }
         }
         
         /* Animaciones */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
         .stream-card {
@@ -551,6 +711,13 @@
                     <span>Usa "Importar" para agregar streams desde un archivo, o "Importar y Reemplazar" para sustituir todos los streams actuales</span>
                 </p>
             </div>
+            
+            <div class="highlight" style="padding: 15px; border-radius: 12px; margin-top: 15px; background: linear-gradient(120deg, #f0f9ff, #e0f2fe);">
+                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-external-link-alt" style="color: var(--secondary);"></i>
+                    <span><strong>Nueva función:</strong> Haz clic en el botón "Ventana" en cualquier stream para abrirlo en una ventana flotante redimensionable y movible.</span>
+                </p>
+            </div>
         </div>
         
         <div class="streams-grid" id="streamsGrid">
@@ -565,6 +732,18 @@
             <p>Stream Manager Pro &copy; 2023 - Gestión de transmisiones en tiempo real</p>
         </footer>
     </div>
+    
+    <!-- Botón para mostrar ventanas flotantes -->
+    <button class="floating-windows-btn" id="floatingWindowsBtn" title="Ventanas flotantes activas">
+        <i class="fas fa-window-restore"></i>
+        <span class="badge" id="floatingWindowsCount">0</span>
+    </button>
+    
+    <!-- Overlay para ventanas flotantes -->
+    <div class="popup-overlay" id="popupOverlay"></div>
+    
+    <!-- Área para ventanas flotantes (se generan dinámicamente) -->
+    <div id="popupWindowsContainer"></div>
 
     <!-- Modal de confirmación -->
     <div class="modal" id="confirmModal">
@@ -602,9 +781,16 @@
         const closeModal = document.getElementById('closeModal');
         const cancelModal = document.getElementById('cancelModal');
         const confirmModalBtn = document.getElementById('confirmModalBtn');
+        const floatingWindowsBtn = document.getElementById('floatingWindowsBtn');
+        const floatingWindowsCount = document.getElementById('floatingWindowsCount');
+        const popupWindowsContainer = document.getElementById('popupWindowsContainer');
+        const popupOverlay = document.getElementById('popupOverlay');
         
         // Array para almacenar los streams
         let streams = JSON.parse(localStorage.getItem('streams')) || [];
+        
+        // Array para almacenar ventanas flotantes activas
+        let floatingWindows = [];
         
         // Cargar URL base guardada si existe
         const savedBaseUrl = localStorage.getItem('savedBaseUrl');
@@ -615,6 +801,12 @@
         
         // Variables para el modal
         let pendingAction = null;
+        
+        // Variables para arrastrar ventanas
+        let isDragging = false;
+        let currentPopup = null;
+        let offsetX = 0;
+        let offsetY = 0;
         
         // Función para actualizar la vista previa de URL
         function updateUrlPreview() {
@@ -681,6 +873,9 @@
                         <button class="control-btn reload" data-action="reload" data-index="${index}" title="Recargar transmisión">
                             <i class="fas fa-redo"></i> Recargar
                         </button>
+                        <button class="control-btn popout" data-action="popout" data-index="${index}" title="Abrir en ventana flotante">
+                            <i class="fas fa-external-link-alt"></i> Ventana
+                        </button>
                         <button class="control-btn remove" data-action="remove" data-index="${index}" title="Eliminar transmisión">
                             <i class="fas fa-trash"></i> Eliminar
                         </button>
@@ -714,6 +909,9 @@
                     }
                     showNotification(`Transmisión "${stream.name}" recargada`);
                     break;
+                case 'popout':
+                    openStreamPopup(stream.url, stream.name, index);
+                    break;
                 case 'remove':
                     showConfirmModal(
                         'Eliminar transmisión',
@@ -723,9 +921,323 @@
                             saveStreams();
                             renderStreams();
                             showNotification(`Transmisión "${stream.name}" eliminada`);
+                            
+                            // Cerrar ventana flotante si está abierta para este stream
+                            closeFloatingWindow(index);
                         }
                     );
                     break;
+            }
+        }
+        
+        // Función para abrir una ventana flotante
+        function openStreamPopup(url, title, streamIndex) {
+            // Verificar si ya existe una ventana para este stream
+            const existingWindowIndex = floatingWindows.findIndex(w => w.streamIndex === streamIndex);
+            if (existingWindowIndex !== -1) {
+                // Enfocar la ventana existente
+                const existingWindow = floatingWindows[existingWindowIndex];
+                focusFloatingWindow(existingWindow.id);
+                showNotification(`Ventana para "${title}" ya está abierta`);
+                return;
+            }
+            
+            // Crear ID único para la ventana
+            const windowId = `popup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Crear elemento de ventana flotante
+            const popupWindow = document.createElement('div');
+            popupWindow.className = 'popup-window';
+            popupWindow.id = windowId;
+            popupWindow.style.zIndex = 1000 + floatingWindows.length;
+            
+            // Posición inicial (en cascada)
+            const startTop = 50 + (floatingWindows.length * 30);
+            const startRight = 50 + (floatingWindows.length * 30);
+            popupWindow.style.top = `${startTop}px`;
+            popupWindow.style.right = `${startRight}px`;
+            
+            popupWindow.innerHTML = `
+                <div class="popup-header" id="${windowId}-header">
+                    <div class="popup-title">${title}</div>
+                    <div class="popup-controls">
+                        <button class="popup-btn" title="Recargar" data-action="reload">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="popup-btn" title="Pantalla completa" data-action="fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="popup-btn" title="Cerrar" data-action="close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="popup-content">
+                    <iframe class="popup-iframe" src="${url}" frameborder="0" allowfullscreen></iframe>
+                </div>
+            `;
+            
+            // Agregar al contenedor
+            popupWindowsContainer.appendChild(popupWindow);
+            
+            // Mostrar la ventana
+            setTimeout(() => {
+                popupWindow.classList.add('active');
+                popupOverlay.classList.add('active');
+            }, 10);
+            
+            // Configurar eventos para la ventana
+            setupPopupEvents(popupWindow, streamIndex, windowId, url, title);
+            
+            // Guardar referencia
+            floatingWindows.push({
+                id: windowId,
+                element: popupWindow,
+                streamIndex: streamIndex,
+                title: title,
+                url: url
+            });
+            
+            // Actualizar contador
+            updateFloatingWindowsCount();
+            
+            showNotification(`Ventana flotante abierta para "${title}"`);
+        }
+        
+        // Configurar eventos para una ventana flotante
+        function setupPopupEvents(popupWindow, streamIndex, windowId, url, title) {
+            const header = document.getElementById(`${windowId}-header`);
+            const controls = popupWindow.querySelectorAll('.popup-btn');
+            
+            // Eventos para controles
+            controls.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const action = this.getAttribute('data-action');
+                    
+                    switch(action) {
+                        case 'reload':
+                            const iframe = popupWindow.querySelector('.popup-iframe');
+                            if (iframe) {
+                                iframe.src = iframe.src;
+                            }
+                            showNotification(`Ventana "${title}" recargada`);
+                            break;
+                        case 'fullscreen':
+                            toggleFullscreen(popupWindow);
+                            break;
+                        case 'close':
+                            closeFloatingWindow(streamIndex);
+                            break;
+                    }
+                });
+            });
+            
+            // Eventos para arrastrar
+            header.addEventListener('mousedown', startDrag);
+            
+            // Hacer que la ventana sea redimensionable
+            makeResizable(popupWindow);
+            
+            // Traer al frente al hacer clic
+            popupWindow.addEventListener('mousedown', () => {
+                bringToFront(windowId);
+            });
+        }
+        
+        // Función para iniciar el arrastre de ventana
+        function startDrag(e) {
+            if (e.target.closest('.popup-btn')) return;
+            
+            isDragging = true;
+            currentPopup = e.target.closest('.popup-window');
+            
+            const rect = currentPopup.getBoundingClientRect();
+            offsetX = e.clientX - rect.right;
+            offsetY = e.clientY - rect.top;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            
+            // Traer al frente
+            bringToFront(currentPopup.id);
+        }
+        
+        // Función para arrastrar ventana
+        function drag(e) {
+            if (!isDragging || !currentPopup) return;
+            
+            e.preventDefault();
+            
+            // Calcular nueva posición
+            const right = window.innerWidth - e.clientX - offsetX;
+            const top = e.clientY - offsetY;
+            
+            // Limitar a los bordes de la ventana
+            const maxRight = window.innerWidth - 50;
+            const maxTop = window.innerHeight - 100;
+            
+            currentPopup.style.right = `${Math.min(Math.max(right, 50), maxRight)}px`;
+            currentPopup.style.top = `${Math.min(Math.max(top, 50), maxTop)}px`;
+        }
+        
+        // Función para detener el arrastre
+        function stopDrag() {
+            isDragging = false;
+            currentPopup = null;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+        
+        // Hacer una ventana redimensionable
+        function makeResizable(element) {
+            const resizeHandle = document.createElement('div');
+            resizeHandle.style.position = 'absolute';
+            resizeHandle.style.bottom = '0';
+            resizeHandle.style.right = '0';
+            resizeHandle.style.width = '20px';
+            resizeHandle.style.height = '20px';
+            resizeHandle.style.cursor = 'se-resize';
+            resizeHandle.style.zIndex = '1001';
+            resizeHandle.style.background = 'transparent';
+            
+            element.style.position = 'fixed';
+            element.appendChild(resizeHandle);
+            
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight, startRight, startTop;
+            
+            resizeHandle.addEventListener('mousedown', initResize);
+            
+            function initResize(e) {
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(getComputedStyle(element).width, 10);
+                startHeight = parseInt(getComputedStyle(element).height, 10);
+                startRight = parseInt(getComputedStyle(element).right, 10);
+                startTop = parseInt(getComputedStyle(element).top, 10);
+                
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+                
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function resize(e) {
+                if (!isResizing) return;
+                
+                const dx = startX - e.clientX;
+                const dy = e.clientY - startY;
+                
+                const newWidth = Math.max(400, startWidth + dx);
+                const newHeight = Math.max(300, startHeight + dy);
+                
+                element.style.width = `${newWidth}px`;
+                element.style.height = `${newHeight}px`;
+                
+                // Ajustar posición para que no se salga de la pantalla
+                const newRight = startRight + (startWidth - newWidth);
+                const newTop = startTop;
+                
+                element.style.right = `${newRight}px`;
+                element.style.top = `${newTop}px`;
+            }
+            
+            function stopResize() {
+                isResizing = false;
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+            }
+        }
+        
+        // Alternar pantalla completa para una ventana
+        function toggleFullscreen(popupWindow) {
+            if (!document.fullscreenElement) {
+                if (popupWindow.requestFullscreen) {
+                    popupWindow.requestFullscreen();
+                } else if (popupWindow.webkitRequestFullscreen) {
+                    popupWindow.webkitRequestFullscreen();
+                } else if (popupWindow.msRequestFullscreen) {
+                    popupWindow.msRequestFullscreen();
+                }
+                showNotification("Pantalla completa activada");
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                showNotification("Pantalla completa desactivada");
+            }
+        }
+        
+        // Traer una ventana al frente
+        function bringToFront(windowId) {
+            // Encontrar la ventana
+            const windowIndex = floatingWindows.findIndex(w => w.id === windowId);
+            if (windowIndex === -1) return;
+            
+            // Reorganizar z-index
+            floatingWindows.forEach((window, index) => {
+                const zIndex = 1000 + index;
+                window.element.style.zIndex = zIndex;
+            });
+            
+            // Mover la ventana seleccionada al final del array (frente)
+            const [selectedWindow] = floatingWindows.splice(windowIndex, 1);
+            floatingWindows.push(selectedWindow);
+            
+            // Actualizar z-index de todas las ventanas
+            floatingWindows.forEach((window, index) => {
+                window.element.style.zIndex = 1000 + index;
+            });
+        }
+        
+        // Cerrar una ventana flotante
+        function closeFloatingWindow(streamIndex) {
+            const windowIndex = floatingWindows.findIndex(w => w.streamIndex === streamIndex);
+            
+            if (windowIndex !== -1) {
+                const window = floatingWindows[windowIndex];
+                window.element.classList.remove('active');
+                
+                // Eliminar después de la animación
+                setTimeout(() => {
+                    if (window.element.parentNode) {
+                        window.element.parentNode.removeChild(window.element);
+                    }
+                }, 300);
+                
+                // Eliminar del array
+                floatingWindows.splice(windowIndex, 1);
+                
+                // Actualizar contador
+                updateFloatingWindowsCount();
+                
+                // Ocultar overlay si no hay ventanas
+                if (floatingWindows.length === 0) {
+                    popupOverlay.classList.remove('active');
+                }
+            }
+        }
+        
+        // Enfocar una ventana flotante
+        function focusFloatingWindow(windowId) {
+            bringToFront(windowId);
+        }
+        
+        // Actualizar contador de ventanas flotantes
+        function updateFloatingWindowsCount() {
+            floatingWindowsCount.textContent = floatingWindows.length;
+            
+            if (floatingWindows.length > 0) {
+                floatingWindowsBtn.style.display = 'flex';
+            } else {
+                floatingWindowsBtn.style.display = 'none';
             }
         }
         
@@ -809,6 +1321,16 @@
                         // Reemplazar todos los streams
                         streams = importedStreams;
                         showNotification(`Se importaron ${importedStreams.length} streams (reemplazando los existentes)`);
+                        
+                        // Cerrar todas las ventanas flotantes
+                        floatingWindows.forEach(window => {
+                            if (window.element.parentNode) {
+                                window.element.parentNode.removeChild(window.element);
+                            }
+                        });
+                        floatingWindows = [];
+                        updateFloatingWindowsCount();
+                        popupOverlay.classList.remove('active');
                     } else {
                         // Agregar a los streams existentes
                         const originalCount = streams.length;
@@ -845,6 +1367,16 @@
                     saveStreams();
                     renderStreams();
                     showNotification('Todos los streams han sido eliminados');
+                    
+                    // Cerrar todas las ventanas flotantes
+                    floatingWindows.forEach(window => {
+                        if (window.element.parentNode) {
+                            window.element.parentNode.removeChild(window.element);
+                        }
+                    });
+                    floatingWindows = [];
+                    updateFloatingWindowsCount();
+                    popupOverlay.classList.remove('active');
                 }
             );
         }
@@ -862,7 +1394,7 @@
                 padding: 15px 20px;
                 border-radius: 10px;
                 box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                z-index: 1000;
+                z-index: 2000;
                 font-weight: 600;
                 transform: translateX(150%);
                 transition: transform 0.3s ease;
@@ -880,7 +1412,9 @@
             setTimeout(() => {
                 notification.style.transform = 'translateX(150%)';
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
                 }, 300);
             }, 3000);
         }
@@ -925,6 +1459,19 @@
         // Limpiar todo
         clearAllBtn.addEventListener('click', clearAllStreams);
         
+        // Botón para mostrar todas las ventanas flotantes
+        floatingWindowsBtn.addEventListener('click', () => {
+            // Traer todas las ventanas al frente en orden
+            floatingWindows.forEach((window, index) => {
+                window.element.style.zIndex = 2000 + index;
+            });
+            
+            // Mostrar mensaje
+            if (floatingWindows.length > 0) {
+                showNotification(`${floatingWindows.length} ventana(s) flotante(s) activa(s)`);
+            }
+        });
+        
         // Modal events
         closeModal.addEventListener('click', () => {
             confirmModal.style.display = 'none';
@@ -946,10 +1493,44 @@
             if (e.target === confirmModal) {
                 confirmModal.style.display = 'none';
             }
+            
+            // Cerrar overlay si se hace clic en él
+            if (e.target === popupOverlay) {
+                // Cerrar todas las ventanas flotantes
+                floatingWindows.forEach(window => {
+                    window.element.classList.remove('active');
+                    setTimeout(() => {
+                        if (window.element.parentNode) {
+                            window.element.parentNode.removeChild(window.element);
+                        }
+                    }, 300);
+                });
+                
+                floatingWindows = [];
+                updateFloatingWindowsCount();
+                popupOverlay.classList.remove('active');
+            }
         });
+        
+        // Manejar salida de pantalla completa
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        function handleFullscreenChange() {
+            if (!document.fullscreenElement && 
+                !document.webkitFullscreenElement &&
+                !document.mozFullScreenElement &&
+                !document.msFullscreenElement) {
+                // Salimos de pantalla completa
+                showNotification("Saliste del modo pantalla completa");
+            }
+        }
         
         // Inicializar la aplicación
         renderStreams();
+        updateFloatingWindowsCount();
     </script>
 </body>
 </html>
