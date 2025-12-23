@@ -385,7 +385,7 @@
             padding: 20px;
         }
         
-        /* Ventana flotante - ARREGLADA */
+        /* Ventana flotante */
         .popup-window {
             position: fixed;
             top: 100px;
@@ -457,7 +457,6 @@
             position: relative;
         }
         
-        /* ESTO ES IMPORTANTE: El iframe debe ocupar TODO el espacio disponible */
         .popup-iframe {
             position: absolute;
             top: 0;
@@ -468,7 +467,6 @@
             object-fit: contain;
         }
         
-        /* Control para redimensionar */
         .popup-resize-handle {
             position: absolute;
             bottom: 0;
@@ -480,7 +478,6 @@
             z-index: 1001;
         }
         
-        /* Overlay para ventanas flotantes */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -496,7 +493,6 @@
             display: block;
         }
         
-        /* Botón para mostrar todas las ventanas flotantes */
         .floating-windows-btn {
             position: fixed;
             bottom: 30px;
@@ -699,7 +695,7 @@
                 </div>
                 <div class="form-group">
                     <label for="streamUrl">URL Base de Transmisión</label>
-                    <input type="text" id="streamUrl" class="form-control" placeholder="https://tuservidor.com/ruta/stream">
+                    <input type="text" id="streamUrl" class="form-control" value="https://irc.elchatcam.com:4000/subscribe.html" placeholder="https://irc.elchatcam.com:4000/subscribe.html">
                 </div>
                 <div class="form-group" style="display: flex; align-items: flex-end;">
                     <button class="btn btn-primary" id="addStreamBtn" style="height: 50px; white-space: nowrap;">
@@ -809,26 +805,27 @@
         // Array para almacenar los streams
         let streams = JSON.parse(localStorage.getItem('streams')) || [];
         
-        // Array para almacenar ventanas flotantes activas
-        let floatingWindows = [];
-        
         // Cargar URL base guardada si existe
         const savedBaseUrl = localStorage.getItem('savedBaseUrl');
         if (savedBaseUrl) {
             streamUrlInput.value = savedBaseUrl;
+            updateUrlPreview();
+        } else {
+            // Establecer valor por defecto si no hay URL guardada
+            streamUrlInput.value = "https://irc.elchatcam.com:4000/subscribe.html";
             updateUrlPreview();
         }
         
         // Variables para el modal
         let pendingAction = null;
         
-        // Variables para arrastrar ventanas (ARREGLADO)
+        // Variables para arrastrar ventanas
         let isDragging = false;
         let currentPopup = null;
         let dragOffsetX = 0;
         let dragOffsetY = 0;
         
-        // Función para actualizar la vista previa de URL
+        // Función para actualizar la vista previa de URL - CORREGIDA
         function updateUrlPreview() {
             const name = streamNameInput.value.trim();
             const baseUrl = streamUrlInput.value.trim();
@@ -836,6 +833,7 @@
             if (name && baseUrl) {
                 // Verificar si la URL base ya tiene parámetros
                 const separator = baseUrl.includes('?') ? '&' : '?';
+                // CAMBIO IMPORTANTE: user → ownerId
                 const finalUrl = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
                 previewUrl.textContent = finalUrl;
                 urlPreview.classList.add('active');
@@ -1039,7 +1037,7 @@
             showNotification(`Ventana flotante abierta para "${title}" (tamaño completo)`);
         }
         
-        // Configurar eventos para una ventana flotante (ARREGLADO)
+        // Configurar eventos para una ventana flotante
         function setupPopupEvents(popupWindow, streamIndex, windowId, url, title) {
             const header = document.getElementById(`${windowId}-header`);
             const controls = popupWindow.querySelectorAll('.popup-btn');
@@ -1069,7 +1067,7 @@
                 });
             });
             
-            // Eventos para arrastrar - ARREGLADO
+            // Eventos para arrastrar
             header.addEventListener('mousedown', (e) => {
                 startDrag(e, popupWindow);
             });
@@ -1083,7 +1081,7 @@
             });
         }
         
-        // Función para iniciar el arrastre de ventana - ARREGLADO
+        // Función para iniciar el arrastre de ventana
         function startDrag(e, popupWindow) {
             if (e.target.closest('.popup-btn')) return;
             
@@ -1104,7 +1102,7 @@
             e.preventDefault();
         }
         
-        // Función para arrastrar ventana - ARREGLADO
+        // Función para arrastrar ventana
         function drag(e) {
             if (!isDragging || !currentPopup) return;
             
@@ -1128,7 +1126,7 @@
             document.removeEventListener('mouseup', stopDrag);
         }
         
-        // Hacer una ventana redimensionable - MEJORADO
+        // Hacer una ventana redimensionable
         function makeResizable(element, resizeHandle) {
             let isResizing = false;
             let startX, startY, startWidth, startHeight, startLeft, startTop;
@@ -1282,7 +1280,7 @@
             }
         }
         
-        // Función para agregar un nuevo stream
+        // Función para agregar un nuevo stream - CORREGIDA
         function addStream(name, baseUrl) {
             if (!name) {
                 alert('Por favor, ingresa un nombre de usuario');
@@ -1295,8 +1293,9 @@
             }
             
             // Construir la URL final concatenando el nombre de usuario
+            // CAMBIO IMPORTANTE: user → ownerId
             const separator = baseUrl.includes('?') ? '&' : '?';
-            const finalUrl = `${baseUrl}${separator}user=${encodeURIComponent(name)}`;
+            const finalUrl = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
             
             streams.push({
                 name: name,
@@ -1358,9 +1357,27 @@
                         }
                     }
                     
+                    // Función para actualizar URLs antiguas si es necesario
+                    function updateOldUrls(streamArray) {
+                        return streamArray.map(stream => {
+                            // Si la URL contiene "?user=", cambiar a "?ownerId="
+                            if (stream.url.includes('?user=')) {
+                                stream.url = stream.url.replace('?user=', '?ownerId=');
+                            }
+                            // Si la URL contiene "&user=", cambiar a "&ownerId="
+                            if (stream.url.includes('&user=')) {
+                                stream.url = stream.url.replace('&user=', '&ownerId=');
+                            }
+                            return stream;
+                        });
+                    }
+                    
+                    // Actualizar URLs antiguas si es necesario
+                    const updatedStreams = updateOldUrls(importedStreams);
+                    
                     if (replace) {
                         // Reemplazar todos los streams
-                        streams = importedStreams;
+                        streams = updatedStreams;
                         showNotification(`Se importaron ${importedStreams.length} streams (reemplazando los existentes)`);
                         
                         // Cerrar todas las ventanas flotantes
@@ -1375,7 +1392,7 @@
                     } else {
                         // Agregar a los streams existentes
                         const originalCount = streams.length;
-                        streams = streams.concat(importedStreams);
+                        streams = streams.concat(updatedStreams);
                         showNotification(`Se agregaron ${importedStreams.length} nuevos streams`);
                     }
                     
@@ -1569,9 +1586,40 @@
             }
         }
         
+        // Función para actualizar automáticamente streams antiguos
+        function updateOldStreams() {
+            let updated = false;
+            streams = streams.map(stream => {
+                // Si la URL contiene "?user=", cambiar a "?ownerId="
+                if (stream.url.includes('?user=')) {
+                    stream.url = stream.url.replace('?user=', '?ownerId=');
+                    updated = true;
+                }
+                // Si la URL contiene "&user=", cambiar a "&ownerId="
+                if (stream.url.includes('&user=')) {
+                    stream.url = stream.url.replace('&user=', '&ownerId=');
+                    updated = true;
+                }
+                return stream;
+            });
+            
+            if (updated) {
+                saveStreams();
+                console.log("Streams antiguos actualizados automáticamente");
+            }
+        }
+        
         // Inicializar la aplicación
+        updateOldStreams(); // Actualizar streams antiguos si existen
         renderStreams();
         updateFloatingWindowsCount();
+        
+        // Mostrar mensaje de bienvenida
+        setTimeout(() => {
+            if (streams.length > 0) {
+                showNotification(`Cargados ${streams.length} streams correctamente`);
+            }
+        }, 500);
     </script>
 </body>
 </html>
