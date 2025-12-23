@@ -836,7 +836,7 @@
             if (name && baseUrl) {
                 // Verificar si la URL base ya tiene parámetros
                 const separator = baseUrl.includes('?') ? '&' : '?';
-                const finalUrl = `${baseUrl}${separator}user=${encodeURIComponent(name)}`;
+                const finalUrl = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
                 previewUrl.textContent = finalUrl;
                 urlPreview.classList.add('active');
             } else {
