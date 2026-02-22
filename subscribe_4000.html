@@ -5,63 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stream Manager Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    // Agrega esto en el <head> o antes de cargar los iframes
-<script>
-// Interceptar RTCPeerConnection para forzar H.264
-const originalRTCPeerConnection = window.RTCPeerConnection;
-
-window.RTCPeerConnection = function(config, constraints) {
-    // Forzar códecs H.264 en la configuración
-    if (config && config.sdpSemantics === 'unified-plan') {
-        // Configuración ya moderna, no hacer nada
-    }
-    
-    const pc = new originalRTCPeerConnection(config, constraints);
-    
-    // Interceptar createOffer para modificar SDP
-    const originalCreateOffer = pc.createOffer.bind(pc);
-    pc.createOffer = function(options) {
-        return originalCreateOffer(options).then(offer => {
-            // Forzar H.264 en el SDP
-            let sdp = offer.sdp;
-            
-            // Priorizar H.264 sobre VP8/VP9
-            sdp = sdp.replace(/(m=video.*\r\n)/g, '$1b=AS:2000\r\n');
-            
-            // Mover H.264 al principio de la lista de códecs
-            const h264Regex = /(a=rtpmap:(\d+) H264\/90000\r\n)/g;
-            const h264Matches = [...sdp.matchAll(h264Regex)];
-            
-            if (h264Matches.length > 0) {
-                // Reordenar para poner H.264 primero
-                const lines = sdp.split('\r\n');
-                const h264Lines = [];
-                const otherLines = [];
-                
-                lines.forEach(line => {
-                    if (line.includes('H264') || line.includes('h264')) {
-                        h264Lines.push(line);
-                    } else if (!line.includes('VP8') && !line.includes('VP9') && !line.includes('rtx')) {
-                        otherLines.push(line);
-                    } else if (line.includes('rtpmap') && (line.includes('VP8') || line.includes('VP9'))) {
-                        // Ignorar líneas de VP8/VP9 para deshabilitarlos
-                    } else {
-                        otherLines.push(line);
-                    }
-                });
-                
-                // Reconstruir SDP con H.264 primero
-                // Esto es una simplificación, en producción usarías un parser SDP más robusto
-            }
-            
-            offer.sdp = sdp;
-            return offer;
-        });
-    };
-    
-    return pc;
-};
-</script>
     <style>
         :root {
             --primary: #6366f1;
@@ -88,13 +31,11 @@ window.RTCPeerConnection = function(config, constraints) {
             color: var(--dark);
             min-height: 100vh;
             padding: 20px;
-            overflow-x: hidden;
         }
         
         .dashboard {
             max-width: 1600px;
             margin: 0 auto;
-            position: relative;
         }
         
         .header {
@@ -107,6 +48,8 @@ window.RTCPeerConnection = function(config, constraints) {
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 20px;
         }
         
         .logo {
@@ -130,7 +73,6 @@ window.RTCPeerConnection = function(config, constraints) {
         .logo-text h1 {
             font-size: 1.8rem;
             font-weight: 800;
-            color: var(--dark);
             line-height: 1.2;
         }
         
@@ -142,6 +84,7 @@ window.RTCPeerConnection = function(config, constraints) {
         .user-controls {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -156,6 +99,8 @@ window.RTCPeerConnection = function(config, constraints) {
             gap: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             font-size: 0.95rem;
+            background: white;
+            color: var(--dark);
         }
         
         .btn-primary {
@@ -166,7 +111,6 @@ window.RTCPeerConnection = function(config, constraints) {
         .btn-primary:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
         }
         
         .btn-success {
@@ -176,11 +120,9 @@ window.RTCPeerConnection = function(config, constraints) {
         
         .btn-success:hover {
             background: #0da271;
-            transform: translateY(-2px);
         }
         
         .btn-outline {
-            background: transparent;
             border: 2px solid var(--primary);
             color: var(--primary);
         }
@@ -188,6 +130,15 @@ window.RTCPeerConnection = function(config, constraints) {
         .btn-outline:hover {
             background: var(--primary);
             color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
         }
         
         .control-panel {
@@ -200,15 +151,11 @@ window.RTCPeerConnection = function(config, constraints) {
         }
         
         .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 25px;
         }
         
         .panel-header h2 {
             font-size: 1.6rem;
-            color: var(--dark);
             font-weight: 700;
         }
         
@@ -217,6 +164,7 @@ window.RTCPeerConnection = function(config, constraints) {
             grid-template-columns: 1fr 1fr auto;
             gap: 20px;
             margin-bottom: 20px;
+            align-items: end;
         }
         
         .form-group {
@@ -225,10 +173,8 @@ window.RTCPeerConnection = function(config, constraints) {
         }
         
         .form-group label {
-            display: block;
             margin-bottom: 10px;
             font-weight: 600;
-            color: var(--dark);
             font-size: 0.95rem;
         }
         
@@ -254,10 +200,10 @@ window.RTCPeerConnection = function(config, constraints) {
             border: 1px dashed #cbd5e1;
             border-radius: 12px;
             padding: 15px;
-            margin-top: 10px;
             font-family: monospace;
             color: var(--gray);
             display: none;
+            word-break: break-all;
         }
         
         .url-preview.active {
@@ -275,13 +221,13 @@ window.RTCPeerConnection = function(config, constraints) {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid var(--border);
+            flex-wrap: wrap;
         }
         
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
             display: inline-block;
-            flex: 1;
         }
         
         .file-input-wrapper input[type=file] {
@@ -309,6 +255,7 @@ window.RTCPeerConnection = function(config, constraints) {
             display: flex;
             flex-direction: column;
             border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease;
         }
         
         .stream-card:hover {
@@ -328,6 +275,7 @@ window.RTCPeerConnection = function(config, constraints) {
         .stream-title {
             font-weight: 700;
             font-size: 1.2rem;
+            word-break: break-all;
         }
         
         .stream-status {
@@ -338,6 +286,7 @@ window.RTCPeerConnection = function(config, constraints) {
             background: rgba(255, 255, 255, 0.2);
             padding: 6px 12px;
             border-radius: 20px;
+            white-space: nowrap;
         }
         
         .status-indicator {
@@ -368,7 +317,6 @@ window.RTCPeerConnection = function(config, constraints) {
             display: flex;
             gap: 15px;
             justify-content: center;
-            flex-wrap: wrap;
         }
         
         .control-btn {
@@ -384,17 +332,8 @@ window.RTCPeerConnection = function(config, constraints) {
             font-size: 0.9rem;
         }
         
-        .control-btn i {
-            font-size: 1.1rem;
-        }
-        
         .control-btn.reload {
             background: var(--primary);
-            color: white;
-        }
-        
-        .control-btn.popout {
-            background: var(--secondary);
             color: white;
         }
         
@@ -424,7 +363,6 @@ window.RTCPeerConnection = function(config, constraints) {
         .empty-state h3 {
             font-size: 1.8rem;
             margin-bottom: 15px;
-            font-weight: 700;
         }
         
         .empty-state p {
@@ -442,228 +380,12 @@ window.RTCPeerConnection = function(config, constraints) {
             padding: 20px;
         }
         
-        /* Ventana flotante */
-        .popup-window {
-            position: fixed;
-            top: 100px;
-            left: 100px;
-            width: 800px;
-            height: 600px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            resize: both;
-            overflow: hidden;
-            min-width: 500px;
-            min-height: 400px;
-        }
-        
-        .popup-window.active {
-            display: flex;
-            animation: popupFadeIn 0.3s ease;
-        }
-        
-        .popup-header {
-            background: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: move;
-            user-select: none;
-        }
-        
-        .popup-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .popup-controls {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .popup-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .popup-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .popup-content {
-            flex: 1;
-            background: #1a1a1a;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .popup-iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            object-fit: contain;
-        }
-        
-        .popup-resize-handle {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 20px;
-            height: 20px;
-            cursor: se-resize;
-            background: transparent;
-            z-index: 1001;
-        }
-        
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-        
-        .popup-overlay.active {
-            display: block;
-        }
-        
-        .floating-windows-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 998;
-            background: var(--primary);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-        }
-        
-        .floating-windows-btn:hover {
-            transform: scale(1.1);
-            background: var(--primary-dark);
-        }
-        
-        .floating-windows-btn .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--danger);
-            color: white;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        @media (max-width: 1200px) {
-            .streams-grid {
-                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            }
-            
-            .popup-window {
-                width: 700px;
-                height: 500px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .streams-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .add-stream-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 20px;
-                align-items: flex-start;
-            }
-            
-            .user-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .import-export-section {
-                flex-direction: column;
-            }
-            
-            .popup-window {
-                width: 90vw;
-                height: 70vh;
-                top: 20px;
-                left: 20px;
-                min-width: 300px;
-                min-height: 300px;
-            }
-        }
-        
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes popupFadeIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .stream-card {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
         .highlight {
             background: linear-gradient(120deg, #f0f9ff, #e0f2fe);
             border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
         }
         
         .modal {
@@ -679,6 +401,10 @@ window.RTCPeerConnection = function(config, constraints) {
             justify-content: center;
         }
         
+        .modal.active {
+            display: flex;
+        }
+        
         .modal-content {
             background: white;
             border-radius: 20px;
@@ -686,6 +412,7 @@ window.RTCPeerConnection = function(config, constraints) {
             max-width: 500px;
             width: 90%;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: popupFadeIn 0.3s ease;
         }
         
         .modal-header {
@@ -697,7 +424,6 @@ window.RTCPeerConnection = function(config, constraints) {
         
         .modal-header h3 {
             font-size: 1.5rem;
-            color: var(--dark);
         }
         
         .close-modal {
@@ -712,6 +438,61 @@ window.RTCPeerConnection = function(config, constraints) {
             display: flex;
             gap: 15px;
             margin-top: 25px;
+            justify-content: flex-end;
+        }
+        
+        @media (max-width: 768px) {
+            .streams-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-stream-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            font-weight: 600;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
         }
     </style>
 </head>
@@ -732,10 +513,10 @@ window.RTCPeerConnection = function(config, constraints) {
                     <i class="fas fa-download"></i> Exportar
                 </button>
                 <div class="file-input-wrapper">
-                    <button class="btn btn-success" id="importBtn">
+                    <button class="btn btn-success">
                         <i class="fas fa-upload"></i> Importar
                     </button>
-                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                    <input type="file" id="importFile" accept=".json">
                 </div>
             </div>
         </header>
@@ -752,13 +533,11 @@ window.RTCPeerConnection = function(config, constraints) {
                 </div>
                 <div class="form-group">
                     <label for="streamUrl">URL Base de Transmisión</label>
-                    <input type="text" id="streamUrl" class="form-control" value="https://irc.elchatcam.com:4000/subscribe.html" placeholder="https://irc.elchatcam.com:4000/subscribe.html">
+                    <input type="text" id="streamUrl" class="form-control" placeholder="https://irc.elchatcam.com:4000/subscribe.html">
                 </div>
-                <div class="form-group" style="display: flex; align-items: flex-end;">
-                    <button class="btn btn-primary" id="addStreamBtn" style="height: 50px; white-space: nowrap;">
-                        <i class="fas fa-plus-circle"></i> Agregar Stream
-                    </button>
-                </div>
+                <button class="btn btn-primary" id="addStreamBtn" style="height: 50px;">
+                    <i class="fas fa-plus-circle"></i> Agregar Stream
+                </button>
                 
                 <div class="url-preview" id="urlPreview">
                     <strong>URL que se generará:</strong> <span id="previewUrl"></span>
@@ -767,7 +546,7 @@ window.RTCPeerConnection = function(config, constraints) {
             
             <div class="import-export-section">
                 <div class="file-input-wrapper">
-                    <button class="btn btn-outline" id="importReplaceBtn">
+                    <button class="btn btn-outline">
                         <i class="fas fa-file-import"></i> Importar y Reemplazar
                     </button>
                     <input type="file" id="importReplaceFile" accept=".json">
@@ -778,17 +557,10 @@ window.RTCPeerConnection = function(config, constraints) {
                 </button>
             </div>
             
-            <div class="highlight" style="padding: 15px; border-radius: 12px; margin-top: 15px;">
+            <div class="highlight">
                 <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-info-circle" style="color: var(--primary);"></i>
                     <span>Usa "Importar" para agregar streams desde un archivo, o "Importar y Reemplazar" para sustituir todos los streams actuales</span>
-                </p>
-            </div>
-            
-            <div class="highlight" style="padding: 15px; border-radius: 12px; margin-top: 15px; background: linear-gradient(120deg, #f0f9ff, #e0f2fe);">
-                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-external-link-alt" style="color: var(--secondary);"></i>
-                    <span><strong>Nueva función:</strong> Haz clic en el botón "Ventana" en cualquier stream para abrirlo en una ventana flotante redimensionable y movible. ¡Ahora se muestra en tamaño completo!</span>
                 </p>
             </div>
         </div>
@@ -805,873 +577,354 @@ window.RTCPeerConnection = function(config, constraints) {
             <p>Stream Manager Pro &copy; 2023 - Gestión de transmisiones en tiempo real</p>
         </footer>
     </div>
-    
-    <!-- Botón para mostrar ventanas flotantes -->
-    <button class="floating-windows-btn" id="floatingWindowsBtn" title="Ventanas flotantes activas">
-        <i class="fas fa-window-restore"></i>
-        <span class="badge" id="floatingWindowsCount">0</span>
-    </button>
-    
-    <!-- Overlay para ventanas flotantes -->
-    <div class="popup-overlay" id="popupOverlay"></div>
-    
-    <!-- Área para ventanas flotantes (se generan dinámicamente) -->
-    <div id="popupWindowsContainer"></div>
 
     <!-- Modal de confirmación -->
     <div class="modal" id="confirmModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">Confirmar acción</h3>
-                <button class="close-modal" id="closeModal">&times;</button>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
             <p id="modalMessage">¿Estás seguro de que quieres realizar esta acción?</p>
             <div class="modal-actions">
-                <button class="btn btn-outline" id="cancelModal">Cancelar</button>
+                <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
                 <button class="btn btn-danger" id="confirmModalBtn">Confirmar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Elementos DOM
-        const streamsGrid = document.getElementById('streamsGrid');
-        const emptyState = document.getElementById('emptyState');
-        const addStreamBtn = document.getElementById('addStreamBtn');
-        const streamNameInput = document.getElementById('streamName');
-        const streamUrlInput = document.getElementById('streamUrl');
-        const exportBtn = document.getElementById('exportBtn');
-        const importBtn = document.getElementById('importBtn');
-        const importFile = document.getElementById('importFile');
-        const importReplaceBtn = document.getElementById('importReplaceBtn');
-        const importReplaceFile = document.getElementById('importReplaceFile');
-        const clearAllBtn = document.getElementById('clearAllBtn');
-        const urlPreview = document.getElementById('urlPreview');
-        const previewUrl = document.getElementById('previewUrl');
-        const confirmModal = document.getElementById('confirmModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const closeModal = document.getElementById('closeModal');
-        const cancelModal = document.getElementById('cancelModal');
-        const confirmModalBtn = document.getElementById('confirmModalBtn');
-        const floatingWindowsBtn = document.getElementById('floatingWindowsBtn');
-        const floatingWindowsCount = document.getElementById('floatingWindowsCount');
-        const popupWindowsContainer = document.getElementById('popupWindowsContainer');
-        const popupOverlay = document.getElementById('popupOverlay');
-        
-        // Array para almacenar los streams
+        // Estado de la aplicación
         let streams = JSON.parse(localStorage.getItem('streams')) || [];
-        
-        // Cargar URL base guardada si existe
+        let modalCallback = null;
+        let modalConfirmBtn = null;
+
+        // Referencias DOM
+        const elements = {
+            grid: document.getElementById('streamsGrid'),
+            empty: document.getElementById('emptyState'),
+            nameInput: document.getElementById('streamName'),
+            urlInput: document.getElementById('streamUrl'),
+            preview: document.getElementById('urlPreview'),
+            previewUrl: document.getElementById('previewUrl'),
+            modal: document.getElementById('confirmModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            modalMessage: document.getElementById('modalMessage')
+        };
+
+        // Inicializar URL base guardada
         const savedBaseUrl = localStorage.getItem('savedBaseUrl');
         if (savedBaseUrl) {
-            streamUrlInput.value = savedBaseUrl;
-            updateUrlPreview();
+            elements.urlInput.value = savedBaseUrl;
         } else {
-            // Establecer valor por defecto si no hay URL guardada
-            streamUrlInput.value = "https://irc.elchatcam.com:4000/subscribe.html";
-            updateUrlPreview();
+            elements.urlInput.value = "https://irc.elchatcam.com:4000/subscribe.html";
         }
+
+        // Event Listeners
+        document.getElementById('addStreamBtn').addEventListener('click', addStream);
+        elements.nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addStream();
+        });
+        elements.nameInput.addEventListener('input', updatePreview);
+        elements.urlInput.addEventListener('input', updatePreview);
         
-        // Variables para el modal
-        let pendingAction = null;
-        
-        // Variables para arrastrar ventanas
-        let isDragging = false;
-        let currentPopup = null;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-        
-        // Función para actualizar la vista previa de URL - CORREGIDA
-        function updateUrlPreview() {
-            const name = streamNameInput.value.trim();
-            const baseUrl = streamUrlInput.value.trim();
+        document.getElementById('exportBtn').addEventListener('click', exportStreams);
+        document.getElementById('importFile').addEventListener('change', (e) => importStreams(e.target.files[0], false));
+        document.getElementById('importReplaceFile').addEventListener('change', (e) => importStreams(e.target.files[0], true));
+        document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+
+        // Cerrar modal al hacer clic fuera
+        elements.modal.addEventListener('click', (e) => {
+            if (e.target === elements.modal) closeModal();
+        });
+
+        function updatePreview() {
+            const name = elements.nameInput.value.trim();
+            const baseUrl = elements.urlInput.value.trim();
             
             if (name && baseUrl) {
-                // Verificar si la URL base ya tiene parámetros
                 const separator = baseUrl.includes('?') ? '&' : '?';
-                // CAMBIO IMPORTANTE: user → ownerId
-                const finalUrl = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
-                previewUrl.textContent = finalUrl;
-                urlPreview.classList.add('active');
+                elements.previewUrl.textContent = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
+                elements.preview.classList.add('active');
             } else {
-                urlPreview.classList.remove('active');
+                elements.preview.classList.remove('active');
             }
         }
-        
-        // Event listeners para actualizar la vista previa
-        streamNameInput.addEventListener('input', updateUrlPreview);
-        streamUrlInput.addEventListener('input', updateUrlPreview);
-        
-        // Función para guardar streams en localStorage
-        function saveStreams() {
-            localStorage.setItem('streams', JSON.stringify(streams));
-        }
-        
-        // Función para guardar la URL base actual
-        function saveBaseUrl() {
-            const baseUrl = streamUrlInput.value.trim();
-            if (baseUrl) {
-                localStorage.setItem('savedBaseUrl', baseUrl);
-            }
-        }
-        
-        // Función para renderizar los streams
-        function renderStreams() {
-            streamsGrid.innerHTML = '';
+
+        function addStream() {
+            const name = elements.nameInput.value.trim();
+            const baseUrl = elements.urlInput.value.trim();
             
-            if (streams.length === 0) {
-                streamsGrid.appendChild(emptyState);
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            
-            streams.forEach((stream, index) => {
-                const streamCard = document.createElement('div');
-                streamCard.className = 'stream-card';
-                streamCard.dataset.index = index;
-                
-                streamCard.innerHTML = `
-                    <div class="stream-header">
-                        <div class="stream-title">${stream.name}</div>
-                        <div class="stream-status">
-                            <span class="status-indicator"></span>
-                            En Vivo
-                        </div>
-                    </div>
-                    <div class="stream-container">
-                        <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>
-                    </div>
-                    <div class="stream-controls">
-                        <button class="control-btn reload" data-action="reload" data-index="${index}" title="Recargar transmisión">
-                            <i class="fas fa-redo"></i> Recargar
-                        </button>
-                        <button class="control-btn popout" data-action="popout" data-index="${index}" title="Abrir en ventana flotante">
-                            <i class="fas fa-external-link-alt"></i> Ventana
-                        </button>
-                        <button class="control-btn remove" data-action="remove" data-index="${index}" title="Eliminar transmisión">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </div>
-                `;
-                
-                streamsGrid.appendChild(streamCard);
-            });
-            
-            // Agregar event listeners a los botones de control individuales
-            document.querySelectorAll('.control-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const action = this.getAttribute('data-action');
-                    const index = parseInt(this.getAttribute('data-index'));
-                    
-                    handleStreamAction(index, action);
-                });
-            });
-        }
-        
-        // Función para manejar las acciones de los streams individualmente
-        function handleStreamAction(index, action) {
-            const stream = streams[index];
-            
-            switch(action) {
-                case 'reload':
-                    // Para recargar, forzamos una actualización del iframe
-                    const iframe = document.querySelector(`[data-index="${index}"] .stream-frame`);
-                    if (iframe) {
-                        iframe.src = iframe.src;
-                    }
-                    showNotification(`Transmisión "${stream.name}" recargada`);
-                    break;
-                case 'popout':
-                    openStreamPopup(stream.url, stream.name, index);
-                    break;
-                case 'remove':
-                    showConfirmModal(
-                        'Eliminar transmisión',
-                        `¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`,
-                        () => {
-                            streams.splice(index, 1);
-                            saveStreams();
-                            renderStreams();
-                            showNotification(`Transmisión "${stream.name}" eliminada`);
-                            
-                            // Cerrar ventana flotante si está abierta para este stream
-                            closeFloatingWindow(index);
-                        }
-                    );
-                    break;
-            }
-        }
-        
-        // Función para abrir una ventana flotante
-        function openStreamPopup(url, title, streamIndex) {
-            // Verificar si ya existe una ventana para este stream
-            const existingWindowIndex = floatingWindows.findIndex(w => w.streamIndex === streamIndex);
-            if (existingWindowIndex !== -1) {
-                // Enfocar la ventana existente
-                const existingWindow = floatingWindows[existingWindowIndex];
-                focusFloatingWindow(existingWindow.id);
-                showNotification(`Ventana para "${title}" ya está abierta`);
-                return;
-            }
-            
-            // Crear ID único para la ventana
-            const windowId = `popup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            
-            // Crear elemento de ventana flotante
-            const popupWindow = document.createElement('div');
-            popupWindow.className = 'popup-window';
-            popupWindow.id = windowId;
-            popupWindow.style.zIndex = 1000 + floatingWindows.length;
-            
-            // Posición inicial (en cascada)
-            const startTop = 100 + (floatingWindows.length * 40);
-            const startLeft = 100 + (floatingWindows.length * 40);
-            popupWindow.style.top = `${startTop}px`;
-            popupWindow.style.left = `${startLeft}px`;
-            
-            popupWindow.innerHTML = `
-                <div class="popup-header" id="${windowId}-header">
-                    <div class="popup-title">${title}</div>
-                    <div class="popup-controls">
-                        <button class="popup-btn" title="Recargar" data-action="reload">
-                            <i class="fas fa-redo"></i>
-                        </button>
-                        <button class="popup-btn" title="Pantalla completa" data-action="fullscreen">
-                            <i class="fas fa-expand"></i>
-                        </button>
-                        <button class="popup-btn" title="Cerrar" data-action="close">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="popup-content">
-                    <iframe class="popup-iframe" src="${url}" frameborder="0" allowfullscreen allow="autoplay; fullscreen"></iframe>
-                    <div class="popup-resize-handle"></div>
-                </div>
-            `;
-            
-            // Agregar al contenedor
-            popupWindowsContainer.appendChild(popupWindow);
-            
-            // Mostrar la ventana
-            setTimeout(() => {
-                popupWindow.classList.add('active');
-                popupOverlay.classList.add('active');
-                
-                // Configurar el iframe para que ocupe todo el espacio
-                const iframe = popupWindow.querySelector('.popup-iframe');
-                if (iframe) {
-                    // Asegurar que el iframe tenga las dimensiones correctas
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                    iframe.style.objectFit = 'contain';
-                    
-                    // Forzar una recarga para asegurar que se muestre el tamaño completo
-                    setTimeout(() => {
-                        iframe.src = iframe.src;
-                    }, 100);
-                }
-            }, 10);
-            
-            // Configurar eventos para la ventana
-            setupPopupEvents(popupWindow, streamIndex, windowId, url, title);
-            
-            // Guardar referencia
-            floatingWindows.push({
-                id: windowId,
-                element: popupWindow,
-                streamIndex: streamIndex,
-                title: title,
-                url: url
-            });
-            
-            // Actualizar contador
-            updateFloatingWindowsCount();
-            
-            showNotification(`Ventana flotante abierta para "${title}" (tamaño completo)`);
-        }
-        
-        // Configurar eventos para una ventana flotante
-        function setupPopupEvents(popupWindow, streamIndex, windowId, url, title) {
-            const header = document.getElementById(`${windowId}-header`);
-            const controls = popupWindow.querySelectorAll('.popup-btn');
-            const resizeHandle = popupWindow.querySelector('.popup-resize-handle');
-            
-            // Eventos para controles
-            controls.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const action = this.getAttribute('data-action');
-                    
-                    switch(action) {
-                        case 'reload':
-                            const iframe = popupWindow.querySelector('.popup-iframe');
-                            if (iframe) {
-                                iframe.src = iframe.src;
-                            }
-                            showNotification(`Ventana "${title}" recargada`);
-                            break;
-                        case 'fullscreen':
-                            toggleFullscreen(popupWindow);
-                            break;
-                        case 'close':
-                            closeFloatingWindow(streamIndex);
-                            break;
-                    }
-                });
-            });
-            
-            // Eventos para arrastrar
-            header.addEventListener('mousedown', (e) => {
-                startDrag(e, popupWindow);
-            });
-            
-            // Hacer que la ventana sea redimensionable
-            makeResizable(popupWindow, resizeHandle);
-            
-            // Traer al frente al hacer clic
-            popupWindow.addEventListener('mousedown', () => {
-                bringToFront(windowId);
-            });
-        }
-        
-        // Función para iniciar el arrastre de ventana
-        function startDrag(e, popupWindow) {
-            if (e.target.closest('.popup-btn')) return;
-            
-            isDragging = true;
-            currentPopup = popupWindow;
-            
-            // Calcular el desplazamiento desde el borde superior izquierdo de la ventana
-            const rect = currentPopup.getBoundingClientRect();
-            dragOffsetX = e.clientX - rect.left;
-            dragOffsetY = e.clientY - rect.top;
-            
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-            
-            // Traer al frente
-            bringToFront(currentPopup.id);
-            
-            e.preventDefault();
-        }
-        
-        // Función para arrastrar ventana
-        function drag(e) {
-            if (!isDragging || !currentPopup) return;
-            
-            // Calcular nueva posición
-            const left = e.clientX - dragOffsetX;
-            const top = e.clientY - dragOffsetY;
-            
-            // Limitar a los bordes de la ventana
-            const maxLeft = window.innerWidth - currentPopup.offsetWidth;
-            const maxTop = window.innerHeight - currentPopup.offsetHeight;
-            
-            currentPopup.style.left = `${Math.min(Math.max(left, 0), maxLeft)}px`;
-            currentPopup.style.top = `${Math.min(Math.max(top, 0), maxTop)}px`;
-        }
-        
-        // Función para detener el arrastre
-        function stopDrag() {
-            isDragging = false;
-            currentPopup = null;
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', stopDrag);
-        }
-        
-        // Hacer una ventana redimensionable
-        function makeResizable(element, resizeHandle) {
-            let isResizing = false;
-            let startX, startY, startWidth, startHeight, startLeft, startTop;
-            
-            resizeHandle.addEventListener('mousedown', initResize);
-            
-            function initResize(e) {
-                isResizing = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(getComputedStyle(element).width, 10);
-                startHeight = parseInt(getComputedStyle(element).height, 10);
-                startLeft = parseInt(getComputedStyle(element).left, 10);
-                startTop = parseInt(getComputedStyle(element).top, 10);
-                
-                document.addEventListener('mousemove', resize);
-                document.addEventListener('mouseup', stopResize);
-                
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            function resize(e) {
-                if (!isResizing) return;
-                
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                
-                // Nuevas dimensiones (con límites mínimos)
-                const newWidth = Math.max(500, startWidth + dx);
-                const newHeight = Math.max(400, startHeight + dy);
-                
-                // Ajustar posición para que no se salga de la pantalla
-                const newLeft = startLeft;
-                const newTop = startTop;
-                
-                // Verificar límites de pantalla
-                if (newLeft + newWidth > window.innerWidth) {
-                    element.style.width = `${window.innerWidth - newLeft}px`;
-                } else {
-                    element.style.width = `${newWidth}px`;
-                }
-                
-                if (newTop + newHeight > window.innerHeight) {
-                    element.style.height = `${window.innerHeight - newTop}px`;
-                } else {
-                    element.style.height = `${newHeight}px`;
-                }
-            }
-            
-            function stopResize() {
-                isResizing = false;
-                document.removeEventListener('mousemove', resize);
-                document.removeEventListener('mouseup', stopResize);
-                
-                // Asegurar que el iframe se redimensione correctamente
-                const iframe = element.querySelector('.popup-iframe');
-                if (iframe) {
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                }
-            }
-        }
-        
-        // Alternar pantalla completa para una ventana
-        function toggleFullscreen(popupWindow) {
-            if (!document.fullscreenElement) {
-                if (popupWindow.requestFullscreen) {
-                    popupWindow.requestFullscreen();
-                } else if (popupWindow.webkitRequestFullscreen) {
-                    popupWindow.webkitRequestFullscreen();
-                } else if (popupWindow.msRequestFullscreen) {
-                    popupWindow.msRequestFullscreen();
-                }
-                showNotification("Pantalla completa activada");
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                showNotification("Pantalla completa desactivada");
-            }
-        }
-        
-        // Traer una ventana al frente
-        function bringToFront(windowId) {
-            // Encontrar la ventana
-            const windowIndex = floatingWindows.findIndex(w => w.id === windowId);
-            if (windowIndex === -1) return;
-            
-            // Reorganizar z-index
-            floatingWindows.forEach((window, index) => {
-                const zIndex = 1000 + index;
-                window.element.style.zIndex = zIndex;
-            });
-            
-            // Mover la ventana seleccionada al final del array (frente)
-            const [selectedWindow] = floatingWindows.splice(windowIndex, 1);
-            floatingWindows.push(selectedWindow);
-            
-            // Actualizar z-index de todas las ventanas
-            floatingWindows.forEach((window, index) => {
-                window.element.style.zIndex = 1000 + index;
-            });
-        }
-        
-        // Cerrar una ventana flotante
-        function closeFloatingWindow(streamIndex) {
-            const windowIndex = floatingWindows.findIndex(w => w.streamIndex === streamIndex);
-            
-            if (windowIndex !== -1) {
-                const window = floatingWindows[windowIndex];
-                window.element.classList.remove('active');
-                
-                // Eliminar después de la animación
-                setTimeout(() => {
-                    if (window.element.parentNode) {
-                        window.element.parentNode.removeChild(window.element);
-                    }
-                }, 300);
-                
-                // Eliminar del array
-                floatingWindows.splice(windowIndex, 1);
-                
-                // Actualizar contador
-                updateFloatingWindowsCount();
-                
-                // Ocultar overlay si no hay ventanas
-                if (floatingWindows.length === 0) {
-                    popupOverlay.classList.remove('active');
-                }
-            }
-        }
-        
-        // Enfocar una ventana flotante
-        function focusFloatingWindow(windowId) {
-            bringToFront(windowId);
-        }
-        
-        // Actualizar contador de ventanas flotantes
-        function updateFloatingWindowsCount() {
-            floatingWindowsCount.textContent = floatingWindows.length;
-            
-            if (floatingWindows.length > 0) {
-                floatingWindowsBtn.style.display = 'flex';
-            } else {
-                floatingWindowsBtn.style.display = 'none';
-            }
-        }
-        
-        // Función para agregar un nuevo stream - CORREGIDA
-        function addStream(name, baseUrl) {
             if (!name) {
-                alert('Por favor, ingresa un nombre de usuario');
+                showNotification('Por favor, ingresa un nombre de usuario', 'error');
                 return;
             }
             
             if (!baseUrl) {
-                alert('Por favor, ingresa una URL base');
+                showNotification('Por favor, ingresa una URL base', 'error');
                 return;
             }
             
-            // Construir la URL final concatenando el nombre de usuario
-            // CAMBIO IMPORTANTE: user → ownerId
             const separator = baseUrl.includes('?') ? '&' : '?';
             const finalUrl = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
             
-            streams.push({
-                name: name,
-                url: finalUrl
-            });
-            
+            const stream = { name, url: finalUrl, id: Date.now() };
+            streams.push(stream);
             saveStreams();
-            renderStreams();
             
-            // Limpiar solo el campo del nombre, mantener la URL base
-            streamNameInput.value = '';
-            urlPreview.classList.remove('active');
+            // Agregar solo el nuevo stream al DOM sin recargar los demás
+            addStreamToDOM(stream);
             
-            // Guardar la URL base
-            saveBaseUrl();
+            // Limpiar solo el nombre
+            elements.nameInput.value = '';
+            elements.preview.classList.remove('active');
+            localStorage.setItem('savedBaseUrl', baseUrl);
             
-            // Mostrar confirmación
             showNotification(`Transmisión "${name}" agregada correctamente`);
         }
-        
-        // Función para exportar la lista de streams
+
+        function addStreamToDOM(stream) {
+            // Ocultar estado vacío si existe
+            if (elements.empty.parentNode) {
+                elements.empty.style.display = 'none';
+            }
+            
+            const card = document.createElement('div');
+            card.className = 'stream-card';
+            card.dataset.id = stream.id;
+            card.innerHTML = `
+                <div class="stream-header">
+                    <div class="stream-title">${escapeHtml(stream.name)}</div>
+                    <div class="stream-status">
+                        <span class="status-indicator"></span>
+                        En Vivo
+                    </div>
+                </div>
+                <div class="stream-container">
+                    <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <div class="stream-controls">
+                    <button class="control-btn reload" onclick="reloadStream(${stream.id})">
+                        <i class="fas fa-redo"></i> Recargar
+                    </button>
+                    <button class="control-btn remove" onclick="confirmRemove(${stream.id})">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            `;
+            
+            elements.grid.appendChild(card);
+        }
+
+        function reloadStream(id) {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (!card) return;
+            
+            const iframe = card.querySelector('.stream-frame');
+            const currentSrc = iframe.src;
+            iframe.src = '';
+            setTimeout(() => {
+                iframe.src = currentSrc;
+            }, 100);
+            
+            const stream = streams.find(s => s.id === id);
+            showNotification(`Transmisión "${stream?.name || ''}" recargada`);
+        }
+
+        function confirmRemove(id) {
+            const stream = streams.find(s => s.id === id);
+            if (!stream) return;
+            
+            // Configurar modal
+            elements.modalTitle.textContent = 'Eliminar transmisión';
+            elements.modalMessage.textContent = `¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`;
+            
+            // Configurar botón de confirmación
+            if (modalConfirmBtn) {
+                modalConfirmBtn.replaceWith(modalConfirmBtn.cloneNode(true));
+            }
+            modalConfirmBtn = document.getElementById('confirmModalBtn');
+            modalConfirmBtn.onclick = () => {
+                removeStream(id);
+                closeModal();
+            };
+            
+            elements.modal.classList.add('active');
+        }
+
+        function removeStream(id) {
+            const index = streams.findIndex(s => s.id === id);
+            if (index === -1) return;
+            
+            const stream = streams[index];
+            streams.splice(index, 1);
+            saveStreams();
+            
+            // Eliminar solo el elemento del DOM sin afectar los demás
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => card.remove(), 300);
+            }
+            
+            // Mostrar empty state si no quedan streams
+            if (streams.length === 0) {
+                setTimeout(() => {
+                    elements.empty.style.display = 'block';
+                    elements.grid.appendChild(elements.empty);
+                }, 300);
+            }
+            
+            showNotification(`Transmisión "${stream.name}" eliminada`);
+        }
+
+        function clearAll() {
+            if (streams.length === 0) return;
+            
+            elements.modalTitle.textContent = 'Limpiar todos los streams';
+            elements.modalMessage.textContent = '¿Estás seguro de que quieres eliminar todos los streams? Esta acción no se puede deshacer.';
+            
+            if (modalConfirmBtn) {
+                modalConfirmBtn.replaceWith(modalConfirmBtn.cloneNode(true));
+            }
+            modalConfirmBtn = document.getElementById('confirmModalBtn');
+            modalConfirmBtn.onclick = () => {
+                streams = [];
+                saveStreams();
+                elements.grid.innerHTML = '';
+                elements.grid.appendChild(elements.empty);
+                elements.empty.style.display = 'block';
+                closeModal();
+                showNotification('Todos los streams han sido eliminados');
+            };
+            
+            elements.modal.classList.add('active');
+        }
+
+        function closeModal() {
+            elements.modal.classList.remove('active');
+            modalCallback = null;
+        }
+
         function exportStreams() {
             if (streams.length === 0) {
-                alert('No hay streams para exportar');
+                showNotification('No hay streams para exportar', 'error');
                 return;
             }
             
             const dataStr = JSON.stringify(streams, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
             
-            const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'streams-backup.json';
+            link.download = `streams-backup-${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
             
             showNotification('Lista de streams exportada correctamente');
         }
-        
-        // Función para importar streams desde un archivo
-        function importStreams(file, replace = false) {
-            const reader = new FileReader();
+
+        function importStreams(file, replace) {
+            if (!file) return;
             
-            reader.onload = function(e) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
                 try {
-                    const importedStreams = JSON.parse(e.target.result);
+                    const imported = JSON.parse(e.target.result);
                     
-                    // Validar que sea un array
-                    if (!Array.isArray(importedStreams)) {
-                        throw new Error('El archivo no contiene una lista válida de streams');
+                    if (!Array.isArray(imported)) {
+                        throw new Error('El archivo no contiene una lista válida');
                     }
                     
-                    // Validar que cada elemento tenga name y url
-                    for (let stream of importedStreams) {
-                        if (!stream.name || !stream.url) {
-                            throw new Error('El archivo contiene streams inválidos');
-                        }
-                    }
+                    // Validar y migrar datos antiguos
+                    const validStreams = imported
+                        .filter(s => s.name && s.url)
+                        .map(s => ({
+                            ...s,
+                            id: s.id || Date.now() + Math.random(),
+                            url: s.url.replace(/[?&]user=/, (m) => m.replace('user', 'ownerId'))
+                        }));
                     
-                    // Función para actualizar URLs antiguas si es necesario
-                    function updateOldUrls(streamArray) {
-                        return streamArray.map(stream => {
-                            // Si la URL contiene "?user=", cambiar a "?ownerId="
-                            if (stream.url.includes('?user=')) {
-                                stream.url = stream.url.replace('?user=', '?ownerId=');
-                            }
-                            // Si la URL contiene "&user=", cambiar a "&ownerId="
-                            if (stream.url.includes('&user=')) {
-                                stream.url = stream.url.replace('&user=', '&ownerId=');
-                            }
-                            return stream;
-                        });
+                    if (validStreams.length === 0) {
+                        throw new Error('No se encontraron streams válidos');
                     }
-                    
-                    // Actualizar URLs antiguas si es necesario
-                    const updatedStreams = updateOldUrls(importedStreams);
                     
                     if (replace) {
-                        // Reemplazar todos los streams
-                        streams = updatedStreams;
-                        showNotification(`Se importaron ${importedStreams.length} streams (reemplazando los existentes)`);
-                        
-                        // Cerrar todas las ventanas flotantes
-                        floatingWindows.forEach(window => {
-                            if (window.element.parentNode) {
-                                window.element.parentNode.removeChild(window.element);
-                            }
-                        });
-                        floatingWindows = [];
-                        updateFloatingWindowsCount();
-                        popupOverlay.classList.remove('active');
+                        streams = validStreams;
+                        renderAll();
+                        showNotification(`Se importaron ${validStreams.length} streams (reemplazando existentes)`);
                     } else {
-                        // Agregar a los streams existentes
-                        const originalCount = streams.length;
-                        streams = streams.concat(updatedStreams);
-                        showNotification(`Se agregaron ${importedStreams.length} nuevos streams`);
+                        // Agregar solo los nuevos que no existan
+                        const existingUrls = new Set(streams.map(s => s.url));
+                        const newStreams = validStreams.filter(s => !existingUrls.has(s.url));
+                        streams.push(...newStreams);
+                        
+                        // Agregar solo los nuevos al DOM
+                        newStreams.forEach(addStreamToDOM);
+                        saveStreams();
+                        showNotification(`Se agregaron ${newStreams.length} nuevos streams`);
                     }
                     
-                    saveStreams();
-                    renderStreams();
+                    // Limpiar input
+                    if (!replace) document.getElementById('importFile').value = '';
+                    else document.getElementById('importReplaceFile').value = '';
                     
                 } catch (error) {
-                    alert('Error al importar el archivo: ' + error.message);
+                    showNotification('Error al importar: ' + error.message, 'error');
                 }
             };
-            
             reader.readAsText(file);
         }
-        
-        // Función para mostrar el modal de confirmación
-        function showConfirmModal(title, message, confirmCallback) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            pendingAction = confirmCallback;
-            confirmModal.style.display = 'flex';
+
+        function renderAll() {
+            elements.grid.innerHTML = '';
+            
+            if (streams.length === 0) {
+                elements.grid.appendChild(elements.empty);
+                elements.empty.style.display = 'block';
+                return;
+            }
+            
+            elements.empty.style.display = 'none';
+            streams.forEach(addStreamToDOM);
+            saveStreams();
         }
-        
-        // Función para limpiar todos los streams
-        function clearAllStreams() {
-            showConfirmModal(
-                'Limpiar todos los streams',
-                '¿Estás seguro de que quieres eliminar todos los streams? Esta acción no se puede deshacer.',
-                () => {
-                    streams = [];
-                    saveStreams();
-                    renderStreams();
-                    showNotification('Todos los streams han sido eliminados');
-                    
-                    // Cerrar todas las ventanas flotantes
-                    floatingWindows.forEach(window => {
-                        if (window.element.parentNode) {
-                            window.element.parentNode.removeChild(window.element);
-                        }
-                    });
-                    floatingWindows = [];
-                    updateFloatingWindowsCount();
-                    popupOverlay.classList.remove('active');
-                }
-            );
+
+        function saveStreams() {
+            localStorage.setItem('streams', JSON.stringify(streams));
         }
-        
-        // Función para mostrar notificaciones
-        function showNotification(message) {
-            // Crear elemento de notificación
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--primary);
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                z-index: 2000;
-                font-weight: 600;
-                transform: translateX(150%);
-                transition: transform 0.3s ease;
-            `;
-            notification.textContent = message;
+
+        function showNotification(message, type = 'success') {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.style.background = type === 'error' ? 'var(--danger)' : 'var(--primary)';
+            notif.textContent = message;
+            document.body.appendChild(notif);
             
-            document.body.appendChild(notification);
+            requestAnimationFrame(() => {
+                notif.classList.add('show');
+            });
             
-            // Animación de entrada
             setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Remover después de 3 segundos
-            setTimeout(() => {
-                notification.style.transform = 'translateX(150%)';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
+                notif.classList.remove('show');
+                setTimeout(() => notif.remove(), 300);
             }, 3000);
         }
-        
-        // Event Listeners
-        addStreamBtn.addEventListener('click', () => {
-            addStream(streamNameInput.value.trim(), streamUrlInput.value.trim());
-        });
-        
-        streamNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addStream(streamNameInput.value.trim(), streamUrlInput.value.trim());
-            }
-        });
-        
-        exportBtn.addEventListener('click', exportStreams);
-        
-        // Importar (agregar)
-        importBtn.addEventListener('click', () => {
-            importFile.click();
-        });
-        
-        importFile.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                importStreams(e.target.files[0], false);
-                e.target.value = ''; // Resetear el input
-            }
-        });
-        
-        // Importar y reemplazar
-        importReplaceBtn.addEventListener('click', () => {
-            importReplaceFile.click();
-        });
-        
-        importReplaceFile.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                importStreams(e.target.files[0], true);
-                e.target.value = ''; // Resetear el input
-            }
-        });
-        
-        // Limpiar todo
-        clearAllBtn.addEventListener('click', clearAllStreams);
-        
-        // Botón para mostrar todas las ventanas flotantes
-        floatingWindowsBtn.addEventListener('click', () => {
-            // Traer todas las ventanas al frente en orden
-            floatingWindows.forEach((window, index) => {
-                window.element.style.zIndex = 2000 + index;
-            });
-            
-            // Mostrar mensaje
-            if (floatingWindows.length > 0) {
-                showNotification(`${floatingWindows.length} ventana(s) flotante(s) activa(s)`);
-            }
-        });
-        
-        // Modal events
-        closeModal.addEventListener('click', () => {
-            confirmModal.style.display = 'none';
-        });
-        
-        cancelModal.addEventListener('click', () => {
-            confirmModal.style.display = 'none';
-        });
-        
-        confirmModalBtn.addEventListener('click', () => {
-            if (pendingAction) {
-                pendingAction();
-            }
-            confirmModal.style.display = 'none';
-        });
-        
-        // Cerrar modal al hacer clic fuera
-        window.addEventListener('click', (e) => {
-            if (e.target === confirmModal) {
-                confirmModal.style.display = 'none';
-            }
-            
-            // Cerrar overlay si se hace clic en él
-            if (e.target === popupOverlay) {
-                // Cerrar todas las ventanas flotantes
-                floatingWindows.forEach(window => {
-                    window.element.classList.remove('active');
-                    setTimeout(() => {
-                        if (window.element.parentNode) {
-                            window.element.parentNode.removeChild(window.element);
-                        }
-                    }, 300);
-                });
-                
-                floatingWindows = [];
-                updateFloatingWindowsCount();
-                popupOverlay.classList.remove('active');
-            }
-        });
-        
-        // Manejar salida de pantalla completa
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-        
-        function handleFullscreenChange() {
-            if (!document.fullscreenElement && 
-                !document.webkitFullscreenElement &&
-                !document.mozFullScreenElement &&
-                !document.msFullscreenElement) {
-                // Salimos de pantalla completa
-                showNotification("Saliste del modo pantalla completa");
-            }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
+
+        // Inicializar
+        renderAll();
+        updatePreview();
         
-        // Función para actualizar automáticamente streams antiguos
-        function updateOldStreams() {
-            let updated = false;
-            streams = streams.map(stream => {
-                // Si la URL contiene "?user=", cambiar a "?ownerId="
-                if (stream.url.includes('?user=')) {
-                    stream.url = stream.url.replace('?user=', '?ownerId=');
-                    updated = true;
-                }
-                // Si la URL contiene "&user=", cambiar a "&ownerId="
-                if (stream.url.includes('&user=')) {
-                    stream.url = stream.url.replace('&user=', '&ownerId=');
-                    updated = true;
-                }
-                return stream;
-            });
-            
-            if (updated) {
-                saveStreams();
-                console.log("Streams antiguos actualizados automáticamente");
-            }
-        }
-        
-        // Inicializar la aplicación
-        updateOldStreams(); // Actualizar streams antiguos si existen
-        renderStreams();
-        updateFloatingWindowsCount();
-        
-        // Mostrar mensaje de bienvenida
         setTimeout(() => {
             if (streams.length > 0) {
                 showNotification(`Cargados ${streams.length} streams correctamente`);
