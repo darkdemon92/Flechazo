@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElChatCam Stream Monitor - AutoSync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --female: #ec4899;    /* Rosa para mujeres */
+            --male: #3b82f6;      /* Azul para varones */
+            --couple: #8b5cf6;    /* Violeta para parejas */
+            --trans: #f59e0b;     /* Naranja para trans */
+            --dark: #0f172a;
+            --gray: #64748b;
+            --border: #334155;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0b1120; color: #e2e8f0; min-height: 100vh; }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 2px solid var(--primary);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .connection-box {
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .status-indicator {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+            transition: all 0.3s;
+        }
+        
+        .status-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 15px var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        
+        /* Layout principal */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            height: fit-content;
+            border: 1px solid var(--border);
+        }
+        
+        .sidebar h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .install-section {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .install-btn {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99,102,241,0.4);
+        }
+        
+        .stats-grid {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        /* Content area */
+        .content {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tab:hover { background: rgba(99,102,241,0.1); color: var(--primary); }
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+        }
+        
+        .tab .badge {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        /* Panels */
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Filters */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            padding: 10px 15px;
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            min-width: 150px;
+        }
+        
+        .sex-filters {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .sex-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .sex-btn.active { border-color: currentColor; background: rgba(255,255,255,0.1); }
+        .sex-btn.female { color: var(--female); }
+        .sex-btn.male { color: var(--male); }
+        .sex-btn.couple { color: var(--couple); }
+        .sex-btn.trans { color: var(--trans); }
+        
+        /* Users table */
+        .users-table {
+            background: #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 60px 2fr 1fr 1fr 1fr 120px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #334155;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .user-row {
+            display: grid;
+            grid-template-columns: 60px 2fr 1fr 1fr 1fr 120px;
+            gap: 15px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .user-row:hover { background: rgba(99,102,241,0.1); }
+        
+        .user-row.streaming { background: rgba(16, 185, 129, 0.05); }
+        .user-row.streaming:hover { background: rgba(16, 185, 129, 0.1); }
+        
+        .user-row.private { background: rgba(239, 68, 68, 0.05); }
+        .user-row.private:hover { background: rgba(239, 68, 68, 0.1); }
+        
+        .user-avatar {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+        
+        .user-info { display: flex; flex-direction: column; gap: 4px; }
+        
+        .user-name {
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Colores de sexo basados en el chat */
+        .sex-female { color: var(--female); }      /* rgb(252, 1, 126) - Rosa */
+        .sex-male { color: var(--male); }          /* rgb(0, 51, 255) - Azul */
+        .sex-couple { color: var(--couple); }      /* rgb(110, 64, 0) - Marrón/Pareja */
+        .sex-trans { color: var(--trans); }        /* Otros colores */
+        
+        .sex-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-female { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+        .badge-male { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-couple { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .badge-trans { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        
+        .cam-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .cam-green { background: rgba(16, 185, 129, 0.2); color: #4ade80; }
+        .cam-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .cam-off { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+        
+        .viewer-count {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .action-btns { display: flex; gap: 8px; }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+        }
+        
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        
+        /* Streams Grid */
+        .streams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .streams-grid { grid-template-columns: 1fr; }
+        }
+        
+        .stream-card {
+            background: #0f172a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        
+        .stream-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .stream-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .stream-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stream-user img {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+        
+        .stream-badges {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .badge {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .badge-public { background: var(--success); color: white; }
+        .badge-private { background: var(--danger); color: white; }
+        .badge-female { background: var(--female); color: white; }
+        .badge-male { background: var(--male); color: white; }
+        
+        .stream-container {
+            height: 250px;
+            background: #000;
+            position: relative;
+        }
+        
+        .stream-frame {
+            width: 100%; height: 100%;
+            border: none;
+        }
+        
+        .stream-controls {
+            padding: 12px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            background: #1e293b;
+        }
+        
+        /* Empty states */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+        
+        /* UserScript modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active { display: flex; }
+        
+        .modal {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--primary);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .code-block {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10000;
+            transform: translateX(150%);
+            transition: transform 0.3s;
+            font-weight: 600;
+            max-width: 400px;
+        }
+        
+        .notification.show { transform: translateX(0); }
+        .notification.error { background: linear-gradient(135deg, var(--danger), #dc2626); }
+        .notification.info { background: linear-gradient(135deg, var(--info), #2563eb); }
+        
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-overlay.active { display: flex; }
+        
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-text {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px; height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7c3aed;
+        }
+        
+        /* Instructions */
+        .instructions {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #94a3b8;
+        }
+        
+        .instructions li { margin-bottom: 8px; }
+        
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Sincronizando con el chat...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">📡</div>
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800;">ElChatCam <span style="color: var(--primary);">Monitor</span></h1>
+                <p style="color: var(--gray); font-size: 0.85rem;">Sistema de indexación automática de streams</p>
+            </div>
+        </div>
+        
+        <div class="connection-box">
+            <div class="status-indicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Desconectado</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showInstallModal()">
+                <i class="fas fa-download"></i> Instalar Script
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="install-section">
+                <h3 style="color: white; margin-bottom: 10px;">⚡ Auto-Sync</h3>
+                <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 15px;">
+                    Para sincronización automática, instala el UserScript y abre el chat en otra pestaña.
+                </p>
+                <button class="install-btn" onclick="showInstallModal()">
+                    <i class="fas fa-magic"></i> Ver Instrucciones
+                </button>
+            </div>
+
+            <h3><i class="fas fa-chart-bar"></i> Estadísticas</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span>Total Usuarios</span>
+                    <span class="stat-value" id="statTotal">0</span>
+                </div>
+                <div class="stat-item" style="border-left-color: var(--success);">
+                    <span style="color: var(--success);">🟢 Públicos</span>
+                    <span class="stat-value" id="statGreen" style="color: var(--success);">0</span>
+                </div>
+                <div class="stat-item" style="border-left-color: var(--danger);">
+                    <span style="color: var(--danger);">🔴 Privados</span>
+                    <span class="stat-value" id="statRed" style="color: var(--danger);">0</span>
+                </div>
+                <div class="stat-item" style="border-left-color: var(--female);">
+                    <span style="color: var(--female);">Mujeres</span>
+                    <span class="stat-value" id="statFemale" style="color: var(--female);">0</span>
+                </div>
+                <div class="stat-item" style="border-left-color: var(--male);">
+                    <span style="color: var(--male);">Varones</span>
+                    <span class="stat-value" id="statMale" style="color: var(--male);">0</span>
+                </div>
+                <div class="stat-item" style="border-left-color: var(--couple);">
+                    <span style="color: var(--couple);">Parejas</span>
+                    <span class="stat-value" id="statCouple" style="color: var(--couple);">0</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <h3><i class="fas fa-clock"></i> Última Sync</h3>
+                <p id="lastSync" style="color: var(--gray); font-size: 0.9rem; margin-top: 10px;">
+                    Nunca
+                </p>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('live', this)">
+                    <i class="fas fa-broadcast-tower"></i> En Vivo
+                    <span class="badge" id="badgeLive">0</span>
+                </button>
+                <button class="tab" onclick="switchTab('all', this)">
+                    <i class="fas fa-users"></i> Todos
+                    <span class="badge" id="badgeAll">0</span>
+                </button>
+                <button class="tab" onclick="switchTab('streams', this)">
+                    <i class="fas fa-video"></i> Mis Streams
+                    <span class="badge" id="badgeStreams">0</span>
+                </button>
+                <button class="tab" onclick="switchTab('settings', this)">
+                    <i class="fas fa-cog"></i> Config
+                </button>
+            </div>
+
+            <!-- Panel: En Vivo -->
+            <div class="panel active" id="panel-live">
+                <div class="instructions">
+                    <h4><i class="fas fa-info-circle"></i> Cómo funciona:</h4>
+                    <ol>
+                        <li>Abre <a href="https://irc.elchatcam.com" target="_blank" style="color: var(--primary);">ElChatCam</a> en <strong>otra pestaña</strong></li>
+                        <li>Instala el UserScript (botón arriba a la derecha)</li>
+                        <li>Los usuarios con cámara (🟢 verde o 🔴 roja) aparecerán automáticamente</li>
+                        <li>Usa los filtros de <strong>SEXO</strong> para encontrar lo que buscas</li>
+                    </ol>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Buscar</label>
+                        <input type="text" id="searchLive" placeholder="Nombre de usuario..." onkeyup="renderLive()">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Estado Cámara</label>
+                        <select id="filterCam" onchange="renderLive()">
+                            <option value="all">Todas</option>
+                            <option value="green">🟢 Pública (Verde)</option>
+                            <option value="red">🔴 Privada (Roja)</option>
+                            <option value="streaming">Cualquiera con cámara</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Sexo</label>
+                        <div class="sex-filters">
+                            <button class="sex-btn female active" onclick="toggleSexFilter('female', this)" title="Mujer">
+                                <i class="fas fa-venus"></i>
+                            </button>
+                            <button class="sex-btn male active" onclick="toggleSexFilter('male', this)" title="Varón">
+                                <i class="fas fa-mars"></i>
+                            </button>
+                            <button class="sex-btn couple active" onclick="toggleSexFilter('couple', this)" title="Pareja">
+                                <i class="fas fa-venus-mars"></i>
+                            </button>
+                            <button class="sex-btn trans active" onclick="toggleSexFilter('trans', this)" title="Trans">
+                                <i class="fas fa-transgender"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="addAllVisibleToStreams()" style="margin-left: auto;">
+                        <i class="fas fa-plus"></i> Agregar Visibles
+                    </button>
+                </div>
+
+                <div class="users-table" id="liveTable">
+                    <div class="empty-state">
+                        <i class="fas fa-satellite-dish"></i>
+                        <h3>Esperando datos del chat...</h3>
+                        <p>Abre el chat en otra pestaña e instala el UserScript</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Todos -->
+            <div class="panel" id="panel-all">
+                <div class="filter-bar">
+                    <input type="text" id="searchAll" placeholder="Buscar en histórico..." onkeyup="renderAll()">
+                    <select id="filterSexAll" onchange="renderAll()">
+                        <option value="all">Todos los sexos</option>
+                        <option value="female">Mujeres</option>
+                        <option value="male">Varones</option>
+                        <option value="couple">Parejas</option>
+                        <option value="trans">Trans</option>
+                    </select>
+                </div>
+                <div class="users-table" id="allTable"></div>
+            </div>
+
+            <!-- Panel: Mis Streams -->
+            <div class="panel" id="panel-streams">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: var(--primary);"><i class="fas fa-play-circle"></i> Reproductor de Streams</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="exportStreams()">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <label class="btn btn-success" style="cursor: pointer;">
+                            <i class="fas fa-upload"></i> Importar
+                            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importStreams(this)">
+                        </label>
+                        <button class="btn btn-danger" onclick="clearAllStreams()">
+                            <i class="fas fa-trash"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+                <div class="streams-grid" id="streamsGrid"></div>
+            </div>
+
+            <!-- Panel: Settings -->
+            <div class="panel" id="panel-settings">
+                <h2 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-cog"></i> Configuración</h2>
+                
+                <div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Intervalo de Sincronización</h3>
+                    <select id="syncInterval" onchange="saveSettings()" style="padding: 10px; background: #1e293b; border: 1px solid var(--border); color: white; border-radius: 8px;">
+                        <option value="5000">5 segundos (más rápido, más consumo)</option>
+                        <option value="10000" selected>10 segundos (recomendado)</option>
+                        <option value="30000">30 segundos</option>
+                        <option value="60000">1 minuto</option>
+                    </select>
+                </div>
+
+                <div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Opciones de Visualización</h3>
+                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+                        <input type="checkbox" id="showOffline" onchange="saveSettings()">
+                        <span>Mostrar usuarios sin cámara</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="autoRefresh" checked onchange="saveSettings()">
+                        <span>Auto-refresh cada intervalo</span>
+                    </label>
+                </div>
+
+                <button class="btn btn-primary" onclick="showInstallModal()">
+                    <i class="fas fa-code"></i> Ver Código del UserScript
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Install Modal -->
+    <div class="modal-overlay" id="installModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-magic"></i> Instalar UserScript</h2>
+                <button class="close-modal" onclick="hideInstallModal()">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: var(--success); margin-bottom: 10px;">Paso 1: Instala Tampermonkey</h3>
+                <p style="color: #94a3b8; margin-bottom: 10px;">
+                    Extensiones para tu navegador:
+                </p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo" target="_blank" class="btn btn-primary">
+                        <i class="fab fa-chrome"></i> Chrome
+                    </a>
+                    <a href="https://addons.mozilla.org/firefox/addon/tampermonkey/" target="_blank" class="btn btn-primary">
+                        <i class="fab fa-firefox"></i> Firefox
+                    </a>
+                    <a href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd" target="_blank" class="btn btn-primary">
+                        <i class="fab fa-edge"></i> Edge
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--success); margin-bottom: 10px;">Paso 2: Crea el Script</h3>
+                <p style="color: #94a3b8; margin-bottom: 10px;">
+                    1. Click en el icono de Tampermonkey → "Create a new script"<br>
+                    2. Borra todo el contenido<br>
+                    3. Pega este código:<br>
+                    4. Ctrl+S para guardar<br>
+                    5. Abre el chat de ElChatCam
+                </p>
+                
+                <div class="code-block" id="userscriptCode">
+// ==UserScript==
+// @name         ElChatCam Auto-Indexer
+// @namespace    http://tampermonkey.net/
+// @version      2.0
+// @description  Indexa automáticamente streams de ElChatCam por sexo y estado de cámara
+// @author       You
+// @match        https://irc.elchatcam.com/*
+// @match        https://elchatcam.com/*
+// @grant        none
+// @run-at       document-end
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    
+    console.log('[ElChatCam Indexer] Iniciando...');
+    
+    // Configuración
+    const CONFIG = {
+        INTERVAL: 10000, // 10 segundos
+        STORAGE_KEY: 'elchatcam_live_data'
+    };
+    
+    let users = [];
+    
+    // Detectar sexo por color del nombre
+    function detectSex(color) {
+        // rgb(252, 1, 126) = Mujer (rosa)
+        // rgb(0, 51, 255) = Varón (azul)
+        // rgb(110, 64, 0) = Pareja (marrón)
+        // Otros = Trans/Otros
+        
+        if (!color) return 'unknown';
+        
+        color = color.toLowerCase();
+        
+        // Rosa/Magenta = Mujer
+        if (color.includes('252, 1') || color.includes('fc01') || color.includes('magenta') || color.includes('pink') || color.includes('255, 105')) {
+            return 'female';
+        }
+        
+        // Azul = Varón
+        if (color.includes('0, 51') || color.includes('0033') || color.includes('blue') || color.includes('0, 0, 255')) {
+            return 'male';
+        }
+        
+        // Marrón/Café = Pareja
+        if (color.includes('110, 64') || color.includes('6e40') || color.includes('brown') || color.includes('rgb(139, 69')) {
+            return 'couple';
+        }
+        
+        // Otros colores = Trans/Otros
+        return 'trans';
+    }
+    
+    // Extraer datos del DOM
+    function extractData() {
+        const userList = document.getElementById('userList');
+        if (!userList) {
+            console.log('[Indexer] userList no encontrado');
+            return [];
+        }
+        
+        const extracted = [];
+        const now = new Date().toISOString();
+        
+        userList.querySelectorAll('li[data-nick]').forEach(li => {
+            const nick = li.getAttribute('data-nick');
+            if (!nick) return;
+            
+            // Obtener color del nombre (sexo)
+            const nameSpan = li.querySelector('span[style*="color"]');
+            const colorStyle = nameSpan ? nameSpan.getAttribute('style') : '';
+            const colorMatch = colorStyle.match(/color:\s*rgb\(([^)]+)\)/);
+            const rgbColor = colorMatch ? colorMatch[0] : '';
+            const sex = detectSex(rgbColor);
+            
+            // Estado de cámara
+            const camIcon = li.querySelector('.fa-video-camera, .cam-icon');
+            let camStatus = 'off';
+            let isStreaming = false;
+            
+            if (camIcon) {
+                const style = camIcon.getAttribute('style') || '';
+                const color = style.match(/color:\s*([^;]+)/)?.[1] || '';
+                
+                // Verde = público
+                if (color.includes('lime') || color.includes('0, 255') || color.includes('green') || color.includes('#00')) {
+                    camStatus = 'green';
+                    isStreaming = true;
+                }
+                // Rojo = privado/limitado
+                else if (color.includes('255, 68') || color.includes('red') || color.includes('rgb(255') || color.includes('#ff')) {
+                    camStatus = 'red';
+                    isStreaming = true;
+                }
+            }
+            
+            // Avatar
+            const avatarImg = li.querySelector('img');
+            const avatar = avatarImg ? avatarImg.src : '/uploads/avatars/default.png';
+            
+            // Espectadores
+            const viewerSpan = li.querySelector('span[style*="border-radius: 12px"]');
+            const viewers = viewerSpan ? parseInt(viewerSpan.textContent) || 0 : 0;
+            
+            extracted.push({
+                id: nick,
+                name: nick,
+                sex: sex,
+                sexColor: rgbColor,
+                camStatus: camStatus,
+                isStreaming: isStreaming,
+                isPrivate: camStatus === 'red',
+                isPublic: camStatus === 'green',
+                avatar: avatar,
+                viewers: viewers,
+                timestamp: now,
+                url: `https://irc.elchatcam.com:4000/subscribe.html?ownerId=${encodeURIComponent(nick)}`
+            });
+        });
+        
+        return extracted;
+    }
+    
+    // Guardar datos para que el monitor los lea
+    function saveData(data) {
+        const payload = {
+            users: data,
+            timestamp: Date.now(),
+            lastUpdate: new Date().toISOString()
+        };
+        
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(payload));
+        
+        // También intentar con BroadcastChannel para comunicación en tiempo real
+        try {
+            const bc = new BroadcastChannel('elchatcam_sync');
+            bc.postMessage(payload);
+        } catch(e) {
+            // BroadcastChannel no soportado, usar localStorage polling
+        }
+        
+        console.log(`[Indexer] Guardados ${data.length} usuarios`);
+    }
+    
+    // Actualizar datos
+    function update() {
+        const data = extractData();
+        users = data;
+        saveData(data);
+        
+        // Mostrar contador en consola
+        const streaming = data.filter(u => u.isStreaming);
+        console.log(`[Indexer] ${streaming.length}/${data.length} transmitiendo`);
+    }
+    
+    // Iniciar
+    function init() {
+        console.log('[ElChatCam Indexer] Iniciando monitoreo...');
+        
+        // Primera extracción
+        update();
+        
+        // Intervalo de actualización
+        setInterval(update, CONFIG.INTERVAL);
+        
+        // También observar cambios en el DOM
+        const userList = document.getElementById('userList');
+        if (userList) {
+            const observer = new MutationObserver(() => {
+                console.log('[Indexer] Cambio detectado en userList');
+                update();
+            });
+            
+            observer.observe(userList, {
+                childList: true,
+                subtree: true,
+                attributes: true
+            });
+        }
+        
+        // Escuchar mensajes del monitor (para solicitudes manuales)
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'REQUEST_UPDATE') {
+                console.log('[Indexer] Solicitud de actualización recibida');
+                update();
+            }
+        });
+    }
+    
+    // Esperar a que el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+})();
+                </div>
+                
+                <button class="copy-btn" onclick="copyUserScript()">
+                    <i class="fas fa-copy"></i> Copiar Código
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // ==========================================
+        // ESTADO GLOBAL
+        // ==========================================
+        let liveUsers = [];
+        let allUsers = JSON.parse(localStorage.getItem('elchatcam_history') || '[]');
+        let myStreams = JSON.parse(localStorage.getItem('elchatcam_streams') || '[]');
+        let settings = JSON.parse(localStorage.getItem('elchatcam_settings') || '{}');
+        let activeSexFilters = new Set(['female', 'male', 'couple', 'trans']);
+        let lastDataTimestamp = 0;
+        let syncIntervalId = null;
+
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            startSyncCheck();
+            renderStreams();
+            updateBadgeCounts();
+            
+            // Verificar inmediatamente si hay datos
+            checkForUpdates();
+        });
+
+        // ==========================================
+        // SINCRONIZACIÓN CON USERSCRIPT
+        // ==========================================
+        function startSyncCheck() {
+            // Verificar cada 2 segundos si hay datos nuevos
+            syncIntervalId = setInterval(checkForUpdates, 2000);
+            
+            // También escuchar BroadcastChannel si está disponible
+            try {
+                const bc = new BroadcastChannel('elchatcam_sync');
+                bc.onmessage = (event) => {
+                    if (event.data && event.data.users) {
+                        processNewData(event.data);
+                    }
+                };
+            } catch(e) {
+                console.log('BroadcastChannel no soportado, usando polling');
+            }
+        }
+
+        function checkForUpdates() {
+            const data = localStorage.getItem('elchatcam_live_data');
+            if (!data) {
+                updateConnectionStatus(false);
+                return;
+            }
+            
+            try {
+                const parsed = JSON.parse(data);
+                
+                // Verificar si son datos nuevos
+                if (parsed.timestamp > lastDataTimestamp) {
+                    lastDataTimestamp = parsed.timestamp;
+                    processNewData(parsed);
+                    updateConnectionStatus(true);
+                } else {
+                    // Datos antiguos pero aún válidos (menos de 30s)
+                    const age = Date.now() - parsed.timestamp;
+                    updateConnectionStatus(age < 30000);
+                }
+            } catch (e) {
+                console.error('Error parsing data:', e);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function processNewData(data) {
+            liveUsers = data.users || [];
+            
+            // Agregar al histórico
+            liveUsers.forEach(user => {
+                if (!allUsers.find(u => u.id === user.id)) {
+                    allUsers.push({
+                        ...user,
+                        firstSeen: user.timestamp
+                    });
+                }
+            });
+            
+            // Guardar histórico
+            localStorage.setItem('elchatcam_history', JSON.stringify(allUsers));
+            
+            // Actualizar UI
+            document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+            updateStats();
+            renderLive();
+            renderAll();
+            updateBadgeCounts();
+            
+            // Notificar si hay nuevos streams
+            const streamingCount = liveUsers.filter(u => u.isStreaming).length;
+            if (streamingCount > 0 && document.hidden) {
+                // Página en segundo plano con streams activos
+                showNotification(`${streamingCount} streams activos`, 'info');
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Conectado - Sync activa';
+                text.style.color = 'var(--success)';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Desconectado - Abre el chat';
+                text.style.color = 'var(--danger)';
+            }
+        }
+
+        // ==========================================
+        // RENDERIZADO
+        // ==========================================
+        function renderLive() {
+            const container = document.getElementById('liveTable');
+            const search = document.getElementById('searchLive')?.value.toLowerCase() || '';
+            const camFilter = document.getElementById('filterCam')?.value || 'all';
+            
+            let filtered = liveUsers.filter(u => {
+                // Filtro de búsqueda
+                if (search && !u.name.toLowerCase().includes(search)) return false;
+                
+                // Filtro de cámara
+                if (camFilter === 'green' && u.camStatus !== 'green') return false;
+                if (camFilter === 'red' && u.camStatus !== 'red') return false;
+                if (camFilter === 'streaming' && !u.isStreaming) return false;
+                
+                // Filtro de sexo
+                if (!activeSexFilters.has(u.sex)) return false;
+                
+                return true;
+            });
+
+            // Ordenar: streaming primero, luego por nombre
+            filtered.sort((a, b) => {
+                if (a.isStreaming && !b.isStreaming) return -1;
+                if (!a.isStreaming && b.isStreaming) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 60px;">
+                        <i class="fas fa-search"></i>
+                        <h3>No se encontraron usuarios</h3>
+                        <p>Prueba con otros filtros o espera a que alguien transmita</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-header">
+                    <div></div>
+                    <div>Usuario / Sexo</div>
+                    <div>Cámara</div>
+                    <div>Sexo</div>
+                    <div>Espect.</div>
+                    <div>Acción</div>
+                </div>
+                ${filtered.map(user => `
+                    <div class="user-row ${user.isStreaming ? 'streaming' : ''} ${user.isPrivate ? 'private' : ''}">
+                        <img src="${user.avatar}" class="user-avatar" onerror="this.src='/uploads/avatars/default.png'">
+                        
+                        <div class="user-info">
+                            <div class="user-name sex-${user.sex}">
+                                ${escapeHtml(user.name)}
+                                ${user.isStreaming ? '<i class="fas fa-circle" style="font-size: 0.5rem; color: var(--success);"></i>' : ''}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">
+                                ${user.sex === 'female' ? '👩 Mujer' : 
+                                  user.sex === 'male' ? '👨 Varón' : 
+                                  user.sex === 'couple' ? '👫 Pareja' : '⚧ Trans'}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="cam-status cam-${user.camStatus}">
+                                ${user.camStatus === 'green' ? '🟢 Pública' : 
+                                  user.camStatus === 'red' ? '🔴 Privada' : '⚫ Off'}
+                            </span>
+                        </div>
+                        
+                        <div>
+                            <span class="sex-badge badge-${user.sex}">
+                                ${user.sex === 'female' ? 'MUJER' : 
+                                  user.sex === 'male' ? 'VARÓN' : 
+                                  user.sex === 'couple' ? 'PAREJA' : 'TRANS'}
+                            </span>
+                        </div>
+                        
+                        <div class="viewer-count">
+                            ${user.viewers || 0} <i class="fas fa-eye" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                        </div>
+                        
+                        <div class="action-btns">
+                            ${user.isStreaming ? `
+                                <button class="btn btn-success btn-sm" onclick="addToStreams('${user.id}')" title="Agregar a mis streams">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            ` : '<span style="color: var(--gray); font-size: 0.75rem;">Offline</span>'}
+                        </div>
+                    </div>
+                `).join('')}`;
+        }
+
+        function renderAll() {
+            const container = document.getElementById('allTable');
+            const search = document.getElementById('searchAll')?.value.toLowerCase() || '';
+            const sexFilter = document.getElementById('filterSexAll')?.value || 'all';
+            
+            let filtered = allUsers.filter(u => {
+                if (search && !u.name.toLowerCase().includes(search)) return false;
+                if (sexFilter !== 'all' && u.sex !== sexFilter) return false;
+                return true;
+            });
+
+            document.getElementById('statHistory').textContent = allUsers.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state">No hay usuarios en el histórico</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-header">
+                    <div></div>
+                    <div>Usuario</div>
+                    <div>Sexo</div>
+                    <div>Primera vez</div>
+                    <div>Última vez</div>
+                    <div>Acción</div>
+                </div>
+                ${filtered.map(user => `
+                    <div class="user-row">
+                        <img src="${user.avatar}" class="user-avatar">
+                        <div class="user-name sex-${user.sex}">${escapeHtml(user.name)}</div>
+                        <div><span class="sex-badge badge-${user.sex}">${user.sex.toUpperCase()}</span></div>
+                        <div>${new Date(user.firstSeen).toLocaleDateString()}</div>
+                        <div>${new Date(user.timestamp).toLocaleDateString()}</div>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="addToStreamsById('${user.id}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}`;
+        }
+
+        function renderStreams() {
+            const container = document.getElementById('streamsGrid');
+            
+            if (myStreams.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-video-slash"></i>
+                        <h3>No tienes streams guardados</h3>
+                        <p>Ve a "En Vivo" y agrega usuarios con cámara activa</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = myStreams.map(stream => {
+                const user = liveUsers.find(u => u.id === stream.id) || stream;
+                return `
+                    <div class="stream-card">
+                        <div class="stream-header">
+                            <div class="stream-user">
+                                <img src="${user.avatar}" onerror="this.src='/uploads/avatars/default.png'">
+                                <div>
+                                    <div style="font-weight: 700; color: white;">${escapeHtml(user.name)}</div>
+                                    <div style="font-size: 0.75rem; color: var(--gray);">
+                                        ${user.sex === 'female' ? '👩 Mujer' : 
+                                          user.sex === 'male' ? '👨 Varón' : 
+                                          user.sex === 'couple' ? '👫 Pareja' : '⚧ Trans'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stream-badges">
+                                ${user.isPrivate ? 
+                                    '<span class="badge badge-private">🔴 PRIVADO</span>' : 
+                                    '<span class="badge badge-public">🟢 PÚBLICO</span>'}
+                                <span class="badge badge-${user.sex}">${user.sex === 'female' ? 'M' : user.sex === 'male' ? 'H' : 'P'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stream-container">
+                            <iframe class="stream-frame" src="${user.url}" frameborder="0" allowfullscreen sandbox="allow-same-origin allow-scripts"></iframe>
+                        </div>
+                        
+                        <div class="stream-controls">
+                            <button class="btn btn-primary btn-sm" onclick="reloadStream('${user.id}')">
+                                <i class="fas fa-sync"></i> Recargar
+                            </button>
+                            <a href="${user.url}" target="_blank" class="btn btn-success btn-sm" style="text-decoration: none;">
+                                <i class="fas fa-external-link-alt"></i> Abrir
+                            </a>
+                            <button class="btn btn-danger btn-sm" onclick="removeStream('${user.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateBadgeCounts();
+        }
+
+        // ==========================================
+        // ACCIONES
+        // ==========================================
+        function addToStreams(userId) {
+            const user = liveUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            if (myStreams.find(s => s.id === userId)) {
+                showNotification(`${user.name} ya está en tus streams`);
+                return;
+            }
+            
+            myStreams.push({
+                ...user,
+                addedAt: new Date().toISOString()
+            });
+            
+            saveStreams();
+            renderStreams();
+            showNotification(`${user.name} agregado a tus streams`);
+        }
+
+        function addToStreamsById(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            // Crear URL si no existe
+            if (!user.url) {
+                user.url = `https://irc.elchatcam.com:4000/subscribe.html?ownerId=${encodeURIComponent(user.name)}`;
+            }
+            
+            addToStreams(userId);
+        }
+
+        function addAllVisibleToStreams() {
+            const visible = getFilteredLive();
+            const streaming = visible.filter(u => u.isStreaming);
+            
+            let added = 0;
+            streaming.forEach(user => {
+                if (!myStreams.find(s => s.id === user.id)) {
+                    myStreams.push({
+                        ...user,
+                        addedAt: new Date().toISOString()
+                    });
+                    added++;
+                }
+            });
+            
+            saveStreams();
+            renderStreams();
+            showNotification(`${added} streams agregados`);
+        }
+
+        function getFilteredLive() {
+            const search = document.getElementById('searchLive')?.value.toLowerCase() || '';
+            const camFilter = document.getElementById('filterCam')?.value || 'all';
+            
+            return liveUsers.filter(u => {
+                if (search && !u.name.toLowerCase().includes(search)) return false;
+                if (camFilter === 'green' && u.camStatus !== 'green') return false;
+                if (camFilter === 'red' && u.camStatus !== 'red') return false;
+                if (camFilter === 'streaming' && !u.isStreaming) return false;
+                if (!activeSexFilters.has(u.sex)) return false;
+                return true;
+            });
+        }
+
+        function reloadStream(userId) {
+            const cards = document.querySelectorAll('.stream-card');
+            cards.forEach(card => {
+                if (card.innerHTML.includes(userId)) {
+                    const iframe = card.querySelector('iframe');
+                    const src = iframe.src;
+                    iframe.src = '';
+                    setTimeout(() => iframe.src = src, 100);
+                }
+            });
+        }
+
+        function removeStream(userId) {
+            myStreams = myStreams.filter(s => s.id !== userId);
+            saveStreams();
+            renderStreams();
+            showNotification('Stream eliminado');
+        }
+
+        function clearAllStreams() {
+            if (!confirm('¿Eliminar TODOS los streams?')) return;
+            myStreams = [];
+            saveStreams();
+            renderStreams();
+            showNotification('Todos los streams eliminados');
+        }
+
+        // ==========================================
+        // FILTROS DE SEXO
+        // ==========================================
+        function toggleSexFilter(sex, btn) {
+            if (activeSexFilters.has(sex)) {
+                activeSexFilters.delete(sex);
+                btn.classList.remove('active');
+            } else {
+                activeSexFilters.add(sex);
+                btn.classList.add('active');
+            }
+            renderLive();
+        }
+
+        // ==========================================
+        // ESTADÍSTICAS
+        // ==========================================
+        function updateStats() {
+            const total = liveUsers.length;
+            const green = liveUsers.filter(u => u.camStatus === 'green').length;
+            const red = liveUsers.filter(u => u.camStatus === 'red').length;
+            const female = liveUsers.filter(u => u.sex === 'female').length;
+            const male = liveUsers.filter(u => u.sex === 'male').length;
+            const couple = liveUsers.filter(u => u.sex === 'couple').length;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statGreen').textContent = green;
+            document.getElementById('statRed').textContent = red;
+            document.getElementById('statFemale').textContent = female;
+            document.getElementById('statMale').textContent = male;
+            document.getElementById('statCouple').textContent = couple;
+        }
+
+        function updateBadgeCounts() {
+            const streaming = liveUsers.filter(u => u.isStreaming).length;
+            document.getElementById('badgeLive').textContent = streaming;
+            document.getElementById('badgeAll').textContent = allUsers.length;
+            document.getElementById('badgeStreams').textContent = myStreams.length;
+        }
+
+        // ==========================================
+        // CONFIGURACIÓN
+        // ==========================================
+        function loadSettings() {
+            if (settings.syncInterval) {
+                document.getElementById('syncInterval').value = settings.syncInterval;
+            }
+            if (settings.showOffline !== undefined) {
+                document.getElementById('showOffline').checked = settings.showOffline;
+            }
+            if (settings.autoRefresh !== undefined) {
+                document.getElementById('autoRefresh').checked = settings.autoRefresh;
+            }
+        }
+
+        function saveSettings() {
+            settings = {
+                syncInterval: document.getElementById('syncInterval').value,
+                showOffline: document.getElementById('showOffline').checked,
+                autoRefresh: document.getElementById('autoRefresh').checked
+            };
+            localStorage.setItem('elchatcam_settings', JSON.stringify(settings));
+            showNotification('Configuración guardada');
+        }
+
+        // ==========================================
+        // UTILIDADES
+        // ==========================================
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(`panel-${tab}`).classList.add('active');
+            
+            if (tab === 'live') renderLive();
+            if (tab === 'all') renderAll();
+            if (tab === 'streams') renderStreams();
+        }
+
+        function saveStreams() {
+            localStorage.setItem('elchatcam_streams', JSON.stringify(myStreams));
+            updateBadgeCounts();
+        }
+
+        function exportStreams() {
+            const data = {
+                streams: myStreams,
+                exportedAt: new Date().toISOString(),
+                source: 'ElChatCam Monitor'
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `elchatcam-streams-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Streams exportados');
+        }
+
+        function importStreams(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.streams && Array.isArray(data.streams)) {
+                        // Fusionar sin duplicados
+                        data.streams.forEach(newStream => {
+                            if (!myStreams.find(s => s.id === newStream.id)) {
+                                myStreams.push(newStream);
+                            }
+                        });
+                        saveStreams();
+                        renderStreams();
+                        showNotification(`Importados ${data.streams.length} streams`);
+                    }
+                } catch (err) {
+                    showNotification('Error al importar archivo', 'error');
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        function showInstallModal() {
+            document.getElementById('installModal').classList.add('active');
+        }
+
+        function hideInstallModal() {
+            document.getElementById('installModal').classList.remove('active');
+        }
+
+        function copyUserScript() {
+            const code = document.getElementById('userscriptCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('¡Código copiado! Pégalo en Tampermonkey');
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification ${type}`;
+            notif.classList.add('show');
+            
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('installModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('installModal')) {
+                hideInstallModal();
+            }
+        });
+    </script>
+</body>
+</html>
