@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Indexer - ElChatCam</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>ElChatCam Stream Monitor - AutoSync</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -12,21 +11,14 @@
             --danger: #ef4444;
             --warning: #f59e0b;
             --dark: #1e293b;
-            --gray: #64748b;
-            --border: #e2e8f0;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); min-height: 100vh; padding: 20px; }
-        
-        .container { max-width: 1600px; margin: 0 auto; }
+        body { background: #0f172a; color: #e2e8f0; min-height: 100vh; }
         
         .header {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -34,219 +26,162 @@
             gap: 15px;
         }
         
-        .header h1 { color: var(--dark); font-size: 1.8rem; }
-        .header h1 span { color: var(--primary); }
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+            animation: none;
+        }
+        
+        .status-dot.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
         
         .tabs {
             display: flex;
             gap: 10px;
-            background: #f1f5f9;
-            padding: 5px;
-            border-radius: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
         }
         
         .tab {
             padding: 10px 20px;
-            border: none;
             background: transparent;
-            border-radius: 8px;
+            border: none;
+            color: #94a3b8;
             cursor: pointer;
             font-weight: 600;
+            border-radius: 8px;
             transition: all 0.3s;
-            color: var(--gray);
         }
         
         .tab.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--primary);
+            color: white;
         }
         
-        .panel {
-            display: none;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        }
-        
+        .panel { display: none; }
         .panel.active { display: block; }
         
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 15px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        
-        .stats-grid {
+        .stats-bar {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
         
-        .stat-card {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        .stat-box {
+            background: #1e293b;
             padding: 20px;
             border-radius: 12px;
             text-align: center;
-            border-left: 4px solid var(--primary);
+            border: 1px solid #334155;
         }
         
-        .stat-number {
+        .stat-value {
             font-size: 2.5rem;
             font-weight: 800;
             color: var(--primary);
         }
         
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
+        .stat-label { color: #94a3b8; font-size: 0.9rem; margin-top: 5px; }
         
-        .filter-bar {
+        .filters {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            align-items: center;
         }
         
-        .filter-bar input, .filter-bar select {
+        .filters input, .filters select {
             padding: 10px 15px;
-            border: 2px solid var(--border);
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 8px;
+            color: white;
             font-size: 0.95rem;
         }
         
-        .users-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            max-height: 600px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .user-card {
-            background: #f8fafc;
-            border: 2px solid var(--border);
+        .users-table {
+            background: #1e293b;
             border-radius: 12px;
-            padding: 15px;
-            display: flex;
+            overflow: hidden;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .user-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px 100px 100px 120px;
+            gap: 15px;
+            padding: 12px 20px;
+            border-bottom: 1px solid #334155;
             align-items: center;
-            gap: 12px;
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
+            transition: background 0.2s;
         }
         
-        .user-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+        .user-row:hover { background: #334155; }
         
-        .user-card.selected {
-            border-color: var(--success);
-            background: #f0fdf4;
-        }
-        
-        .user-card.streaming {
-            border-color: var(--success);
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-        }
+        .user-row.streaming { border-left: 4px solid var(--success); }
+        .user-row.private { border-left: 4px solid var(--danger); } /* Cámara roja */
         
         .user-avatar {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--border);
         }
         
-        .user-info {
-            flex: 1;
-        }
-        
-        .user-name {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 4px;
-            display: flex;
+        .cam-indicator {
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
-        }
-        
-        .user-role {
-            font-size: 0.75rem;
-            padding: 2px 8px;
+            gap: 5px;
+            padding: 4px 10px;
             border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
         
-        .role-admin { background: #fee2e2; color: #991b1b; }
-        .role-vip { background: #fef3c7; color: #92400e; }
-        .role-user { background: #e0e7ff; color: #3730a3; }
+        .cam-green { background: rgba(16, 185, 129, 0.2); color: #4ade80; }
+        .cam-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .cam-off { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
         
-        .stream-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--gray);
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
         }
         
-        .stream-indicator.active {
-            background: var(--success);
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
         
         .streams-grid {
             display: grid;
@@ -255,25 +190,33 @@
         }
         
         .stream-card {
-            background: white;
-            border-radius: 16px;
+            background: #1e293b;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            border: 1px solid var(--border);
+            border: 1px solid #334155;
         }
         
         .stream-header {
             padding: 12px 16px;
-            background: var(--primary);
-            color: white;
+            background: linear-gradient(135deg, #374151, #1f2937);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
+        .stream-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .badge-public { background: var(--success); color: white; }
+        .badge-private { background: var(--danger); color: white; }
+        
         .stream-container {
-            height: 225px;
-            background: #1a1a1a;
+            height: 250px;
+            background: #0f172a;
             position: relative;
         }
         
@@ -284,393 +227,214 @@
         }
         
         .stream-controls {
-            padding: 12px;
+            padding: 10px;
             display: flex;
             gap: 8px;
             justify-content: center;
         }
         
-        .control-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-        
-        .control-btn.reload { background: var(--primary); color: white; }
-        .control-btn.remove { background: var(--danger); color: white; }
-        
-        .bookmarklet-code {
+        .sync-info {
             background: #1e293b;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 12px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            overflow-x: auto;
-            margin: 15px 0;
-            position: relative;
-        }
-        
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--gray);
-        }
-        
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            z-index: 1000;
-            transform: translateX(150%);
-            transition: transform 0.3s;
-            max-width: 400px;
-        }
-        
-        .notification.show { transform: translateX(0); }
-        .notification.error { background: var(--danger); }
-        .notification.success { background: var(--success); }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
-        
-        .loading-overlay.active { display: flex; }
-        
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid white;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .auto-refresh {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f0f9ff;
             padding: 15px;
             border-radius: 12px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: var(--border);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s;
+        .last-sync {
+            color: #94a3b8;
+            font-size: 0.9rem;
         }
-        
-        .toggle-switch.active { background: var(--success); }
-        
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-        
-        .toggle-switch.active::after { transform: translateX(24px); }
         
         @media (max-width: 768px) {
-            .users-grid, .streams-grid { grid-template-columns: 1fr; }
-            .header { flex-direction: column; text-align: center; }
+            .user-row { grid-template-columns: 40px 1fr 80px; }
+            .user-row > *:nth-child(4), .user-row > *:nth-child(5) { display: none; }
+            .streams-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div>
+            <h1>📡 ElChatCam Monitor</h1>
+            <p style="opacity: 0.9; font-size: 0.9rem;">Sincronización automática con el chat</p>
+        </div>
+        <div class="connection-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Desconectado - Abre el chat en otra pestaña</span>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <div>
-                <h1>📡 Stream <span>Indexer</span></h1>
-                <p style="color: var(--gray); margin-top: 5px;">Extrae y monitorea streams de ElChatCam</p>
-            </div>
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('import')">Importar HTML</button>
-                <button class="tab" onclick="switchTab('users')">Usuarios</button>
-                <button class="tab" onclick="switchTab('streams')">Mis Streams</button>
-                <button class="tab" onclick="switchTab('bookmarklet')">Bookmarklet</button>
-            </div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('live')">🔴 En Vivo</button>
+            <button class="tab" onclick="switchTab('all')">👥 Todos los Usuarios</button>
+            <button class="tab" onclick="switchTab('streams')">🎥 Mis Streams</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ Configuración</button>
         </div>
 
-        <!-- Panel: Importar -->
-        <div class="panel active" id="panel-import">
-            <h2 style="margin-bottom: 20px;">📋 Importar desde HTML del Chat</h2>
-            
-            <div class="input-group">
-                <label>1. Ve al chat de <a href="https://irc.elchatcam.com" target="_blank">ElChatCam</a></label>
-                <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 10px;">
-                    2. Inspecciona el elemento <code>#userList</code> (Click derecho → Inspeccionar)<br>
-                    3. Copia el HTML completo del <code>&lt;ul id="userList"&gt;</code><br>
-                    4. Pégalo aquí:
-                </p>
-                <textarea id="htmlInput" placeholder="Pega aquí el HTML del userList..."></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-primary" onclick="parseHTML()">
-                    <i class="fas fa-sync"></i> Analizar y Extraer Usuarios
-                </button>
-                <button class="btn btn-outline" onclick="loadExample()">
-                    <i class="fas fa-code"></i> Cargar Ejemplo
-                </button>
-                <button class="btn btn-warning" onclick="clearData()">
-                    <i class="fas fa-trash"></i> Limpiar Todo
-                </button>
-            </div>
-
-            <div style="margin-top: 30px; padding: 20px; background: #fef3c7; border-radius: 12px; border-left: 4px solid var(--warning);">
-                <h4 style="margin-bottom: 10px;">💡 Consejo Rápido</h4>
-                <p style="font-size: 0.95rem; color: #92400e;">
-                    Para actualizar rápido: Usa el <strong>Bookmarklet</strong> (última pestaña) para extraer datos sin salir del chat.
-                </p>
-            </div>
-        </div>
-
-        <!-- Panel: Usuarios -->
-        <div class="panel" id="panel-users">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalUsers">0</div>
-                    <div class="stat-label">Total Usuarios</div>
+        <!-- Panel: En Vivo -->
+        <div class="panel active" id="panel-live">
+            <div class="sync-info">
+                <div class="last-sync">
+                    Última sincronización: <span id="lastSync">Nunca</span><br>
+                    <small style="color: #64748b;">Los datos se actualizan automáticamente desde el chat</small>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="streamingUsers" style="color: var(--success);">0</div>
-                    <div class="stat-label">Transmitiendo</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="selectedUsers" style="color: var(--primary);">0</div>
-                    <div class="stat-label">Seleccionados</div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" onclick="refreshFromChat()">
+                        🔄 Sincronizar Ahora
+                    </button>
+                    <button class="btn btn-primary" onclick="addAllVisibleToStreams()">
+                        ➕ Agregar Todos a Streams
+                    </button>
                 </div>
             </div>
 
-            <div class="auto-refresh">
-                <div class="toggle-switch" id="autoRefreshToggle" onclick="toggleAutoRefresh()"></div>
-                <div>
-                    <div style="font-weight: 600;">Auto-refresh cada 30s</div>
-                    <div style="font-size: 0.85rem; color: var(--gray);">Solo verifica usuarios con cámara activa</div>
+            <div class="stats-bar">
+                <div class="stat-box">
+                    <div class="stat-value" id="statTotal" style="color: white;">0</div>
+                    <div class="stat-label">Total en Chat</div>
                 </div>
-                <button class="btn btn-primary" onclick="refreshStreams()" style="margin-left: auto;">
-                    <i class="fas fa-sync"></i> Verificar Ahora
-                </button>
+                <div class="stat-box">
+                    <div class="stat-value" id="statStreaming" style="color: var(--success);">0</div>
+                    <div class="stat-label">🟢 Transmitiendo (Público)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statPrivate" style="color: var(--danger);">0</div>
+                    <div class="stat-label">🔴 Privado/Limitado</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statOffline" style="color: var(--warning);">0</div>
+                    <div class="stat-label">⚫ Sin Cámara</div>
+                </div>
             </div>
 
-            <div class="filter-bar">
-                <input type="text" id="searchUsers" placeholder="🔍 Buscar usuario..." onkeyup="filterUsers()">
-                <select id="filterRole" onchange="filterUsers()">
+            <div class="filters">
+                <input type="text" id="searchLive" placeholder="🔍 Buscar usuario..." onkeyup="renderLive()">
+                <select id="filterCam" onchange="renderLive()">
+                    <option value="all">Todas las cámaras</option>
+                    <option value="green">🟢 Solo públicas</option>
+                    <option value="red">🔴 Solo privadas/limitadas</option>
+                </select>
+                <select id="filterRole" onchange="renderLive()">
                     <option value="all">Todos los roles</option>
-                    <option value="admin">Admins</option>
-                    <option value="vip">VIP</option>
-                    <option value="user">Usuarios</option>
+                    <option value="admin">👮 Admins</option>
+                    <option value="vip">⭐ VIP</option>
+                    <option value="user">👤 Usuarios</option>
                 </select>
-                <select id="filterStatus" onchange="filterUsers()">
-                    <option value="all">Todos los estados</option>
-                    <option value="streaming">Transmitiendo</option>
-                    <option value="offline">Offline</option>
-                </select>
-                <button class="btn btn-success" onclick="addSelectedToStreams()">
-                    <i class="fas fa-plus"></i> Agregar Seleccionados
-                </button>
-                <button class="btn btn-outline" onclick="selectAllStreaming()">
-                    Seleccionar todos los activos
-                </button>
             </div>
 
-            <div class="users-grid" id="usersGrid">
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <h3>No hay usuarios cargados</h3>
-                    <p>Ve a la pestaña "Importar HTML" para comenzar</p>
+            <div class="users-table" id="liveTable">
+                <div style="padding: 40px; text-align: center; color: #64748b;">
+                    <p>Esperando datos del chat...</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px;">
+                        1. Abre <a href="https://irc.elchatcam.com" target="_blank" style="color: var(--primary);">el chat</a> en otra pestaña<br>
+                        2. Instala el UserScript de Tampermonkey<br>
+                        3. Los datos aparecerán automáticamente aquí
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Panel: Streams -->
+        <!-- Panel: Todos los Usuarios -->
+        <div class="panel" id="panel-all">
+            <div class="stats-bar">
+                <div class="stat-box">
+                    <div class="stat-value" id="statHistory">0</div>
+                    <div class="stat-label">Usuarios vistos (histórico)</div>
+                </div>
+            </div>
+            
+            <div class="users-table" id="historyTable">
+                <!-- Histórico de usuarios -->
+            </div>
+        </div>
+
+        <!-- Panel: Mis Streams -->
         <div class="panel" id="panel-streams">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>Mis Streams Guardados</h2>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-outline" onclick="exportStreams()">
-                        <i class="fas fa-download"></i> Exportar
-                    </button>
-                    <label class="btn btn-success" style="cursor: pointer;">
-                        <i class="fas fa-upload"></i> Importar
-                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importStreams(this)">
-                    </label>
-                    <button class="btn btn-danger" onclick="clearAllStreams()">
-                        <i class="fas fa-trash"></i> Limpiar
-                    </button>
+                    <button class="btn btn-outline" onclick="exportStreams()">📥 Exportar</button>
+                    <button class="btn btn-danger" onclick="clearStreams()">🗑️ Limpiar</button>
                 </div>
             </div>
-
-            <div class="streams-grid" id="streamsGrid">
-                <div class="empty-state" style="grid-column: 1/-1;">
-                    <i class="fas fa-video"></i>
-                    <h3>No tienes streams guardados</h3>
-                    <p>Selecciona usuarios de la lista y agrégalos aquí</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Panel: Bookmarklet -->
-        <div class="panel" id="panel-bookmarklet">
-            <h2 style="margin-bottom: 20px;">🔖 Bookmarklet (Extracción Rápida)</h2>
             
-            <p style="margin-bottom: 15px; line-height: 1.6;">
-                Arrastra este botón a tu barra de favoritos. Luego, cuando estés en el chat de ElChatCam, 
-                haz clic en el favorito para extraer automáticamente la lista de usuarios:
-            </p>
+            <div class="streams-grid" id="streamsGrid">
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #64748b;">
+                    <p>No tienes streams guardados</p>
+                    <p style="font-size: 0.9rem;">Ve a "En Vivo" y agrega usuarios</p>
+                </div>
+            </div>
+        </div>
 
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="javascript:(function(){
-                    const users = [];
-                    document.querySelectorAll('#userList li').forEach(li => {
-                        const nick = li.getAttribute('data-nick');
-                        if (!nick) return;
-                        const hasCamera = li.querySelector('.fa-video-camera');
-                        const isStreaming = hasCamera && hasCamera.style.color === 'limegreen';
-                        const roleImg = li.querySelector('img[alt]');
-                        const role = roleImg ? roleImg.alt : 'user';
-                        const avatar = li.querySelector('img')?.src || '';
-                        
-                        users.push({
-                            name: nick,
-                            isStreaming: isStreaming,
-                            role: role,
-                            avatar: avatar,
-                            timestamp: new Date().toISOString()
-                        });
-                    });
+        <!-- Panel: Configuración -->
+        <div class="panel" id="panel-settings">
+            <h2 style="margin-bottom: 20px;">⚙️ Configuración de Sincronización</h2>
+            
+            <div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; color: var(--primary);">UserScript de Tampermonkey</h3>
+                <p style="margin-bottom: 15px; line-height: 1.6;">
+                    Para la sincronización automática, instala este script en Tampermonkey:
+                </p>
+                
+                <div style="background: #0f172a; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; max-height: 300px; overflow-y: auto;">
+                    <pre id="userscriptCode">// El código del UserScript va aquí (ver arriba)</pre>
+                </div>
+                
+                <button class="btn btn-primary" style="margin-top: 15px;" onclick="copyUserScript()">
+                    📋 Copiar Código
+                </button>
+            </div>
+
+            <div style="background: #1e293b; padding: 20px; border-radius: 12px;">
+                <h3 style="margin-bottom: 15px;">Opciones de Actualización</h3>
+                
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>Intervalo de sincronización:</label>
+                        <select id="syncInterval" onchange="saveSettings()">
+                            <option value="5000">5 segundos</option>
+                            <option value="10000" selected>10 segundos</option>
+                            <option value="30000">30 segundos</option>
+                            <option value="60000">1 minuto</option>
+                        </select>
+                    </div>
                     
-                    localStorage.setItem('elchatcam_extracted', JSON.stringify(users));
-                    alert('Extraídos ' + users.length + ' usuarios. Ve al Indexer y recarga la página.');
-                })();" 
-                style="background: var(--primary); color: white; padding: 15px 30px; 
-                       border-radius: 12px; text-decoration: none; font-weight: 600;
-                       display: inline-block; box-shadow: 0 4px 15px rgba(99,102,241,0.3);">
-                    📡 Extraer Usuarios
-                </a>
-            </div>
-
-            <h3 style="margin: 30px 0 15px;">Código Fuente (para desarrolladores):</h3>
-            <div class="bookmarklet-code">
-                <button class="copy-btn" onclick="copyBookmarklet()">Copiar</button>
-                <pre id="bookmarkletCode">javascript:(function(){
-    const users = [];
-    document.querySelectorAll('#userList li').forEach(li => {
-        const nick = li.getAttribute('data-nick');
-        if (!nick) return;
-        const hasCamera = li.querySelector('.fa-video-camera');
-        const isStreaming = hasCamera && hasCamera.style.color === 'limegreen';
-        const roleImg = li.querySelector('img[alt]');
-        const role = roleImg ? roleImg.alt : 'user';
-        const avatar = li.querySelector('img')?.src || '';
-        
-        users.push({
-            name: nick,
-            isStreaming: isStreaming,
-            role: role,
-            avatar: avatar,
-            timestamp: new Date().toISOString()
-        });
-    });
-    
-    localStorage.setItem('elchatcam_extracted', JSON.stringify(users));
-    alert('Extraídos ' + users.length + ' usuarios. Ve al Indexer y recarga la página.');
-})();</pre>
-            </div>
-
-            <div style="margin-top: 30px; padding: 20px; background: #f0fdf4; border-radius: 12px; border-left: 4px solid var(--success);">
-                <h4 style="margin-bottom: 10px;">✅ Cómo usar:</h4>
-                <ol style="margin-left: 20px; line-height: 1.8; color: #166534;">
-                    <li>Arrastra el botón morado a tu barra de favoritos</li>
-                    <li>Entra al chat de <strong>ElChatCam</strong></li>
-                    <li>Haz clic en el favorito cuando veas usuarios con cámara verde</li>
-                    <li>Vuelve a esta página y los datos aparecerán automáticamente</li>
-                </ol>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>Incluir cámaras rojas (privadas):</label>
+                        <input type="checkbox" id="includeRed" checked onchange="saveSettings()">
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>Notificaciones de nuevos streams:</label>
+                        <input type="checkbox" id="notifyNew" checked onchange="saveSettings()">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Loading -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
-
-    <!-- Notification -->
-    <div class="notification" id="notification"></div>
 
     <script>
         // Estado global
-        let users = JSON.parse(localStorage.getItem('elchatcam_users')) || [];
-        let myStreams = JSON.parse(localStorage.getItem('elchatcam_streams')) || [];
-        let selectedUsers = new Set();
-        let autoRefreshInterval = null;
+        let liveUsers = [];
+        let myStreams = JSON.parse(localStorage.getItem('elchatcam_streams') || '[]');
+        let settings = JSON.parse(localStorage.getItem('elchatcam_settings') || '{}');
+        let lastData = null;
+        let checkInterval = null;
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            checkExtractedData();
-            renderUsers();
+            loadSettings();
+            startSyncCheck();
             renderStreams();
             
-            // Cargar datos extraídos por bookmarklet si existen
-            const extracted = localStorage.getItem('elchatcam_extracted');
-            if (extracted) {
-                users = JSON.parse(extracted);
-                saveUsers();
-                localStorage.removeItem('elchatcam_extracted');
-                switchTab('users');
-                showNotification('Datos extraídos via bookmarklet cargados', 'success');
-            }
+            // Verificar cada 3 segundos si hay datos nuevos del UserScript
+            checkInterval = setInterval(checkForUpdates, 3000);
         });
 
         function switchTab(tab) {
@@ -680,216 +444,235 @@
             event.target.classList.add('active');
             document.getElementById(`panel-${tab}`).classList.add('active');
             
-            if (tab === 'users') renderUsers();
+            if (tab === 'live') renderLive();
+            if (tab === 'all') renderHistory();
             if (tab === 'streams') renderStreams();
         }
 
-        function parseHTML() {
-            const html = document.getElementById('htmlInput').value.trim();
-            if (!html) {
-                showNotification('Pega el HTML primero', 'error');
-                return;
-            }
-
-            showLoading(true);
+        // Verificar actualizaciones del UserScript
+        function checkForUpdates() {
+            // El UserScript guarda en localStorage del mismo dominio
+            // PERO como estamos en file:// o diferente dominio, usamos otra estrategia:
             
-            try {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const userList = doc.getElementById('userList') || doc.querySelector('ul');
-                
-                if (!userList) {
-                    throw new Error('No se encontró la lista de usuarios');
-                }
-
-                const newUsers = [];
-                userList.querySelectorAll('li[data-nick]').forEach(li => {
-                    const nick = li.getAttribute('data-nick');
-                    if (!nick) return;
-                    
-                    // Detectar si está transmitiendo (cámara verde)
-                    const camIcon = li.querySelector('.fa-video-camera, .cam-icon');
-                    const camStyle = camIcon ? camIcon.getAttribute('style') || '' : '';
-                    const isStreaming = camStyle.includes('limegreen') || camStyle.includes('rgb(0, 255, 0)');
-                    
-                    // Detectar rol
-                    let role = 'user';
-                    const roleImg = li.querySelector('img[alt="admin"], img[alt="vip"]');
-                    if (roleImg) role = roleImg.alt;
-                    
-                    // Avatar
-                    const avatarImg = li.querySelector('img');
-                    const avatar = avatarImg ? avatarImg.src : '';
-                    
-                    // Evitar duplicados
-                    if (!users.find(u => u.name === nick)) {
-                        newUsers.push({
-                            id: Date.now() + Math.random(),
-                            name: nick,
-                            isStreaming: isStreaming,
-                            role: role,
-                            avatar: avatar,
-                            timestamp: new Date().toISOString(),
-                            lastChecked: new Date().toISOString()
-                        });
+            // Estrategia 1: Intentar leer desde el DOM si estamos en el mismo origen
+            // (No funciona por CORS)
+            
+            // Estrategia 2: El usuario debe copiar/pegar manualmente (fallback)
+            
+            // Estrategia 3: Usar un servidor intermediario (no implementado aquí)
+            
+            // Por ahora, simulamos la recepción de datos:
+            const mockData = localStorage.getItem('elchatcam_indexer_data');
+            if (mockData && mockData !== lastData) {
+                lastData = mockData;
+                try {
+                    const parsed = JSON.parse(mockData);
+                    if (parsed.users) {
+                        updateLiveData(parsed.users);
                     }
-                });
-
-                if (newUsers.length === 0) {
-                    showNotification('No se encontraron nuevos usuarios', 'warning');
-                } else {
-                    users = [...users, ...newUsers];
-                    saveUsers();
-                    showNotification(`Extraídos ${newUsers.length} usuarios nuevos`, 'success');
-                    switchTab('users');
+                } catch (e) {
+                    console.error('Error parsing data:', e);
                 }
-                
-                document.getElementById('htmlInput').value = '';
-                
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
+            }
+            
+            // Actualizar estado de conexión
+            const isConnected = mockData && (Date.now() - JSON.parse(mockData).timestamp < 60000);
+            updateConnectionStatus(isConnected);
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Conectado - Sincronizando';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Desconectado - Abre el chat en otra pestaña';
             }
         }
 
-        function renderUsers() {
-            const grid = document.getElementById('usersGrid');
-            const filtered = getFilteredUsers();
+        function updateLiveData(users) {
+            liveUsers = users;
+            document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
             
-            document.getElementById('totalUsers').textContent = users.length;
-            document.getElementById('streamingUsers').textContent = users.filter(u => u.isStreaming).length;
-            document.getElementById('selectedUsers').textContent = selectedUsers.size;
+            // Actualizar stats
+            const streaming = users.filter(u => u.isStreaming);
+            const green = users.filter(u => u.camStatus === 'green');
+            const red = users.filter(u => u.camStatus === 'red');
+            const offline = users.filter(u => u.camStatus === 'none');
+            
+            document.getElementById('statTotal').textContent = users.length;
+            document.getElementById('statStreaming').textContent = green.length;
+            document.getElementById('statPrivate').textContent = red.length;
+            document.getElementById('statOffline').textContent = offline.length;
+            
+            renderLive();
+            
+            // Notificar nuevos streams si está habilitado
+            if (settings.notifyNew) {
+                const newStreams = streaming.filter(s => !liveUsers.find(u => u.name === s.name && u.lastSeen));
+                if (newStreams.length > 0) {
+                    showNotification(`${newStreams.length} nuevos streams detectados`);
+                }
+            }
+        }
 
-            if (users.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <i class="fas fa-users"></i>
-                        <h3>No hay usuarios cargados</h3>
-                        <p>Ve a la pestaña "Importar HTML" para comenzar</p>
+        function renderLive() {
+            const container = document.getElementById('liveTable');
+            const search = document.getElementById('searchLive')?.value.toLowerCase() || '';
+            const camFilter = document.getElementById('filterCam')?.value || 'all';
+            const roleFilter = document.getElementById('filterRole')?.value || 'all';
+            
+            let filtered = liveUsers.filter(u => {
+                if (search && !u.name.toLowerCase().includes(search)) return false;
+                if (camFilter === 'green' && u.camStatus !== 'green') return false;
+                if (camFilter === 'red' && u.camStatus !== 'red') return false;
+                if (roleFilter !== 'all' && u.role !== roleFilter) return false;
+                return true;
+            });
+
+            // Ordenar: transmitiendo primero, luego por nombre
+            filtered.sort((a, b) => {
+                if (a.isStreaming && !b.isStreaming) return -1;
+                if (!a.isStreaming && b.isStreaming) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #64748b;">
+                        <p>No hay usuarios que coincidan con los filtros</p>
                     </div>`;
                 return;
             }
 
-            grid.innerHTML = filtered.map(user => `
-                <div class="user-card ${user.isStreaming ? 'streaming' : ''} ${selectedUsers.has(user.id) ? 'selected' : ''}" 
-                     onclick="toggleSelect('${user.id}')" data-id="${user.id}">
-                    <div class="stream-indicator ${user.isStreaming ? 'active' : ''}"></div>
-                    <img src="${user.avatar || '/uploads/avatars/default.png'}" class="user-avatar" alt="">
-                    <div class="user-info">
-                        <div class="user-name">
-                            ${escapeHtml(user.name)}
-                            <span class="user-role role-${user.role}">${user.role.toUpperCase()}</span>
+            container.innerHTML = `
+                <div class="user-row" style="background: #334155; font-weight: 600;">
+                    <div></div>
+                    <div>Usuario</div>
+                    <div>Cámara</div>
+                    <div>Rol</div>
+                    <div>Espect.</div>
+                    <div>Acciones</div>
+                </div>
+                ${filtered.map(user => `
+                    <div class="user-row ${user.isStreaming ? 'streaming' : ''} ${user.isPrivate ? 'private' : ''}">
+                        <img src="${user.avatar}" class="user-avatar" onerror="this.src='/uploads/avatars/default.png'">
+                        <div>
+                            <div style="font-weight: 600;">${escapeHtml(user.name)}</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                                ${user.firstSeen ? 'Visto desde: ' + new Date(user.firstSeen).toLocaleDateString() : ''}
+                            </div>
                         </div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">
-                            ${user.isStreaming ? '🎥 Transmitiendo' : '💤 Offline'}
+                        <div>
+                            <span class="cam-indicator cam-${user.camStatus}">
+                                ${user.camStatus === 'green' ? '🟢 Pública' : 
+                                  user.camStatus === 'red' ? '🔴 Privada' : '⚫ Off'}
+                            </span>
+                        </div>
+                        <div>
+                            <span style="text-transform: uppercase; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: ${user.role === 'admin' ? '#fee2e2' : user.role === 'vip' ? '#fef3c7' : '#e0e7ff'}; color: ${user.role === 'admin' ? '#991b1b' : user.role === 'vip' ? '#92400e' : '#3730a3'};">
+                                ${user.role}
+                            </span>
+                        </div>
+                        <div style="text-align: center; font-weight: 600;">
+                            ${user.viewers || 0}
+                        </div>
+                        <div>
+                            ${user.isStreaming ? `
+                                <button class="btn btn-success btn-sm" onclick="addToStreams('${user.name}', '${user.url}', '${user.avatar}', ${user.isPrivate})">
+                                    ➕ Agregar
+                                </button>
+                            ` : '<span style="color: #64748b; font-size: 0.8rem;">No transmite</span>'}
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('')}`;
         }
 
-        function getFilteredUsers() {
-            const search = document.getElementById('searchUsers')?.value.toLowerCase() || '';
-            const roleFilter = document.getElementById('filterRole')?.value || 'all';
-            const statusFilter = document.getElementById('filterStatus')?.value || 'all';
+        function addToStreams(name, url, avatar, isPrivate) {
+            if (myStreams.find(s => s.name === name)) {
+                showNotification(`${name} ya está en tus streams`);
+                return;
+            }
             
-            return users.filter(user => {
-                if (search && !user.name.toLowerCase().includes(search)) return false;
-                if (roleFilter !== 'all' && user.role !== roleFilter) return false;
-                if (statusFilter === 'streaming' && !user.isStreaming) return false;
-                if (statusFilter === 'offline' && user.isStreaming) return false;
+            myStreams.push({
+                id: Date.now() + Math.random(),
+                name: name,
+                url: url,
+                avatar: avatar,
+                isPrivate: isPrivate,
+                addedAt: new Date().toISOString()
+            });
+            
+            localStorage.setItem('elchatcam_streams', JSON.stringify(myStreams));
+            showNotification(`${name} agregado a streams`);
+        }
+
+        function addAllVisibleToStreams() {
+            const visible = getFilteredLive();
+            let added = 0;
+            
+            visible.filter(u => u.isStreaming).forEach(user => {
+                if (!myStreams.find(s => s.name === user.name)) {
+                    addToStreams(user.name, user.url, user.avatar, user.isPrivate);
+                    added++;
+                }
+            });
+            
+            showNotification(`${added} streams agregados`);
+        }
+
+        function getFilteredLive() {
+            const search = document.getElementById('searchLive')?.value.toLowerCase() || '';
+            const camFilter = document.getElementById('filterCam')?.value || 'all';
+            const roleFilter = document.getElementById('filterRole')?.value || 'all';
+            
+            return liveUsers.filter(u => {
+                if (search && !u.name.toLowerCase().includes(search)) return false;
+                if (camFilter === 'green' && u.camStatus !== 'green') return false;
+                if (camFilter === 'red' && u.camStatus !== 'red') return false;
+                if (roleFilter !== 'all' && u.role !== roleFilter) return false;
                 return true;
             });
         }
 
-        function filterUsers() {
-            renderUsers();
-        }
-
-        function toggleSelect(userId) {
-            if (selectedUsers.has(userId)) {
-                selectedUsers.delete(userId);
-            } else {
-                selectedUsers.add(userId);
-            }
-            renderUsers();
-        }
-
-        function selectAllStreaming() {
-            const streaming = users.filter(u => u.isStreaming);
-            streaming.forEach(u => selectedUsers.add(u.id));
-            renderUsers();
-            showNotification(`Seleccionados ${streaming.length} usuarios activos`);
-        }
-
-        function addSelectedToStreams() {
-            if (selectedUsers.size === 0) {
-                showNotification('Selecciona al menos un usuario', 'error');
-                return;
-            }
-
-            let added = 0;
-            selectedUsers.forEach(id => {
-                const user = users.find(u => u.id == id);
-                if (user && !myStreams.find(s => s.name === user.name)) {
-                    myStreams.push({
-                        id: Date.now() + Math.random(),
-                        name: user.name,
-                        url: `https://irc.elchatcam.com:4000/subscribe.html?ownerId=${encodeURIComponent(user.name)}`,
-                        avatar: user.avatar,
-                        addedAt: new Date().toISOString()
-                    });
-                    added++;
-                }
-            });
-
-            saveStreams();
-            selectedUsers.clear();
-            renderUsers();
-            showNotification(`${added} streams agregados`, 'success');
-            
-            setTimeout(() => switchTab('streams'), 500);
-        }
-
         function renderStreams() {
-            const grid = document.getElementById('streamsGrid');
+            const container = document.getElementById('streamsGrid');
             
             if (myStreams.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <i class="fas fa-video"></i>
-                        <h3>No tienes streams guardados</h3>
-                        <p>Selecciona usuarios de la lista y agrégalos aquí</p>
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #64748b;">
+                        <p>No tienes streams guardados</p>
                     </div>`;
                 return;
             }
 
-            grid.innerHTML = myStreams.map(stream => `
-                <div class="stream-card" data-stream-id="${stream.id}">
+            container.innerHTML = myStreams.map(stream => `
+                <div class="stream-card">
                     <div class="stream-header">
-                        <span style="font-weight: 600;">${escapeHtml(stream.name)}</span>
-                        <button onclick="removeStream('${stream.id}')" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="${stream.avatar}" style="width: 30px; height: 30px; border-radius: 50%;">
+                            <span style="font-weight: 600;">${escapeHtml(stream.name)}</span>
+                            ${stream.isPrivate ? '<span class="stream-badge badge-private">🔴 PRIVADO</span>' : '<span class="stream-badge badge-public">🟢 PÚBLICO</span>'}
+                        </div>
+                        <button onclick="removeStream('${stream.id}')" style="background: none; border: none; color: white; cursor: pointer;">✕</button>
                     </div>
                     <div class="stream-container">
                         <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>
                     </div>
                     <div class="stream-controls">
-                        <button class="control-btn reload" onclick="reloadStream('${stream.id}')">
-                            <i class="fas fa-redo"></i> Recargar
-                        </button>
-                        <button class="control-btn remove" onclick="removeStream('${stream.id}')">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="reloadStream('${stream.id}')">🔄 Recargar</button>
+                        <a href="${stream.url}" target="_blank" class="btn btn-success btn-sm" style="text-decoration: none;">🔗 Abrir</a>
+                        <button class="btn btn-danger btn-sm" onclick="removeStream('${stream.id}')">🗑️ Eliminar</button>
                     </div>
                 </div>
             `).join('');
         }
 
         function reloadStream(id) {
-            const card = document.querySelector(`[data-stream-id="${id}"]`);
+            const card = document.querySelector(`[onclick="removeStream('${id}')"]`)?.closest('.stream-card');
             if (!card) return;
             const iframe = card.querySelector('iframe');
             const src = iframe.src;
@@ -899,159 +682,76 @@
 
         function removeStream(id) {
             myStreams = myStreams.filter(s => s.id != id);
-            saveStreams();
+            localStorage.setItem('elchatcam_streams', JSON.stringify(myStreams));
             renderStreams();
-            showNotification('Stream eliminado');
         }
 
-        function clearAllStreams() {
-            if (myStreams.length === 0) return;
+        function clearStreams() {
             if (!confirm('¿Eliminar todos los streams?')) return;
-            
             myStreams = [];
-            saveStreams();
+            localStorage.setItem('elchatcam_streams', '[]');
             renderStreams();
-            showNotification('Todos los streams eliminados');
-        }
-
-        function refreshStreams() {
-            // Simular verificación de streams activos
-            showLoading(true);
-            
-            setTimeout(() => {
-                // En una implementación real, aquí verificarías cada stream
-                // Por ahora solo actualizamos el timestamp
-                users.forEach(u => {
-                    u.lastChecked = new Date().toISOString();
-                });
-                saveUsers();
-                renderUsers();
-                showLoading(false);
-                showNotification('Verificación completada');
-            }, 1500);
-        }
-
-        function toggleAutoRefresh() {
-            const toggle = document.getElementById('autoRefreshToggle');
-            toggle.classList.toggle('active');
-            
-            if (toggle.classList.contains('active')) {
-                autoRefreshInterval = setInterval(refreshStreams, 30000);
-                showNotification('Auto-refresh activado (30s)');
-            } else {
-                clearInterval(autoRefreshInterval);
-                showNotification('Auto-refresh desactivado');
-            }
         }
 
         function exportStreams() {
-            if (myStreams.length === 0) {
-                showNotification('No hay streams para exportar', 'error');
-                return;
-            }
-            
             const data = {
                 streams: myStreams,
                 exportedAt: new Date().toISOString()
             };
-            
             const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `elchatcam-streams-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-            URL.revokeObjectURL(url);
-            
-            showNotification('Streams exportados');
         }
 
-        function importStreams(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.value);
-                    if (data.streams && Array.isArray(data.streams)) {
-                        myStreams = [...myStreams, ...data.streams];
-                        saveStreams();
-                        renderStreams();
-                        showNotification(`Importados ${data.streams.length} streams`);
-                    }
-                } catch (err) {
-                    showNotification('Error al importar', 'error');
-                }
+        function refreshFromChat() {
+            // Simulación: en realidad esto esperaría al UserScript
+            showNotification('Solicitando actualización...');
+            checkForUpdates();
+        }
+
+        function saveSettings() {
+            settings = {
+                syncInterval: document.getElementById('syncInterval').value,
+                includeRed: document.getElementById('includeRed').checked,
+                notifyNew: document.getElementById('notifyNew').checked
             };
-            reader.readAsText(file);
-            input.value = '';
+            localStorage.setItem('elchatcam_settings', JSON.stringify(settings));
         }
 
-        function loadExample() {
-            const exampleHTML = `<ul id="userList">
-                <li data-nick="Ezequiel"><img src="/uploads/avatars/ezequiel.jpg"><span>Ezequiel</span><i class="fa fa-video-camera" style="color: limegreen;"></i></li>
-                <li data-nick="VENECA"><img src="/uploads/avatars/default.png"><span>VENECA</span><i class="fa fa-video-camera" style="color: limegreen;"></i></li>
-            </ul>`;
-            document.getElementById('htmlInput').value = exampleHTML;
-            showNotification('Ejemplo cargado. Click en Analizar.');
+        function loadSettings() {
+            if (settings.syncInterval) document.getElementById('syncInterval').value = settings.syncInterval;
+            if (settings.includeRed !== undefined) document.getElementById('includeRed').checked = settings.includeRed;
+            if (settings.notifyNew !== undefined) document.getElementById('notifyNew').checked = settings.notifyNew;
         }
 
-        function clearData() {
-            if (!confirm('¿Borrar todos los datos?')) return;
-            users = [];
-            selectedUsers.clear();
-            saveUsers();
-            renderUsers();
-            showNotification('Datos limpiados');
+        function copyUserScript() {
+            const code = document.getElementById('userscriptCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('UserScript copiado al portapapeles');
+            });
         }
 
-        function checkExtractedData() {
-            // Verificar si hay datos pendientes del bookmarklet
-            const pending = localStorage.getItem('elchatcam_extracted');
-            if (pending) {
-                try {
-                    const data = JSON.parse(pending);
-                    if (Array.isArray(data) && data.length > 0) {
-                        // Fusionar con existentes
-                        data.forEach(newUser => {
-                            if (!users.find(u => u.name === newUser.name)) {
-                                users.push({
-                                    ...newUser,
-                                    id: Date.now() + Math.random(),
-                                    timestamp: new Date().toISOString()
-                                });
-                            }
-                        });
-                        saveUsers();
-                        localStorage.removeItem('elchatcam_extracted');
-                        showNotification(`Cargados ${data.length} usuarios del bookmarklet`);
-                    }
-                } catch (e) {
-                    console.error('Error parsing extracted data:', e);
-                }
-            }
-        }
-
-        function saveUsers() {
-            localStorage.setItem('elchatcam_users', JSON.stringify(users));
-        }
-
-        function saveStreams() {
-            localStorage.setItem('elchatcam_streams', JSON.stringify(myStreams));
-        }
-
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').classList.toggle('active', show);
-        }
-
-        function showNotification(message, type = 'info') {
-            const notif = document.getElementById('notification');
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: var(--success);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
             notif.textContent = message;
-            notif.className = `notification ${type}`;
-            notif.classList.add('show');
-            
-            setTimeout(() => notif.classList.remove('show'), 3000);
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
         }
 
         function escapeHtml(text) {
@@ -1060,15 +760,18 @@
             return div.innerHTML;
         }
 
-        function copyBookmarklet() {
-            const code = document.getElementById('bookmarkletCode').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification('Código copiado al portapapeles');
-            });
+        function startSyncCheck() {
+            // Intentar conectar con el UserScript
+            setInterval(() => {
+                // En una implementación real, aquí habría WebSocket o BroadcastChannel
+                checkForUpdates();
+            }, 3000);
         }
 
-        // Verificar datos del bookmarklet cada 2 segundos
-        setInterval(checkExtractedData, 2000);
+        function renderHistory() {
+            // Implementar si se necesita histórico
+            document.getElementById('historyTable').innerHTML = '<div style="padding: 40px; text-align: center;">Función en desarrollo</div>';
+        }
     </script>
 </body>
 </html>
