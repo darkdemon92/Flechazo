@@ -6,16 +6,19 @@
     <title>ElChatCam Stream Monitor - AutoSync</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ==========================================
+           VARIABLES DE COLORES (basadas en el chat real)
+           ========================================== */
         :root {
             --primary: #6366f1;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
             --info: #3b82f6;
-            --female: #ec4899;    /* Rosa para mujeres */
-            --male: #3b82f6;      /* Azul para varones */
-            --couple: #8b5cf6;    /* Violeta para parejas */
-            --trans: #f59e0b;     /* Naranja para trans */
+            --female: #ec4899;      /* rosa para mujeres (rgb(252,1,126) aproximado) */
+            --male: #3b82f6;         /* azul para varones (rgb(0,51,255) aproximado) */
+            --couple: #8b5cf6;       /* violeta/marrón para parejas (rgb(110,64,0) más claro) */
+            --trans: #f59e0b;        /* naranja para trans/otros */
             --dark: #0f172a;
             --gray: #64748b;
             --border: #334155;
@@ -24,7 +27,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #0b1120; color: #e2e8f0; min-height: 100vh; }
         
-        /* Header */
+        /* ==========================================
+           HEADER
+           ========================================== */
         .header {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             border-bottom: 2px solid var(--primary);
@@ -81,7 +86,9 @@
             50% { opacity: 0.7; transform: scale(1.1); }
         }
         
-        /* Layout principal */
+        /* ==========================================
+           LAYOUT PRINCIPAL
+           ========================================== */
         .main-container {
             display: grid;
             grid-template-columns: 300px 1fr;
@@ -95,7 +102,9 @@
             .main-container { grid-template-columns: 1fr; }
         }
         
-        /* Sidebar */
+        /* ==========================================
+           SIDEBAR (estadísticas)
+           ========================================== */
         .sidebar {
             background: #1e293b;
             border-radius: 16px;
@@ -163,7 +172,9 @@
             color: var(--primary);
         }
         
-        /* Content area */
+        /* ==========================================
+           CONTENIDO PRINCIPAL
+           ========================================== */
         .content {
             background: #1e293b;
             border-radius: 16px;
@@ -171,7 +182,9 @@
             border: 1px solid var(--border);
         }
         
-        /* Tabs */
+        /* ==========================================
+           PESTAÑAS
+           ========================================== */
         .tabs {
             display: flex;
             gap: 10px;
@@ -208,7 +221,9 @@
             font-size: 0.75rem;
         }
         
-        /* Panels */
+        /* ==========================================
+           PANELES
+           ========================================== */
         .panel { display: none; }
         .panel.active { display: block; animation: fadeIn 0.3s; }
         
@@ -217,7 +232,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Filters */
+        /* ==========================================
+           BARRA DE FILTROS
+           ========================================== */
         .filter-bar {
             display: flex;
             gap: 15px;
@@ -277,7 +294,9 @@
         .sex-btn.couple { color: var(--couple); }
         .sex-btn.trans { color: var(--trans); }
         
-        /* Users table */
+        /* ==========================================
+           TABLA DE USUARIOS
+           ========================================== */
         .users-table {
             background: #0f172a;
             border-radius: 12px;
@@ -336,11 +355,11 @@
             gap: 8px;
         }
         
-        /* Colores de sexo basados en el chat */
-        .sex-female { color: var(--female); }      /* rgb(252, 1, 126) - Rosa */
-        .sex-male { color: var(--male); }          /* rgb(0, 51, 255) - Azul */
-        .sex-couple { color: var(--couple); }      /* rgb(110, 64, 0) - Marrón/Pareja */
-        .sex-trans { color: var(--trans); }        /* Otros colores */
+        /* Colores de sexo exactos según el chat */
+        .sex-female { color: #fc017e; }  /* rgb(252,1,126) */
+        .sex-male { color: #0033ff; }     /* rgb(0,51,255) */
+        .sex-couple { color: #6e4000; }   /* rgb(110,64,0) */
+        .sex-trans { color: #f59e0b; }
         
         .sex-badge {
             font-size: 0.7rem;
@@ -408,7 +427,9 @@
         
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         
-        /* Streams Grid */
+        /* ==========================================
+           GRID DE STREAMS
+           ========================================== */
         .streams-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -492,7 +513,9 @@
             background: #1e293b;
         }
         
-        /* Empty states */
+        /* ==========================================
+           ESTADOS VACÍOS
+           ========================================== */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -511,7 +534,9 @@
             color: #e2e8f0;
         }
         
-        /* UserScript modal */
+        /* ==========================================
+           MODAL DEL USERSCRIPT
+           ========================================== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -588,7 +613,9 @@
             gap: 8px;
         }
         
-        /* Notification */
+        /* ==========================================
+           NOTIFICACIÓN FLOTANTE
+           ========================================== */
         .notification {
             position: fixed;
             top: 20px;
@@ -609,7 +636,9 @@
         .notification.error { background: linear-gradient(135deg, var(--danger), #dc2626); }
         .notification.info { background: linear-gradient(135deg, var(--info), #2563eb); }
         
-        /* Loading */
+        /* ==========================================
+           PANTALLA DE CARGA
+           ========================================== */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -640,7 +669,9 @@
             font-size: 1.1rem;
         }
         
-        /* Scrollbar */
+        /* ==========================================
+           SCROLL PERSONALIZADO
+           ========================================== */
         ::-webkit-scrollbar {
             width: 8px; height: 8px;
         }
@@ -659,7 +690,9 @@
             background: #7c3aed;
         }
         
-        /* Instructions */
+        /* ==========================================
+           INSTRUCCIONES
+           ========================================== */
         .instructions {
             background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
             border-left: 4px solid var(--primary);
@@ -688,16 +721,39 @@
             color: var(--primary);
             font-weight: 600;
         }
+        
+        /* ==========================================
+           MINI PANEL FLOTANTE (ahora arrastrable)
+           ========================================== */
+        #stream-indexer-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 9999;
+            font-family: 'Segoe UI', sans-serif;
+            min-width: 250px;
+            max-width: 300px;
+            cursor: move; /* indica que se puede arrastrar */
+            user-select: none;
+        }
+        #stream-indexer-panel:active {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
+    <!-- Pantalla de carga mientras se sincroniza -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
         <div class="loading-text">Sincronizando con el chat...</div>
     </div>
 
-    <!-- Header -->
+    <!-- Header principal -->
     <header class="header">
         <div class="logo">
             <div class="logo-icon">📡</div>
@@ -718,9 +774,9 @@
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Contenedor principal: sidebar + contenido -->
     <div class="main-container">
-        <!-- Sidebar -->
+        <!-- Sidebar con estadísticas e instalación -->
         <aside class="sidebar">
             <div class="install-section">
                 <h3 style="color: white; margin-bottom: 10px;">⚡ Auto-Sync</h3>
@@ -768,9 +824,9 @@
             </div>
         </aside>
 
-        <!-- Content -->
+        <!-- Contenido principal con pestañas -->
         <main class="content">
-            <!-- Tabs -->
+            <!-- Pestañas de navegación -->
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('live', this)">
                     <i class="fas fa-broadcast-tower"></i> En Vivo
@@ -794,10 +850,10 @@
                 <div class="instructions">
                     <h4><i class="fas fa-info-circle"></i> Cómo funciona:</h4>
                     <ol>
-                        <li>Abre <a href="https://irc.elchatcam.com" target="_blank" style="color: var(--primary);">ElChatCam</a> en <strong>otra pestaña</strong></li>
-                        <li>Instala el UserScript (botón arriba a la derecha)</li>
-                        <li>Los usuarios con cámara (🟢 verde o 🔴 roja) aparecerán automáticamente</li>
-                        <li>Usa los filtros de <strong>SEXO</strong> para encontrar lo que buscas</li>
+                        <li>Ve a <a href="https://elchatcam.com" target="_blank" style="color: var(--primary);">ElChatCam.com</a> y haz clic en <strong>ENTRAR AL CHAT</strong> (se generará una URL dinámica).</li>
+                        <li>Instala el UserScript (botón arriba a la derecha).</li>
+                        <li>Los usuarios con cámara (🟢 verde o 🔴 roja) aparecerán automáticamente.</li>
+                        <li>Usa los filtros de <strong>SEXO</strong> para encontrar lo que buscas.</li>
                     </ol>
                 </div>
 
@@ -849,7 +905,7 @@
                 </div>
             </div>
 
-            <!-- Panel: Todos -->
+            <!-- Panel: Todos (histórico) -->
             <div class="panel" id="panel-all">
                 <div class="filter-bar">
                     <input type="text" id="searchAll" placeholder="Buscar en histórico..." onkeyup="renderAll()">
@@ -864,7 +920,7 @@
                 <div class="users-table" id="allTable"></div>
             </div>
 
-            <!-- Panel: Mis Streams -->
+            <!-- Panel: Mis Streams (reproductor) -->
             <div class="panel" id="panel-streams">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="color: var(--primary);"><i class="fas fa-play-circle"></i> Reproductor de Streams</h2>
@@ -884,7 +940,7 @@
                 <div class="streams-grid" id="streamsGrid"></div>
             </div>
 
-            <!-- Panel: Settings -->
+            <!-- Panel: Configuración -->
             <div class="panel" id="panel-settings">
                 <h2 style="color: var(--primary); margin-bottom: 20px;"><i class="fas fa-cog"></i> Configuración</h2>
                 
@@ -917,7 +973,7 @@
         </main>
     </div>
 
-    <!-- Install Modal -->
+    <!-- Modal de instalación del UserScript (instrucciones y código) -->
     <div class="modal-overlay" id="installModal">
         <div class="modal">
             <div class="modal-header">
@@ -948,18 +1004,18 @@
                 <p style="color: #94a3b8; margin-bottom: 10px;">
                     1. Click en el icono de Tampermonkey → "Create a new script"<br>
                     2. Borra todo el contenido<br>
-                    3. Pega este código:<br>
+                    3. Pega este código (mejorado con colores exactos del chat):<br>
                     4. Ctrl+S para guardar<br>
-                    5. Abre el chat de ElChatCam
+                    5. Abre <strong>https://elchatcam.com</strong>, haz clic en "ENTRAR AL CHAT" y luego en la pestaña del chat.
                 </p>
                 
                 <div class="code-block" id="userscriptCode">
 // ==UserScript==
 // @name         ElChatCam Auto-Indexer
 // @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  Indexa automáticamente streams de ElChatCam por sexo y estado de cámara
-// @author       You
+// @version      2.1
+// @description  Indexa automáticamente streams de ElChatCam por sexo y estado de cámara (colores reales)
+// @author       TuNombre
 // @match        https://irc.elchatcam.com/*
 // @match        https://elchatcam.com/*
 // @grant        none
@@ -979,37 +1035,38 @@
     
     let users = [];
     
-    // Detectar sexo por color del nombre
+    /**
+     * Detecta el sexo basado en el color RGB exacto del nick.
+     * Los valores fueron tomados directamente del código fuente de la web.
+     */
     function detectSex(color) {
-        // rgb(252, 1, 126) = Mujer (rosa)
-        // rgb(0, 51, 255) = Varón (azul)
-        // rgb(110, 64, 0) = Pareja (marrón)
-        // Otros = Trans/Otros
-        
         if (!color) return 'unknown';
         
-        color = color.toLowerCase();
+        // Normalizamos el string para comparar fácilmente
+        color = color.toLowerCase().replace(/\s+/g, '');
         
-        // Rosa/Magenta = Mujer
-        if (color.includes('252, 1') || color.includes('fc01') || color.includes('magenta') || color.includes('pink') || color.includes('255, 105')) {
+        // Mujer: rgb(252,1,126) -> rosa/magenta
+        if (color.includes('252,1,126') || color.includes('rgb(252,1,126)') || color.includes('#fc017e')) {
             return 'female';
         }
         
-        // Azul = Varón
-        if (color.includes('0, 51') || color.includes('0033') || color.includes('blue') || color.includes('0, 0, 255')) {
+        // Varón: rgb(0,51,255) -> azul
+        if (color.includes('0,51,255') || color.includes('rgb(0,51,255)') || color.includes('#0033ff')) {
             return 'male';
         }
         
-        // Marrón/Café = Pareja
-        if (color.includes('110, 64') || color.includes('6e40') || color.includes('brown') || color.includes('rgb(139, 69')) {
+        // Pareja: rgb(110,64,0) -> marrón
+        if (color.includes('110,64,0') || color.includes('rgb(110,64,0)') || color.includes('#6e4000')) {
             return 'couple';
         }
         
-        // Otros colores = Trans/Otros
+        // Otros colores (trans, etc.)
         return 'trans';
     }
     
-    // Extraer datos del DOM
+    /**
+     * Extrae los datos de la lista de usuarios del DOM.
+     */
     function extractData() {
         const userList = document.getElementById('userList');
         if (!userList) {
@@ -1024,41 +1081,62 @@
             const nick = li.getAttribute('data-nick');
             if (!nick) return;
             
-            // Obtener color del nombre (sexo)
+            // Extraer el color del nick (sexo)
             const nameSpan = li.querySelector('span[style*="color"]');
-            const colorStyle = nameSpan ? nameSpan.getAttribute('style') : '';
-            const colorMatch = colorStyle.match(/color:\s*rgb\(([^)]+)\)/);
-            const rgbColor = colorMatch ? colorMatch[0] : '';
-            const sex = detectSex(rgbColor);
+            let sex = 'unknown';
+            let rgbColor = '';
+            if (nameSpan) {
+                const styleAttr = nameSpan.getAttribute('style') || '';
+                const colorMatch = styleAttr.match(/color:\s*rgb\(([^)]+)\)/i);
+                if (colorMatch) {
+                    rgbColor = colorMatch[0];
+                    sex = detectSex(rgbColor);
+                } else {
+                    // Si no es RGB, puede ser nombre de color, intentamos detectar igual
+                    sex = detectSex(styleAttr);
+                }
+            }
             
-            // Estado de cámara
+            // Estado de la cámara: buscamos el icono de video
             const camIcon = li.querySelector('.fa-video-camera, .cam-icon');
             let camStatus = 'off';
             let isStreaming = false;
+            let isPrivate = false;
+            let isPublic = false;
             
             if (camIcon) {
                 const style = camIcon.getAttribute('style') || '';
-                const color = style.match(/color:\s*([^;]+)/)?.[1] || '';
+                const colorMatch = style.match(/color:\s*([^;]+)/i);
+                const color = colorMatch ? colorMatch[1].toLowerCase().trim() : '';
                 
-                // Verde = público
-                if (color.includes('lime') || color.includes('0, 255') || color.includes('green') || color.includes('#00')) {
+                // Verde lima = público
+                if (color.includes('lime') || color.includes('limegreen') || color.includes('#00ff00') || color.includes('rgb(0,255,0)')) {
                     camStatus = 'green';
                     isStreaming = true;
+                    isPublic = true;
                 }
-                // Rojo = privado/limitado
-                else if (color.includes('255, 68') || color.includes('red') || color.includes('rgb(255') || color.includes('#ff')) {
+                // Rojo (#ff4444) = privado
+                else if (color.includes('#ff4444') || color.includes('rgb(255,68,68)') || color.includes('red')) {
                     camStatus = 'red';
                     isStreaming = true;
+                    isPrivate = true;
                 }
             }
             
             // Avatar
             const avatarImg = li.querySelector('img');
-            const avatar = avatarImg ? avatarImg.src : '/uploads/avatars/default.png';
+            let avatar = avatarImg ? avatarImg.src : '';
+            if (!avatar || avatar === '') {
+                avatar = '/uploads/avatars/default.png';
+            }
             
-            // Espectadores
-            const viewerSpan = li.querySelector('span[style*="border-radius: 12px"]');
-            const viewers = viewerSpan ? parseInt(viewerSpan.textContent) || 0 : 0;
+            // Espectadores: el span con border-radius (típicamente)
+            const viewerSpan = li.querySelector('span[style*="border-radius"]');
+            let viewers = 0;
+            if (viewerSpan) {
+                const text = viewerSpan.textContent.trim();
+                viewers = parseInt(text) || 0;
+            }
             
             extracted.push({
                 id: nick,
@@ -1067,11 +1145,12 @@
                 sexColor: rgbColor,
                 camStatus: camStatus,
                 isStreaming: isStreaming,
-                isPrivate: camStatus === 'red',
-                isPublic: camStatus === 'green',
+                isPrivate: isPrivate,
+                isPublic: isPublic,
                 avatar: avatar,
                 viewers: viewers,
                 timestamp: now,
+                // URL del stream (formato que usa el monitor)
                 url: `https://irc.elchatcam.com:4000/subscribe.html?ownerId=${encodeURIComponent(nick)}`
             });
         });
@@ -1079,7 +1158,9 @@
         return extracted;
     }
     
-    // Guardar datos para que el monitor los lea
+    /**
+     * Guarda los datos en localStorage y emite un BroadcastChannel si es posible.
+     */
     function saveData(data) {
         const payload = {
             users: data,
@@ -1089,39 +1170,39 @@
         
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(payload));
         
-        // También intentar con BroadcastChannel para comunicación en tiempo real
+        // Usar BroadcastChannel para comunicación en tiempo real (si el navegador lo soporta)
         try {
             const bc = new BroadcastChannel('elchatcam_sync');
             bc.postMessage(payload);
         } catch(e) {
-            // BroadcastChannel no soportado, usar localStorage polling
+            // Fallback: el monitor usará polling
         }
         
-        console.log(`[Indexer] Guardados ${data.length} usuarios`);
+        console.log(`[Indexer] Guardados ${data.length} usuarios (${data.filter(u => u.isStreaming).length} transmitiendo)`);
     }
     
-    // Actualizar datos
+    /**
+     * Actualiza los datos extrayendo del DOM.
+     */
     function update() {
         const data = extractData();
         users = data;
         saveData(data);
-        
-        // Mostrar contador en consola
-        const streaming = data.filter(u => u.isStreaming);
-        console.log(`[Indexer] ${streaming.length}/${data.length} transmitiendo`);
     }
     
-    // Iniciar
+    /**
+     * Inicializa el indexer.
+     */
     function init() {
         console.log('[ElChatCam Indexer] Iniciando monitoreo...');
         
         // Primera extracción
         update();
         
-        // Intervalo de actualización
+        // Intervalo periódico
         setInterval(update, CONFIG.INTERVAL);
         
-        // También observar cambios en el DOM
+        // Observar cambios en la lista de usuarios (para actualizar más rápido)
         const userList = document.getElementById('userList');
         if (userList) {
             const observer = new MutationObserver(() => {
@@ -1132,11 +1213,12 @@
             observer.observe(userList, {
                 childList: true,
                 subtree: true,
-                attributes: true
+                attributes: true,
+                attributeFilter: ['style', 'class']
             });
         }
         
-        // Escuchar mensajes del monitor (para solicitudes manuales)
+        // Escuchar mensajes del monitor (para solicitar actualización manual)
         window.addEventListener('message', (e) => {
             if (e.data && e.data.type === 'REQUEST_UPDATE') {
                 console.log('[Indexer] Solicitud de actualización recibida');
@@ -1162,16 +1244,36 @@
         </div>
     </div>
 
-    <!-- Notification -->
+    <!-- Notificación flotante -->
     <div class="notification" id="notification"></div>
+
+    <!-- Mini panel flotante de estadísticas (ahora arrastrable) -->
+    <div id="stream-indexer-panel" style="display: none;"> <!-- Oculto por defecto, se mostrará cuando haya datos -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong>📡 Stream Indexer</strong>
+            <button id="toggle-monitor" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">⏸️</button>
+        </div>
+        <div style="font-size: 0.85rem; margin-bottom: 8px;">
+            <div>Usuarios: <span id="total-count" style="font-weight: bold;">0</span></div>
+            <div>Transmitiendo: <span id="streaming-count" style="font-weight: bold; color: #4ade80;">0</span></div>
+            <div style="font-size: 0.75rem; opacity: 0.9; margin-top: 4px;">
+                🟢 <span id="green-count">0</span> | 🔴 <span id="red-count">0</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+            <button id="export-now" style="flex: 1; background: #10b981; border: none; color: white; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📋 Exportar</button>
+            <button id="open-indexer" style="flex: 1; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🌐 Ver</button>
+        </div>
+        <div id="last-update" style="font-size: 0.7rem; opacity: 0.8; margin-top: 8px; text-align: center;">Actualizado: --:--:--</div>
+    </div>
 
     <script>
         // ==========================================
         // ESTADO GLOBAL
         // ==========================================
-        let liveUsers = [];
-        let allUsers = JSON.parse(localStorage.getItem('elchatcam_history') || '[]');
-        let myStreams = JSON.parse(localStorage.getItem('elchatcam_streams') || '[]');
+        let liveUsers = [];                // Usuarios actuales del chat
+        let allUsers = JSON.parse(localStorage.getItem('elchatcam_history') || '[]');  // Histórico
+        let myStreams = JSON.parse(localStorage.getItem('elchatcam_streams') || '[]'); // Streams guardados
         let settings = JSON.parse(localStorage.getItem('elchatcam_settings') || '{}');
         let activeSexFilters = new Set(['female', 'male', 'couple', 'trans']);
         let lastDataTimestamp = 0;
@@ -1185,16 +1287,14 @@
             startSyncCheck();
             renderStreams();
             updateBadgeCounts();
-            
-            // Verificar inmediatamente si hay datos
-            checkForUpdates();
+            makePanelDraggable(); // Hacemos arrastrable el mini panel
         });
 
         // ==========================================
-        // SINCRONIZACIÓN CON USERSCRIPT
+        // SINCRONIZACIÓN CON EL USERSCRIPT
         // ==========================================
         function startSyncCheck() {
-            // Verificar cada 2 segundos si hay datos nuevos
+            // Verificar cada 2 segundos si hay datos nuevos en localStorage
             syncIntervalId = setInterval(checkForUpdates, 2000);
             
             // También escuchar BroadcastChannel si está disponible
@@ -1220,13 +1320,13 @@
             try {
                 const parsed = JSON.parse(data);
                 
-                // Verificar si son datos nuevos
+                // Verificar si son datos nuevos (timestamp mayor)
                 if (parsed.timestamp > lastDataTimestamp) {
                     lastDataTimestamp = parsed.timestamp;
                     processNewData(parsed);
                     updateConnectionStatus(true);
                 } else {
-                    // Datos antiguos pero aún válidos (menos de 30s)
+                    // Datos antiguos pero aún válidos (menos de 30 segundos)
                     const age = Date.now() - parsed.timestamp;
                     updateConnectionStatus(age < 30000);
                 }
@@ -1239,7 +1339,7 @@
         function processNewData(data) {
             liveUsers = data.users || [];
             
-            // Agregar al histórico
+            // Agregar al histórico (si no existían)
             liveUsers.forEach(user => {
                 if (!allUsers.find(u => u.id === user.id)) {
                     allUsers.push({
@@ -1258,11 +1358,11 @@
             renderLive();
             renderAll();
             updateBadgeCounts();
+            updateMiniPanel(); // Actualizar el panel flotante
             
-            // Notificar si hay nuevos streams
+            // Notificar si hay nuevos streams (solo si la pestaña no está activa)
             const streamingCount = liveUsers.filter(u => u.isStreaming).length;
             if (streamingCount > 0 && document.hidden) {
-                // Página en segundo plano con streams activos
                 showNotification(`${streamingCount} streams activos`, 'info');
             }
         }
@@ -1283,7 +1383,7 @@
         }
 
         // ==========================================
-        // RENDERIZADO
+        // RENDERIZADO DE TABLAS
         // ==========================================
         function renderLive() {
             const container = document.getElementById('liveTable');
@@ -1291,7 +1391,7 @@
             const camFilter = document.getElementById('filterCam')?.value || 'all';
             
             let filtered = liveUsers.filter(u => {
-                // Filtro de búsqueda
+                // Filtro de búsqueda por nombre
                 if (search && !u.name.toLowerCase().includes(search)) return false;
                 
                 // Filtro de cámara
@@ -1388,8 +1488,6 @@
                 return true;
             });
 
-            document.getElementById('statHistory').textContent = allUsers.length;
-
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="empty-state">No hay usuarios en el histórico</div>';
                 return;
@@ -1406,7 +1504,7 @@
                 </div>
                 ${filtered.map(user => `
                     <div class="user-row">
-                        <img src="${user.avatar}" class="user-avatar">
+                        <img src="${user.avatar}" class="user-avatar" onerror="this.src='/uploads/avatars/default.png'">
                         <div class="user-name sex-${user.sex}">${escapeHtml(user.name)}</div>
                         <div><span class="sex-badge badge-${user.sex}">${user.sex.toUpperCase()}</span></div>
                         <div>${new Date(user.firstSeen).toLocaleDateString()}</div>
@@ -1480,7 +1578,7 @@
         }
 
         // ==========================================
-        // ACCIONES
+        // ACCIONES SOBRE STREAMS
         // ==========================================
         function addToStreams(userId) {
             const user = liveUsers.find(u => u.id === userId);
@@ -1505,7 +1603,7 @@
             const user = allUsers.find(u => u.id === userId);
             if (!user) return;
             
-            // Crear URL si no existe
+            // Crear URL si no existe (formato estándar)
             if (!user.url) {
                 user.url = `https://irc.elchatcam.com:4000/subscribe.html?ownerId=${encodeURIComponent(user.name)}`;
             }
@@ -1612,6 +1710,79 @@
             document.getElementById('badgeLive').textContent = streaming;
             document.getElementById('badgeAll').textContent = allUsers.length;
             document.getElementById('badgeStreams').textContent = myStreams.length;
+        }
+
+        // ==========================================
+        // MINI PANEL FLOTANTE
+        // ==========================================
+        function updateMiniPanel() {
+            const panel = document.getElementById('stream-indexer-panel');
+            if (!panel) return;
+            
+            const total = liveUsers.length;
+            const streaming = liveUsers.filter(u => u.isStreaming).length;
+            const green = liveUsers.filter(u => u.camStatus === 'green').length;
+            const red = liveUsers.filter(u => u.camStatus === 'red').length;
+            
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('streaming-count').textContent = streaming;
+            document.getElementById('green-count').textContent = green;
+            document.getElementById('red-count').textContent = red;
+            document.getElementById('last-update').textContent = 'Actualizado: ' + new Date().toLocaleTimeString();
+            
+            // Mostrar el panel si hay datos
+            if (total > 0) {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Hacer arrastrable el mini panel
+        function makePanelDraggable() {
+            const panel = document.getElementById('stream-indexer-panel');
+            if (!panel) return;
+            
+            let offsetX, offsetY, mouseX, mouseY;
+            
+            panel.addEventListener('mousedown', (e) => {
+                // Solo si el clic no es en un botón
+                if (e.target.tagName === 'BUTTON') return;
+                
+                e.preventDefault();
+                // Obtener la posición del mouse al iniciar el arrastre
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                
+                // Obtener la posición actual del panel
+                const rect = panel.getBoundingClientRect();
+                offsetX = mouseX - rect.left;
+                offsetY = mouseY - rect.top;
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+            
+            function onMouseMove(e) {
+                e.preventDefault();
+                // Calcular nueva posición
+                const left = e.clientX - offsetX;
+                const top = e.clientY - offsetY;
+                
+                // Limitar para que no se salga de la ventana
+                const maxLeft = window.innerWidth - panel.offsetWidth;
+                const maxTop = window.innerHeight - panel.offsetHeight;
+                
+                panel.style.left = Math.min(Math.max(0, left), maxLeft) + 'px';
+                panel.style.top = Math.min(Math.max(0, top), maxTop) + 'px';
+                panel.style.right = 'auto';
+                panel.style.bottom = 'auto';
+            }
+            
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
         }
 
         // ==========================================
@@ -1737,6 +1908,25 @@
             if (e.target === document.getElementById('installModal')) {
                 hideInstallModal();
             }
+        });
+
+        // Botones del mini panel
+        document.getElementById('toggle-monitor')?.addEventListener('click', () => {
+            const panel = document.getElementById('stream-indexer-panel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        });
+
+        document.getElementById('export-now')?.addEventListener('click', () => {
+            exportStreams();
+        });
+
+        document.getElementById('open-indexer')?.addEventListener('click', () => {
+            // Cambiar a la pestaña de streams
+            switchTab('streams', document.querySelector('.tab[onclick*="streams"]'));
         });
     </script>
 </body>
