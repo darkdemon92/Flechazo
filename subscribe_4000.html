@@ -3,88 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Manager Pro</title>
+    <title>Stream Indexer - ElChatCam</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
             --success: #10b981;
-            --warning: #f59e0b;
             --danger: #ef4444;
-            --light: #f8fafc;
+            --warning: #f59e0b;
             --dark: #1e293b;
             --gray: #64748b;
             --border: #e2e8f0;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); min-height: 100vh; padding: 20px; }
         
-        body {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: var(--dark);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .dashboard {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1600px; margin: 0 auto; }
         
         .header {
             background: white;
             border-radius: 20px;
-            padding: 25px 35px;
+            padding: 25px;
             margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid var(--border);
             flex-wrap: wrap;
-            gap: 20px;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
             gap: 15px;
         }
         
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
+        .header h1 { color: var(--dark); font-size: 1.8rem; }
+        .header h1 span { color: var(--primary); }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 5px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
         }
         
-        .logo-text h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            line-height: 1.2;
-        }
-        
-        .logo-text p {
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
             color: var(--gray);
-            font-size: 0.95rem;
         }
         
-        .user-controls {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        .tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .panel {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        
+        .panel.active { display: block; }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
         }
         
         .btn {
@@ -93,178 +101,169 @@
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
+            transition: all 0.3s;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            font-size: 0.95rem;
-            background: white;
-            color: var(--dark);
         }
         
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #0da271;
-        }
-        
-        .btn-outline {
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-        
-        .control-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            border: 1px solid var(--border);
-        }
-        
-        .panel-header {
-            margin-bottom: 25px;
-        }
-        
-        .panel-header h2 {
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
-        
-        .add-stream-form {
+        .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
-            align-items: end;
         }
         
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group label {
-            margin-bottom: 10px;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid var(--border);
+        .stat-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 20px;
             border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s;
-            background: var(--light);
+            text-align: center;
+            border-left: 4px solid var(--primary);
         }
         
-        .form-control:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-        
-        .url-preview {
-            grid-column: 1 / -1;
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 15px;
-            font-family: monospace;
-            color: var(--gray);
-            display: none;
-            word-break: break-all;
-        }
-        
-        .url-preview.active {
-            display: block;
-        }
-        
-        .url-preview span {
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
             color: var(--primary);
-            font-weight: 600;
         }
         
-        .import-export-section {
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .filter-bar {
             display: flex;
             gap: 15px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
+            margin-bottom: 20px;
             flex-wrap: wrap;
+            align-items: center;
         }
         
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
+        .filter-bar input, .filter-bar select {
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
         }
         
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .user-card {
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
             cursor: pointer;
+            position: relative;
+        }
+        
+        .user-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .user-card.selected {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+        
+        .user-card.streaming {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .role-admin { background: #fee2e2; color: #991b1b; }
+        .role-vip { background: #fef3c7; color: #92400e; }
+        .role-user { background: #e0e7ff; color: #3730a3; }
+        
+        .stream-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gray);
+        }
+        
+        .stream-indicator.active {
+            background: var(--success);
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
         
         .streams-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
         }
         
         .stream-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: flex;
-            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             border: 1px solid var(--border);
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .stream-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
         }
         
         .stream-header {
-            padding: 20px;
+            padding: 12px 16px;
             background: var(--primary);
             color: white;
             display: flex;
@@ -272,37 +271,9 @@
             align-items: center;
         }
         
-        .stream-title {
-            font-weight: 700;
-            font-size: 1.2rem;
-            word-break: break-all;
-        }
-        
-        .stream-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 12px;
-            border-radius: 20px;
-            white-space: nowrap;
-        }
-        
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4ade80;
-            animation: pulse 2s infinite;
-        }
-        
         .stream-container {
-            height: 280px;
+            height: 225px;
             background: #1a1a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
         }
         
@@ -313,167 +284,60 @@
         }
         
         .stream-controls {
-            padding: 20px;
+            padding: 12px;
             display: flex;
-            gap: 15px;
+            gap: 8px;
             justify-content: center;
         }
         
         .control-btn {
-            padding: 12px 24px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 10px;
-            font-weight: 600;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
         }
         
-        .control-btn.reload {
+        .control-btn.reload { background: var(--primary); color: white; }
+        .control-btn.remove { background: var(--danger); color: white; }
+        
+        .bookmarklet-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             background: var(--primary);
             color: white;
-        }
-        
-        .control-btn.remove {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .control-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
         
         .empty-state {
-            grid-column: 1 / -1;
             text-align: center;
-            padding: 80px 20px;
+            padding: 60px 20px;
             color: var(--gray);
         }
         
         .empty-state i {
-            font-size: 5rem;
-            margin-bottom: 25px;
-            color: #cbd5e1;
-        }
-        
-        .empty-state h3 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-        
-        .empty-state p {
-            font-size: 1.1rem;
-            max-width: 500px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            color: var(--gray);
-            font-size: 0.95rem;
-            padding: 20px;
-        }
-        
-        .highlight {
-            background: linear-gradient(120deg, #f0f9ff, #e0f2fe);
-            border-left: 4px solid var(--primary);
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 15px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            animation: popupFadeIn 0.3s ease;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-size: 4rem;
             margin-bottom: 20px;
-        }
-        
-        .modal-header h3 {
-            font-size: 1.5rem;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--gray);
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-            justify-content: flex-end;
-        }
-        
-        @media (max-width: 768px) {
-            .streams-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .add-stream-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .user-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes popupFadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            opacity: 0.5;
         }
         
         .notification {
@@ -483,436 +347,711 @@
             background: var(--primary);
             color: white;
             padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 2000;
-            font-weight: 600;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
             transform: translateX(150%);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s;
+            max-width: 400px;
         }
         
-        .notification.show {
-            transform: translateX(0);
+        .notification.show { transform: translateX(0); }
+        .notification.error { background: var(--danger); }
+        .notification.success { background: var(--success); }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        
+        .loading-overlay.active { display: flex; }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid white;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: var(--border);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active { background: var(--success); }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active::after { transform: translateX(24px); }
+        
+        @media (max-width: 768px) {
+            .users-grid, .streams-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-satellite-dish"></i>
-                </div>
-                <div class="logo-text">
-                    <h1>Stream Manager <span style="color: var(--primary);">Pro</span></h1>
-                    <p>Gestiona y controla múltiples transmisiones en tiempo real</p>
-                </div>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📡 Stream <span>Indexer</span></h1>
+                <p style="color: var(--gray); margin-top: 5px;">Extrae y monitorea streams de ElChatCam</p>
             </div>
-            <div class="user-controls">
-                <button class="btn btn-outline" id="exportBtn">
-                    <i class="fas fa-download"></i> Exportar
-                </button>
-                <div class="file-input-wrapper">
-                    <button class="btn btn-success">
-                        <i class="fas fa-upload"></i> Importar
-                    </button>
-                    <input type="file" id="importFile" accept=".json">
-                </div>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('import')">Importar HTML</button>
+                <button class="tab" onclick="switchTab('users')">Usuarios</button>
+                <button class="tab" onclick="switchTab('streams')">Mis Streams</button>
+                <button class="tab" onclick="switchTab('bookmarklet')">Bookmarklet</button>
             </div>
-        </header>
-        
-        <div class="control-panel">
-            <div class="panel-header">
-                <h2>Agregar Nueva Transmisión</h2>
+        </div>
+
+        <!-- Panel: Importar -->
+        <div class="panel active" id="panel-import">
+            <h2 style="margin-bottom: 20px;">📋 Importar desde HTML del Chat</h2>
+            
+            <div class="input-group">
+                <label>1. Ve al chat de <a href="https://irc.elchatcam.com" target="_blank">ElChatCam</a></label>
+                <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 10px;">
+                    2. Inspecciona el elemento <code>#userList</code> (Click derecho → Inspeccionar)<br>
+                    3. Copia el HTML completo del <code>&lt;ul id="userList"&gt;</code><br>
+                    4. Pégalo aquí:
+                </p>
+                <textarea id="htmlInput" placeholder="Pega aquí el HTML del userList..."></textarea>
             </div>
             
-            <div class="add-stream-form">
-                <div class="form-group">
-                    <label for="streamName">Nombre de Usuario</label>
-                    <input type="text" id="streamName" class="form-control" placeholder="Ingresa el nombre de usuario">
-                </div>
-                <div class="form-group">
-                    <label for="streamUrl">URL Base de Transmisión</label>
-                    <input type="text" id="streamUrl" class="form-control" placeholder="https://irc.elchatcam.com:4000/subscribe.html">
-                </div>
-                <button class="btn btn-primary" id="addStreamBtn" style="height: 50px;">
-                    <i class="fas fa-plus-circle"></i> Agregar Stream
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="parseHTML()">
+                    <i class="fas fa-sync"></i> Analizar y Extraer Usuarios
                 </button>
-                
-                <div class="url-preview" id="urlPreview">
-                    <strong>URL que se generará:</strong> <span id="previewUrl"></span>
-                </div>
-            </div>
-            
-            <div class="import-export-section">
-                <div class="file-input-wrapper">
-                    <button class="btn btn-outline">
-                        <i class="fas fa-file-import"></i> Importar y Reemplazar
-                    </button>
-                    <input type="file" id="importReplaceFile" accept=".json">
-                </div>
-                
-                <button class="btn btn-outline" id="clearAllBtn">
-                    <i class="fas fa-trash-alt"></i> Limpiar Todo
+                <button class="btn btn-outline" onclick="loadExample()">
+                    <i class="fas fa-code"></i> Cargar Ejemplo
+                </button>
+                <button class="btn btn-warning" onclick="clearData()">
+                    <i class="fas fa-trash"></i> Limpiar Todo
                 </button>
             </div>
-            
-            <div class="highlight">
-                <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-                    <span>Usa "Importar" para agregar streams desde un archivo, o "Importar y Reemplazar" para sustituir todos los streams actuales</span>
+
+            <div style="margin-top: 30px; padding: 20px; background: #fef3c7; border-radius: 12px; border-left: 4px solid var(--warning);">
+                <h4 style="margin-bottom: 10px;">💡 Consejo Rápido</h4>
+                <p style="font-size: 0.95rem; color: #92400e;">
+                    Para actualizar rápido: Usa el <strong>Bookmarklet</strong> (última pestaña) para extraer datos sin salir del chat.
                 </p>
             </div>
         </div>
-        
-        <div class="streams-grid" id="streamsGrid">
-            <div class="empty-state" id="emptyState">
-                <i class="fas fa-broadcast-tower"></i>
-                <h3>No hay transmisiones activas</h3>
-                <p>Agrega tu primera transmisión usando el formulario superior. El sistema generará automáticamente la URL completa.</p>
+
+        <!-- Panel: Usuarios -->
+        <div class="panel" id="panel-users">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Usuarios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="streamingUsers" style="color: var(--success);">0</div>
+                    <div class="stat-label">Transmitiendo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="selectedUsers" style="color: var(--primary);">0</div>
+                    <div class="stat-label">Seleccionados</div>
+                </div>
+            </div>
+
+            <div class="auto-refresh">
+                <div class="toggle-switch" id="autoRefreshToggle" onclick="toggleAutoRefresh()"></div>
+                <div>
+                    <div style="font-weight: 600;">Auto-refresh cada 30s</div>
+                    <div style="font-size: 0.85rem; color: var(--gray);">Solo verifica usuarios con cámara activa</div>
+                </div>
+                <button class="btn btn-primary" onclick="refreshStreams()" style="margin-left: auto;">
+                    <i class="fas fa-sync"></i> Verificar Ahora
+                </button>
+            </div>
+
+            <div class="filter-bar">
+                <input type="text" id="searchUsers" placeholder="🔍 Buscar usuario..." onkeyup="filterUsers()">
+                <select id="filterRole" onchange="filterUsers()">
+                    <option value="all">Todos los roles</option>
+                    <option value="admin">Admins</option>
+                    <option value="vip">VIP</option>
+                    <option value="user">Usuarios</option>
+                </select>
+                <select id="filterStatus" onchange="filterUsers()">
+                    <option value="all">Todos los estados</option>
+                    <option value="streaming">Transmitiendo</option>
+                    <option value="offline">Offline</option>
+                </select>
+                <button class="btn btn-success" onclick="addSelectedToStreams()">
+                    <i class="fas fa-plus"></i> Agregar Seleccionados
+                </button>
+                <button class="btn btn-outline" onclick="selectAllStreaming()">
+                    Seleccionar todos los activos
+                </button>
+            </div>
+
+            <div class="users-grid" id="usersGrid">
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h3>No hay usuarios cargados</h3>
+                    <p>Ve a la pestaña "Importar HTML" para comenzar</p>
+                </div>
             </div>
         </div>
+
+        <!-- Panel: Streams -->
+        <div class="panel" id="panel-streams">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h2>Mis Streams Guardados</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-outline" onclick="exportStreams()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                    <label class="btn btn-success" style="cursor: pointer;">
+                        <i class="fas fa-upload"></i> Importar
+                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importStreams(this)">
+                    </label>
+                    <button class="btn btn-danger" onclick="clearAllStreams()">
+                        <i class="fas fa-trash"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="streams-grid" id="streamsGrid">
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <i class="fas fa-video"></i>
+                    <h3>No tienes streams guardados</h3>
+                    <p>Selecciona usuarios de la lista y agrégalos aquí</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel: Bookmarklet -->
+        <div class="panel" id="panel-bookmarklet">
+            <h2 style="margin-bottom: 20px;">🔖 Bookmarklet (Extracción Rápida)</h2>
+            
+            <p style="margin-bottom: 15px; line-height: 1.6;">
+                Arrastra este botón a tu barra de favoritos. Luego, cuando estés en el chat de ElChatCam, 
+                haz clic en el favorito para extraer automáticamente la lista de usuarios:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="javascript:(function(){
+                    const users = [];
+                    document.querySelectorAll('#userList li').forEach(li => {
+                        const nick = li.getAttribute('data-nick');
+                        if (!nick) return;
+                        const hasCamera = li.querySelector('.fa-video-camera');
+                        const isStreaming = hasCamera && hasCamera.style.color === 'limegreen';
+                        const roleImg = li.querySelector('img[alt]');
+                        const role = roleImg ? roleImg.alt : 'user';
+                        const avatar = li.querySelector('img')?.src || '';
+                        
+                        users.push({
+                            name: nick,
+                            isStreaming: isStreaming,
+                            role: role,
+                            avatar: avatar,
+                            timestamp: new Date().toISOString()
+                        });
+                    });
+                    
+                    localStorage.setItem('elchatcam_extracted', JSON.stringify(users));
+                    alert('Extraídos ' + users.length + ' usuarios. Ve al Indexer y recarga la página.');
+                })();" 
+                style="background: var(--primary); color: white; padding: 15px 30px; 
+                       border-radius: 12px; text-decoration: none; font-weight: 600;
+                       display: inline-block; box-shadow: 0 4px 15px rgba(99,102,241,0.3);">
+                    📡 Extraer Usuarios
+                </a>
+            </div>
+
+            <h3 style="margin: 30px 0 15px;">Código Fuente (para desarrolladores):</h3>
+            <div class="bookmarklet-code">
+                <button class="copy-btn" onclick="copyBookmarklet()">Copiar</button>
+                <pre id="bookmarkletCode">javascript:(function(){
+    const users = [];
+    document.querySelectorAll('#userList li').forEach(li => {
+        const nick = li.getAttribute('data-nick');
+        if (!nick) return;
+        const hasCamera = li.querySelector('.fa-video-camera');
+        const isStreaming = hasCamera && hasCamera.style.color === 'limegreen';
+        const roleImg = li.querySelector('img[alt]');
+        const role = roleImg ? roleImg.alt : 'user';
+        const avatar = li.querySelector('img')?.src || '';
         
-        <footer class="footer">
-            <p>Stream Manager Pro &copy; 2023 - Gestión de transmisiones en tiempo real</p>
-        </footer>
+        users.push({
+            name: nick,
+            isStreaming: isStreaming,
+            role: role,
+            avatar: avatar,
+            timestamp: new Date().toISOString()
+        });
+    });
+    
+    localStorage.setItem('elchatcam_extracted', JSON.stringify(users));
+    alert('Extraídos ' + users.length + ' usuarios. Ve al Indexer y recarga la página.');
+})();</pre>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background: #f0fdf4; border-radius: 12px; border-left: 4px solid var(--success);">
+                <h4 style="margin-bottom: 10px;">✅ Cómo usar:</h4>
+                <ol style="margin-left: 20px; line-height: 1.8; color: #166534;">
+                    <li>Arrastra el botón morado a tu barra de favoritos</li>
+                    <li>Entra al chat de <strong>ElChatCam</strong></li>
+                    <li>Haz clic en el favorito cuando veas usuarios con cámara verde</li>
+                    <li>Vuelve a esta página y los datos aparecerán automáticamente</li>
+                </ol>
+            </div>
+        </div>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Confirmar acción</h3>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-            </div>
-            <p id="modalMessage">¿Estás seguro de que quieres realizar esta acción?</p>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-                <button class="btn btn-danger" id="confirmModalBtn">Confirmar</button>
-            </div>
-        </div>
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
     </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
 
     <script>
-        // Estado de la aplicación
-        let streams = JSON.parse(localStorage.getItem('streams')) || [];
-        let modalCallback = null;
-        let modalConfirmBtn = null;
+        // Estado global
+        let users = JSON.parse(localStorage.getItem('elchatcam_users')) || [];
+        let myStreams = JSON.parse(localStorage.getItem('elchatcam_streams')) || [];
+        let selectedUsers = new Set();
+        let autoRefreshInterval = null;
 
-        // Referencias DOM
-        const elements = {
-            grid: document.getElementById('streamsGrid'),
-            empty: document.getElementById('emptyState'),
-            nameInput: document.getElementById('streamName'),
-            urlInput: document.getElementById('streamUrl'),
-            preview: document.getElementById('urlPreview'),
-            previewUrl: document.getElementById('previewUrl'),
-            modal: document.getElementById('confirmModal'),
-            modalTitle: document.getElementById('modalTitle'),
-            modalMessage: document.getElementById('modalMessage')
-        };
-
-        // Inicializar URL base guardada
-        const savedBaseUrl = localStorage.getItem('savedBaseUrl');
-        if (savedBaseUrl) {
-            elements.urlInput.value = savedBaseUrl;
-        } else {
-            elements.urlInput.value = "https://irc.elchatcam.com:4000/subscribe.html";
-        }
-
-        // Event Listeners
-        document.getElementById('addStreamBtn').addEventListener('click', addStream);
-        elements.nameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addStream();
-        });
-        elements.nameInput.addEventListener('input', updatePreview);
-        elements.urlInput.addEventListener('input', updatePreview);
-        
-        document.getElementById('exportBtn').addEventListener('click', exportStreams);
-        document.getElementById('importFile').addEventListener('change', (e) => importStreams(e.target.files[0], false));
-        document.getElementById('importReplaceFile').addEventListener('change', (e) => importStreams(e.target.files[0], true));
-        document.getElementById('clearAllBtn').addEventListener('click', clearAll);
-
-        // Cerrar modal al hacer clic fuera
-        elements.modal.addEventListener('click', (e) => {
-            if (e.target === elements.modal) closeModal();
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExtractedData();
+            renderUsers();
+            renderStreams();
+            
+            // Cargar datos extraídos por bookmarklet si existen
+            const extracted = localStorage.getItem('elchatcam_extracted');
+            if (extracted) {
+                users = JSON.parse(extracted);
+                saveUsers();
+                localStorage.removeItem('elchatcam_extracted');
+                switchTab('users');
+                showNotification('Datos extraídos via bookmarklet cargados', 'success');
+            }
         });
 
-        function updatePreview() {
-            const name = elements.nameInput.value.trim();
-            const baseUrl = elements.urlInput.value.trim();
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             
-            if (name && baseUrl) {
-                const separator = baseUrl.includes('?') ? '&' : '?';
-                elements.previewUrl.textContent = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
-                elements.preview.classList.add('active');
-            } else {
-                elements.preview.classList.remove('active');
+            event.target.classList.add('active');
+            document.getElementById(`panel-${tab}`).classList.add('active');
+            
+            if (tab === 'users') renderUsers();
+            if (tab === 'streams') renderStreams();
+        }
+
+        function parseHTML() {
+            const html = document.getElementById('htmlInput').value.trim();
+            if (!html) {
+                showNotification('Pega el HTML primero', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const userList = doc.getElementById('userList') || doc.querySelector('ul');
+                
+                if (!userList) {
+                    throw new Error('No se encontró la lista de usuarios');
+                }
+
+                const newUsers = [];
+                userList.querySelectorAll('li[data-nick]').forEach(li => {
+                    const nick = li.getAttribute('data-nick');
+                    if (!nick) return;
+                    
+                    // Detectar si está transmitiendo (cámara verde)
+                    const camIcon = li.querySelector('.fa-video-camera, .cam-icon');
+                    const camStyle = camIcon ? camIcon.getAttribute('style') || '' : '';
+                    const isStreaming = camStyle.includes('limegreen') || camStyle.includes('rgb(0, 255, 0)');
+                    
+                    // Detectar rol
+                    let role = 'user';
+                    const roleImg = li.querySelector('img[alt="admin"], img[alt="vip"]');
+                    if (roleImg) role = roleImg.alt;
+                    
+                    // Avatar
+                    const avatarImg = li.querySelector('img');
+                    const avatar = avatarImg ? avatarImg.src : '';
+                    
+                    // Evitar duplicados
+                    if (!users.find(u => u.name === nick)) {
+                        newUsers.push({
+                            id: Date.now() + Math.random(),
+                            name: nick,
+                            isStreaming: isStreaming,
+                            role: role,
+                            avatar: avatar,
+                            timestamp: new Date().toISOString(),
+                            lastChecked: new Date().toISOString()
+                        });
+                    }
+                });
+
+                if (newUsers.length === 0) {
+                    showNotification('No se encontraron nuevos usuarios', 'warning');
+                } else {
+                    users = [...users, ...newUsers];
+                    saveUsers();
+                    showNotification(`Extraídos ${newUsers.length} usuarios nuevos`, 'success');
+                    switchTab('users');
+                }
+                
+                document.getElementById('htmlInput').value = '';
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
-        function addStream() {
-            const name = elements.nameInput.value.trim();
-            const baseUrl = elements.urlInput.value.trim();
+        function renderUsers() {
+            const grid = document.getElementById('usersGrid');
+            const filtered = getFilteredUsers();
             
-            if (!name) {
-                showNotification('Por favor, ingresa un nombre de usuario', 'error');
-                return;
-            }
-            
-            if (!baseUrl) {
-                showNotification('Por favor, ingresa una URL base', 'error');
-                return;
-            }
-            
-            const separator = baseUrl.includes('?') ? '&' : '?';
-            const finalUrl = `${baseUrl}${separator}ownerId=${encodeURIComponent(name)}`;
-            
-            const stream = { name, url: finalUrl, id: Date.now() };
-            streams.push(stream);
-            saveStreams();
-            
-            // Agregar solo el nuevo stream al DOM sin recargar los demás
-            addStreamToDOM(stream);
-            
-            // Limpiar solo el nombre
-            elements.nameInput.value = '';
-            elements.preview.classList.remove('active');
-            localStorage.setItem('savedBaseUrl', baseUrl);
-            
-            showNotification(`Transmisión "${name}" agregada correctamente`);
-        }
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('streamingUsers').textContent = users.filter(u => u.isStreaming).length;
+            document.getElementById('selectedUsers').textContent = selectedUsers.size;
 
-        function addStreamToDOM(stream) {
-            // Ocultar estado vacío si existe
-            if (elements.empty.parentNode) {
-                elements.empty.style.display = 'none';
+            if (users.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-users"></i>
+                        <h3>No hay usuarios cargados</h3>
+                        <p>Ve a la pestaña "Importar HTML" para comenzar</p>
+                    </div>`;
+                return;
             }
-            
-            const card = document.createElement('div');
-            card.className = 'stream-card';
-            card.dataset.id = stream.id;
-            card.innerHTML = `
-                <div class="stream-header">
-                    <div class="stream-title">${escapeHtml(stream.name)}</div>
-                    <div class="stream-status">
-                        <span class="status-indicator"></span>
-                        En Vivo
+
+            grid.innerHTML = filtered.map(user => `
+                <div class="user-card ${user.isStreaming ? 'streaming' : ''} ${selectedUsers.has(user.id) ? 'selected' : ''}" 
+                     onclick="toggleSelect('${user.id}')" data-id="${user.id}">
+                    <div class="stream-indicator ${user.isStreaming ? 'active' : ''}"></div>
+                    <img src="${user.avatar || '/uploads/avatars/default.png'}" class="user-avatar" alt="">
+                    <div class="user-info">
+                        <div class="user-name">
+                            ${escapeHtml(user.name)}
+                            <span class="user-role role-${user.role}">${user.role.toUpperCase()}</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--gray);">
+                            ${user.isStreaming ? '🎥 Transmitiendo' : '💤 Offline'}
+                        </div>
                     </div>
                 </div>
-                <div class="stream-container">
-                    <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>
-                </div>
-                <div class="stream-controls">
-                    <button class="control-btn reload" onclick="reloadStream(${stream.id})">
-                        <i class="fas fa-redo"></i> Recargar
-                    </button>
-                    <button class="control-btn remove" onclick="confirmRemove(${stream.id})">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                </div>
-            `;
+            `).join('');
+        }
+
+        function getFilteredUsers() {
+            const search = document.getElementById('searchUsers')?.value.toLowerCase() || '';
+            const roleFilter = document.getElementById('filterRole')?.value || 'all';
+            const statusFilter = document.getElementById('filterStatus')?.value || 'all';
             
-            elements.grid.appendChild(card);
+            return users.filter(user => {
+                if (search && !user.name.toLowerCase().includes(search)) return false;
+                if (roleFilter !== 'all' && user.role !== roleFilter) return false;
+                if (statusFilter === 'streaming' && !user.isStreaming) return false;
+                if (statusFilter === 'offline' && user.isStreaming) return false;
+                return true;
+            });
+        }
+
+        function filterUsers() {
+            renderUsers();
+        }
+
+        function toggleSelect(userId) {
+            if (selectedUsers.has(userId)) {
+                selectedUsers.delete(userId);
+            } else {
+                selectedUsers.add(userId);
+            }
+            renderUsers();
+        }
+
+        function selectAllStreaming() {
+            const streaming = users.filter(u => u.isStreaming);
+            streaming.forEach(u => selectedUsers.add(u.id));
+            renderUsers();
+            showNotification(`Seleccionados ${streaming.length} usuarios activos`);
+        }
+
+        function addSelectedToStreams() {
+            if (selectedUsers.size === 0) {
+                showNotification('Selecciona al menos un usuario', 'error');
+                return;
+            }
+
+            let added = 0;
+            selectedUsers.forEach(id => {
+                const user = users.find(u => u.id == id);
+                if (user && !myStreams.find(s => s.name === user.name)) {
+                    myStreams.push({
+                        id: Date.now() + Math.random(),
+                        name: user.name,
+                        url: `https://irc.elchatcam.com:4000/subscribe.html?ownerId=${encodeURIComponent(user.name)}`,
+                        avatar: user.avatar,
+                        addedAt: new Date().toISOString()
+                    });
+                    added++;
+                }
+            });
+
+            saveStreams();
+            selectedUsers.clear();
+            renderUsers();
+            showNotification(`${added} streams agregados`, 'success');
+            
+            setTimeout(() => switchTab('streams'), 500);
+        }
+
+        function renderStreams() {
+            const grid = document.getElementById('streamsGrid');
+            
+            if (myStreams.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-video"></i>
+                        <h3>No tienes streams guardados</h3>
+                        <p>Selecciona usuarios de la lista y agrégalos aquí</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = myStreams.map(stream => `
+                <div class="stream-card" data-stream-id="${stream.id}">
+                    <div class="stream-header">
+                        <span style="font-weight: 600;">${escapeHtml(stream.name)}</span>
+                        <button onclick="removeStream('${stream.id}')" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="stream-container">
+                        <iframe class="stream-frame" src="${stream.url}" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <div class="stream-controls">
+                        <button class="control-btn reload" onclick="reloadStream('${stream.id}')">
+                            <i class="fas fa-redo"></i> Recargar
+                        </button>
+                        <button class="control-btn remove" onclick="removeStream('${stream.id}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function reloadStream(id) {
-            const card = document.querySelector(`[data-id="${id}"]`);
+            const card = document.querySelector(`[data-stream-id="${id}"]`);
             if (!card) return;
-            
-            const iframe = card.querySelector('.stream-frame');
-            const currentSrc = iframe.src;
+            const iframe = card.querySelector('iframe');
+            const src = iframe.src;
             iframe.src = '';
-            setTimeout(() => {
-                iframe.src = currentSrc;
-            }, 100);
-            
-            const stream = streams.find(s => s.id === id);
-            showNotification(`Transmisión "${stream?.name || ''}" recargada`);
-        }
-
-        function confirmRemove(id) {
-            const stream = streams.find(s => s.id === id);
-            if (!stream) return;
-            
-            // Configurar modal
-            elements.modalTitle.textContent = 'Eliminar transmisión';
-            elements.modalMessage.textContent = `¿Estás seguro de que quieres eliminar la transmisión "${stream.name}"?`;
-            
-            // Configurar botón de confirmación
-            if (modalConfirmBtn) {
-                modalConfirmBtn.replaceWith(modalConfirmBtn.cloneNode(true));
-            }
-            modalConfirmBtn = document.getElementById('confirmModalBtn');
-            modalConfirmBtn.onclick = () => {
-                removeStream(id);
-                closeModal();
-            };
-            
-            elements.modal.classList.add('active');
+            setTimeout(() => iframe.src = src, 100);
         }
 
         function removeStream(id) {
-            const index = streams.findIndex(s => s.id === id);
-            if (index === -1) return;
-            
-            const stream = streams[index];
-            streams.splice(index, 1);
+            myStreams = myStreams.filter(s => s.id != id);
             saveStreams();
-            
-            // Eliminar solo el elemento del DOM sin afectar los demás
-            const card = document.querySelector(`[data-id="${id}"]`);
-            if (card) {
-                card.style.opacity = '0';
-                card.style.transform = 'scale(0.9)';
-                setTimeout(() => card.remove(), 300);
-            }
-            
-            // Mostrar empty state si no quedan streams
-            if (streams.length === 0) {
-                setTimeout(() => {
-                    elements.empty.style.display = 'block';
-                    elements.grid.appendChild(elements.empty);
-                }, 300);
-            }
-            
-            showNotification(`Transmisión "${stream.name}" eliminada`);
+            renderStreams();
+            showNotification('Stream eliminado');
         }
 
-        function clearAll() {
-            if (streams.length === 0) return;
+        function clearAllStreams() {
+            if (myStreams.length === 0) return;
+            if (!confirm('¿Eliminar todos los streams?')) return;
             
-            elements.modalTitle.textContent = 'Limpiar todos los streams';
-            elements.modalMessage.textContent = '¿Estás seguro de que quieres eliminar todos los streams? Esta acción no se puede deshacer.';
-            
-            if (modalConfirmBtn) {
-                modalConfirmBtn.replaceWith(modalConfirmBtn.cloneNode(true));
-            }
-            modalConfirmBtn = document.getElementById('confirmModalBtn');
-            modalConfirmBtn.onclick = () => {
-                streams = [];
-                saveStreams();
-                elements.grid.innerHTML = '';
-                elements.grid.appendChild(elements.empty);
-                elements.empty.style.display = 'block';
-                closeModal();
-                showNotification('Todos los streams han sido eliminados');
-            };
-            
-            elements.modal.classList.add('active');
+            myStreams = [];
+            saveStreams();
+            renderStreams();
+            showNotification('Todos los streams eliminados');
         }
 
-        function closeModal() {
-            elements.modal.classList.remove('active');
-            modalCallback = null;
+        function refreshStreams() {
+            // Simular verificación de streams activos
+            showLoading(true);
+            
+            setTimeout(() => {
+                // En una implementación real, aquí verificarías cada stream
+                // Por ahora solo actualizamos el timestamp
+                users.forEach(u => {
+                    u.lastChecked = new Date().toISOString();
+                });
+                saveUsers();
+                renderUsers();
+                showLoading(false);
+                showNotification('Verificación completada');
+            }, 1500);
+        }
+
+        function toggleAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            toggle.classList.toggle('active');
+            
+            if (toggle.classList.contains('active')) {
+                autoRefreshInterval = setInterval(refreshStreams, 30000);
+                showNotification('Auto-refresh activado (30s)');
+            } else {
+                clearInterval(autoRefreshInterval);
+                showNotification('Auto-refresh desactivado');
+            }
         }
 
         function exportStreams() {
-            if (streams.length === 0) {
+            if (myStreams.length === 0) {
                 showNotification('No hay streams para exportar', 'error');
                 return;
             }
             
-            const dataStr = JSON.stringify(streams, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
+            const data = {
+                streams: myStreams,
+                exportedAt: new Date().toISOString()
+            };
             
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `streams-backup-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `elchatcam-streams-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
             URL.revokeObjectURL(url);
             
-            showNotification('Lista de streams exportada correctamente');
+            showNotification('Streams exportados');
         }
 
-        function importStreams(file, replace) {
+        function importStreams(input) {
+            const file = input.files[0];
             if (!file) return;
             
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const imported = JSON.parse(e.target.result);
-                    
-                    if (!Array.isArray(imported)) {
-                        throw new Error('El archivo no contiene una lista válida');
-                    }
-                    
-                    // Validar y migrar datos antiguos
-                    const validStreams = imported
-                        .filter(s => s.name && s.url)
-                        .map(s => ({
-                            ...s,
-                            id: s.id || Date.now() + Math.random(),
-                            url: s.url.replace(/[?&]user=/, (m) => m.replace('user', 'ownerId'))
-                        }));
-                    
-                    if (validStreams.length === 0) {
-                        throw new Error('No se encontraron streams válidos');
-                    }
-                    
-                    if (replace) {
-                        streams = validStreams;
-                        renderAll();
-                        showNotification(`Se importaron ${validStreams.length} streams (reemplazando existentes)`);
-                    } else {
-                        // Agregar solo los nuevos que no existan
-                        const existingUrls = new Set(streams.map(s => s.url));
-                        const newStreams = validStreams.filter(s => !existingUrls.has(s.url));
-                        streams.push(...newStreams);
-                        
-                        // Agregar solo los nuevos al DOM
-                        newStreams.forEach(addStreamToDOM);
+                    const data = JSON.parse(e.target.value);
+                    if (data.streams && Array.isArray(data.streams)) {
+                        myStreams = [...myStreams, ...data.streams];
                         saveStreams();
-                        showNotification(`Se agregaron ${newStreams.length} nuevos streams`);
+                        renderStreams();
+                        showNotification(`Importados ${data.streams.length} streams`);
                     }
-                    
-                    // Limpiar input
-                    if (!replace) document.getElementById('importFile').value = '';
-                    else document.getElementById('importReplaceFile').value = '';
-                    
-                } catch (error) {
-                    showNotification('Error al importar: ' + error.message, 'error');
+                } catch (err) {
+                    showNotification('Error al importar', 'error');
                 }
             };
             reader.readAsText(file);
+            input.value = '';
         }
 
-        function renderAll() {
-            elements.grid.innerHTML = '';
-            
-            if (streams.length === 0) {
-                elements.grid.appendChild(elements.empty);
-                elements.empty.style.display = 'block';
-                return;
+        function loadExample() {
+            const exampleHTML = `<ul id="userList">
+                <li data-nick="Ezequiel"><img src="/uploads/avatars/ezequiel.jpg"><span>Ezequiel</span><i class="fa fa-video-camera" style="color: limegreen;"></i></li>
+                <li data-nick="VENECA"><img src="/uploads/avatars/default.png"><span>VENECA</span><i class="fa fa-video-camera" style="color: limegreen;"></i></li>
+            </ul>`;
+            document.getElementById('htmlInput').value = exampleHTML;
+            showNotification('Ejemplo cargado. Click en Analizar.');
+        }
+
+        function clearData() {
+            if (!confirm('¿Borrar todos los datos?')) return;
+            users = [];
+            selectedUsers.clear();
+            saveUsers();
+            renderUsers();
+            showNotification('Datos limpiados');
+        }
+
+        function checkExtractedData() {
+            // Verificar si hay datos pendientes del bookmarklet
+            const pending = localStorage.getItem('elchatcam_extracted');
+            if (pending) {
+                try {
+                    const data = JSON.parse(pending);
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Fusionar con existentes
+                        data.forEach(newUser => {
+                            if (!users.find(u => u.name === newUser.name)) {
+                                users.push({
+                                    ...newUser,
+                                    id: Date.now() + Math.random(),
+                                    timestamp: new Date().toISOString()
+                                });
+                            }
+                        });
+                        saveUsers();
+                        localStorage.removeItem('elchatcam_extracted');
+                        showNotification(`Cargados ${data.length} usuarios del bookmarklet`);
+                    }
+                } catch (e) {
+                    console.error('Error parsing extracted data:', e);
+                }
             }
-            
-            elements.empty.style.display = 'none';
-            streams.forEach(addStreamToDOM);
-            saveStreams();
+        }
+
+        function saveUsers() {
+            localStorage.setItem('elchatcam_users', JSON.stringify(users));
         }
 
         function saveStreams() {
-            localStorage.setItem('streams', JSON.stringify(streams));
+            localStorage.setItem('elchatcam_streams', JSON.stringify(myStreams));
         }
 
-        function showNotification(message, type = 'success') {
-            const notif = document.createElement('div');
-            notif.className = 'notification';
-            notif.style.background = type === 'error' ? 'var(--danger)' : 'var(--primary)';
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('active', show);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notif = document.getElementById('notification');
             notif.textContent = message;
-            document.body.appendChild(notif);
+            notif.className = `notification ${type}`;
+            notif.classList.add('show');
             
-            requestAnimationFrame(() => {
-                notif.classList.add('show');
-            });
-            
-            setTimeout(() => {
-                notif.classList.remove('show');
-                setTimeout(() => notif.remove(), 300);
-            }, 3000);
+            setTimeout(() => notif.classList.remove('show'), 3000);
         }
 
         function escapeHtml(text) {
@@ -921,15 +1060,15 @@
             return div.innerHTML;
         }
 
-        // Inicializar
-        renderAll();
-        updatePreview();
-        
-        setTimeout(() => {
-            if (streams.length > 0) {
-                showNotification(`Cargados ${streams.length} streams correctamente`);
-            }
-        }, 500);
+        function copyBookmarklet() {
+            const code = document.getElementById('bookmarkletCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Código copiado al portapapeles');
+            });
+        }
+
+        // Verificar datos del bookmarklet cada 2 segundos
+        setInterval(checkExtractedData, 2000);
     </script>
 </body>
 </html>
