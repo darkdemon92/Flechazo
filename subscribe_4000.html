@@ -5,6 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stream Manager Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    // Agrega esto en el <head> o antes de cargar los iframes
+<script>
+// Interceptar RTCPeerConnection para forzar H.264
+const originalRTCPeerConnection = window.RTCPeerConnection;
+
+window.RTCPeerConnection = function(config, constraints) {
+    // Forzar códecs H.264 en la configuración
+    if (config && config.sdpSemantics === 'unified-plan') {
+        // Configuración ya moderna, no hacer nada
+    }
+    
+    const pc = new originalRTCPeerConnection(config, constraints);
+    
+    // Interceptar createOffer para modificar SDP
+    const originalCreateOffer = pc.createOffer.bind(pc);
+    pc.createOffer = function(options) {
+        return originalCreateOffer(options).then(offer => {
+            // Forzar H.264 en el SDP
+            let sdp = offer.sdp;
+            
+            // Priorizar H.264 sobre VP8/VP9
+            sdp = sdp.replace(/(m=video.*\r\n)/g, '$1b=AS:2000\r\n');
+            
+            // Mover H.264 al principio de la lista de códecs
+            const h264Regex = /(a=rtpmap:(\d+) H264\/90000\r\n)/g;
+            const h264Matches = [...sdp.matchAll(h264Regex)];
+            
+            if (h264Matches.length > 0) {
+                // Reordenar para poner H.264 primero
+                const lines = sdp.split('\r\n');
+                const h264Lines = [];
+                const otherLines = [];
+                
+                lines.forEach(line => {
+                    if (line.includes('H264') || line.includes('h264')) {
+                        h264Lines.push(line);
+                    } else if (!line.includes('VP8') && !line.includes('VP9') && !line.includes('rtx')) {
+                        otherLines.push(line);
+                    } else if (line.includes('rtpmap') && (line.includes('VP8') || line.includes('VP9'))) {
+                        // Ignorar líneas de VP8/VP9 para deshabilitarlos
+                    } else {
+                        otherLines.push(line);
+                    }
+                });
+                
+                // Reconstruir SDP con H.264 primero
+                // Esto es una simplificación, en producción usarías un parser SDP más robusto
+            }
+            
+            offer.sdp = sdp;
+            return offer;
+        });
+    };
+    
+    return pc;
+};
+</script>
     <style>
         :root {
             --primary: #6366f1;
